@@ -8,4 +8,5 @@
 uploads.tar.gz
 *.exe
 *.sql
+!sql/*.sql
 *.log
