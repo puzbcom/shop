@@ -1,0 +1,442 @@
+{{define "extra_css"}}
+  /* ── CATEGORY NAV ── */
+  .cat-nav { border-bottom: 1px solid var(--border); background: #fff; }
+  .cat-nav-inner { max-width: 1440px; margin: 0 auto; padding: 0 24px; display: flex; overflow-x: auto; scrollbar-width: none; }
+  .cat-nav-inner::-webkit-scrollbar { display: none; }
+  .cat-nav-inner a { white-space: nowrap; padding: 13px 14px; font-size: 13px; font-weight: 600; color: var(--black); border-bottom: 3px solid transparent; display: block; transition: border-color .15s; }
+  .cat-nav-inner a:hover, .cat-nav-inner a.active { border-bottom-color: var(--black); }
+
+  /* ── MAIN ── */
+  main { max-width: 1440px; margin: 0 auto; padding: 0 24px 64px; }
+
+  /* ── HERO ── */
+  .hero { margin: 24px 0 0; border-radius: 16px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; background: linear-gradient(135deg, #f9ede0 0%, #fde8d0 100%); height: 360px; }
+  .hero-text { padding: 28px 44px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .hero-eyebrow { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--orange); }
+  .hero-title { font-size: 30px; font-weight: 800; line-height: 1.2; color: var(--black); }
+  .hero-sub { font-size: 15px; color: var(--gray); max-width: 300px; line-height: 1.5; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; background: var(--black); color: #fff; border-radius: 99px; padding: 11px 24px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; width: fit-content; transition: background .15s; }
+  .btn-primary:hover { background: #3a3a3a; }
+
+  /* ── HERO SLIDESHOW ── */
+  .hero-slideshow { position: relative; overflow: hidden; height: 360px; background: #e8e0d8; }
+  .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease; }
+  .hero-slide.active { opacity: 1; }
+  .hero-slide img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .hero-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 2; }
+  .hero-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.5); cursor: pointer; border: none; padding: 0; transition: background .2s; }
+  .hero-dot.active { background: #fff; }
+
+  /* ── SECTION HEADERS ── */
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin: 44px 0 18px; }
+  .section-title { font-size: 24px; font-weight: 800; letter-spacing: -.3px; }
+  .section-link { font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  .section-link:hover { color: var(--orange); }
+
+  /* ── CATEGORY CIRCLES ── */
+  .category-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px; }
+  .cat-card { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
+  .cat-card:hover .cat-circle { transform: scale(1.06); }
+  .cat-circle { width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; transition: transform .2s ease; }
+  .cat-circle img { width: 100%; height: 100%; object-fit: cover; }
+  .cat-card:nth-child(8n+1) .cat-circle { background: #fde8d0; }
+  .cat-card:nth-child(8n+2) .cat-circle { background: #d5e8fd; }
+  .cat-card:nth-child(8n+3) .cat-circle { background: #d5fde8; }
+  .cat-card:nth-child(8n+4) .cat-circle { background: #fdd5e8; }
+  .cat-card:nth-child(8n+5) .cat-circle { background: #e8d5fd; }
+  .cat-card:nth-child(8n+6) .cat-circle { background: #fdfdd5; }
+  .cat-card:nth-child(8n+7) .cat-circle { background: #d5fdfd; }
+  .cat-card:nth-child(8n+8) .cat-circle { background: #ffe8d5; }
+  .cat-label { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; }
+
+  /* ── PRODUCT GRID ── */
+  .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+  .product-card { cursor: pointer; }
+  .product-card:hover .product-img-wrap { transform: translateY(-3px); }
+  .product-img-wrap { position: relative; border-radius: 10px; overflow: hidden; background: var(--light-gray); aspect-ratio: 1; transition: transform .2s ease; }
+  .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .product-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 52px; }
+  .heart-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.88); border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background .15s; }
+  .heart-btn:hover { background: #fff; }
+  .heart-btn svg { width: 16px; height: 16px; fill: none; stroke: var(--black); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .product-info { padding: 10px 0 0; }
+  .product-shop { font-size: 11px; color: var(--gray); margin-bottom: 3px; letter-spacing: .03em; }
+  .product-name { font-size: 13px; line-height: 1.4; color: var(--black); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 5px; }
+  .product-stars { display: flex; align-items: center; gap: 3px; margin-bottom: 5px; }
+  .stars-filled { color: var(--star); font-size: 12px; letter-spacing: 1px; }
+  .review-count { font-size: 11px; color: var(--gray); }
+  .product-price { font-size: 14px; font-weight: 700; }
+  .product-price .was { font-size: 12px; color: var(--gray); text-decoration: line-through; font-weight: 400; margin-left: 5px; }
+  .product-badge { display: inline-block; border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 700; margin-top: 5px; text-transform: uppercase; letter-spacing: .05em; }
+  .badge-bestseller { background: #d5fde8; color: #1a7f4b; }
+  .badge-sale       { background: #ffe8e8; color: #c0392b; }
+  .badge-new        { background: #e8d5fd; color: #6b21a8; }
+  .badge-featured   { background: #fde8d0; color: var(--orange-dark); }
+
+  /* ── TWO-COLUMN MINI LISTS ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 8px; }
+  .mini-list { display: flex; flex-direction: column; gap: 12px; }
+  .mini-card { display: flex; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .mini-card:hover { background: var(--light-gray); }
+  .mini-thumb { width: 72px; height: 72px; border-radius: 8px; overflow: hidden; background: var(--light-gray); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .mini-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .mini-name { font-size: 13px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mini-price { font-size: 13px; font-weight: 700; }
+
+  /* ── GIFT BANNER ── */
+  .gift-banner { margin: 48px 0 0; position: relative; overflow: hidden; background: linear-gradient(135deg, #1a2d38 0%, #253c4b 50%, #1f3d4a 100%); border-radius: 20px; padding: 52px 56px; display: flex; align-items: center; justify-content: space-between; gap: 48px; color: #fff; }
+  .gift-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(241,100,30,.12) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 10% 80%, rgba(255,255,255,.04) 0%, transparent 60%); pointer-events: none; }
+  .gift-banner::after { content: '✦  ✦  ✦'; position: absolute; top: 22px; right: 56px; font-size: 11px; letter-spacing: 6px; color: rgba(255,255,255,.18); }
+  .gift-banner-text { position: relative; z-index: 1; max-width: 420px; }
+  .gift-banner-text .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--orange); margin-bottom: 12px; }
+  .gift-banner-text h2 { font-size: 34px; font-weight: 800; line-height: 1.15; margin-bottom: 14px; white-space: nowrap; }
+  .gift-word { color: var(--orange); font-style: italic; font-weight: 900; letter-spacing: 0.5px; }
+  .gift-banner-text p { font-size: 14px; color: rgba(255,255,255,.72); line-height: 1.7; margin-bottom: 24px; }
+  .gift-banner-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; padding: 11px 24px; border-radius: 99px; transition: background .15s, transform .15s; }
+  .gift-banner-cta:hover { background: var(--orange-dark); transform: translateY(-1px); }
+  .gift-pills { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; max-width: 380px; justify-content: flex-end; }
+  .gift-pill { display: inline-block; background: rgba(255,255,255,.1); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,.2); border-radius: 99px; padding: 10px 22px; font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; transition: background .15s, border-color .15s, transform .12s; }
+  .gift-pill:hover { background: rgba(241,100,30,.35); border-color: rgba(241,100,30,.6); transform: translateY(-2px); }
+  .gift-pill:nth-child(1) { background: rgba(241,100,30,.25); border-color: rgba(241,100,30,.5); }
+  .gift-pill:nth-child(2) { background: rgba(255,255,255,.16); }
+
+  /* ── TRUST STRIP ── */
+  .trust-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; padding: 36px 0; margin: 48px 0 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .trust-item { display: flex; align-items: flex-start; gap: 18px; }
+  .trust-icon { font-size: 34px; flex-shrink: 0; line-height: 1; }
+  .trust-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .trust-item p { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    .product-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .category-grid { grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .gift-banner { padding: 36px 32px; gap: 32px; }
+    .gift-banner-text h2 { font-size: 26px; white-space: normal; }
+  }
+  @media (max-width: 768px) {
+    main { padding: 0 16px 48px; }
+    .hero { grid-template-columns: 1fr; height: auto; border-radius: 12px; }
+    .hero-slideshow { display: none; }
+    .hero-text { padding: 28px 24px 32px; }
+    .hero-title { font-size: 24px; }
+    .section-header { margin: 32px 0 14px; }
+    .section-title { font-size: 20px; }
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .category-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .cat-label { font-size: 11px; }
+    .two-col { grid-template-columns: 1fr; gap: 20px; }
+    .gift-banner { flex-direction: column; padding: 28px 20px; gap: 20px; border-radius: 14px; }
+    .gift-banner-text h2 { font-size: 22px; white-space: normal; }
+    .gift-pills { max-width: 100%; justify-content: flex-start; }
+    .trust-strip { grid-template-columns: 1fr; gap: 20px; padding: 24px 0; }
+  }
+  @media (max-width: 480px) {
+    .category-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .cat-circle { font-size: 22px; }
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+{{end}}
+
+{{define "content"}}
+<nav class="cat-nav">
+  <div class="cat-nav-inner">
+    <a href="/" class="active">{{translate "Home"}}</a>
+    {{range .Categories}}
+    <a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}">{{.Name}}</a>
+    {{end}}
+    <a href="/flash-deals/1">{{translate "Flash Deals"}}</a>
+    <a href="/products">{{translate "All Products"}}</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-text">
+      <span class="hero-eyebrow">{{translate "Handmade & Unique"}}</span>
+      <h1 class="hero-title">{{translate "Shop one-of-a-kind pieces made just for you"}}</h1>
+      <p class="hero-sub">{{translate "Discover millions of handcrafted items from independent sellers around the world."}}</p>
+      <a href="/products" class="btn-primary">{{translate "Shop now →"}}</a>
+    </div>
+    <div class="hero-slideshow" id="heroSlideshow">
+      {{$s1 := get_setting "hero_slide_1"}}{{$l1 := get_setting "hero_slide_1_link"}}
+      {{$s2 := get_setting "hero_slide_2"}}{{$l2 := get_setting "hero_slide_2_link"}}
+      {{$s3 := get_setting "hero_slide_3"}}{{$l3 := get_setting "hero_slide_3_link"}}
+      {{if $s1}}
+        <div class="hero-slide active">
+          {{if $l1}}<a href="{{$l1}}" style="display:block;height:100%">{{end}}
+          <img src="{{uploaded_asset $s1}}" alt="Hero slide 1" loading="eager">
+          {{if $l1}}</a>{{end}}
+        </div>
+      {{else if .FeaturedProducts}}
+        {{if (index .FeaturedProducts 0).ThumbnailImg}}
+        <div class="hero-slide active"><img src="{{uploaded_asset (index .FeaturedProducts 0).ThumbnailImg}}" alt="Featured" loading="eager"></div>
+        {{end}}
+      {{end}}
+      {{if $s2}}
+        <div class="hero-slide">
+          {{if $l2}}<a href="{{$l2}}" style="display:block;height:100%">{{end}}
+          <img src="{{uploaded_asset $s2}}" alt="Hero slide 2" loading="lazy">
+          {{if $l2}}</a>{{end}}
+        </div>
+      {{end}}
+      {{if $s3}}
+        <div class="hero-slide">
+          {{if $l3}}<a href="{{$l3}}" style="display:block;height:100%">{{end}}
+          <img src="{{uploaded_asset $s3}}" alt="Hero slide 3" loading="lazy">
+          {{if $l3}}</a>{{end}}
+        </div>
+      {{end}}
+      <div class="hero-dots" id="heroDots"></div>
+    </div>
+  </section>
+
+  <script>
+  (function(){
+    var ss = document.getElementById('heroSlideshow');
+    if (!ss) return;
+    var slides = ss.querySelectorAll('.hero-slide');
+    if (slides.length < 2) return;
+    var dotsEl = document.getElementById('heroDots');
+    var cur = 0;
+    slides.forEach(function(_, i) {
+      var d = document.createElement('button');
+      d.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', function() { go(i); });
+      dotsEl.appendChild(d);
+    });
+    function go(n) {
+      slides[cur].classList.remove('active');
+      dotsEl.children[cur].classList.remove('active');
+      cur = (n + slides.length) % slides.length;
+      slides[cur].classList.add('active');
+      dotsEl.children[cur].classList.add('active');
+    }
+    setInterval(function() { go(cur + 1); }, 4000);
+  })();
+  </script>
+
+  <!-- Shop by Category -->
+  <div class="section-header">
+    <h2 class="section-title">{{translate "Shop by category"}}</h2>
+    <a href="/categories" class="section-link">{{translate "Browse all categories →"}}</a>
+  </div>
+  <div class="category-grid">
+    {{range .Categories}}
+    <a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" class="cat-card">
+      <div class="cat-circle">
+        {{if .Banner}}<img src="{{uploaded_asset .Banner}}" alt="{{.Name}}" loading="lazy">
+        {{else if .Icon}}<img src="{{uploaded_asset .Icon}}" alt="{{.Name}}" loading="lazy">
+        {{else}}🛍️{{end}}
+      </div>
+      <span class="cat-label">{{.Name}}</span>
+    </a>
+    {{else}}
+    <p style="grid-column:1/-1;color:var(--gray)">{{translate "No categories yet."}}</p>
+    {{end}}
+  </div>
+
+  <!-- Featured / Editors' Picks -->
+  <div class="section-header">
+    <h2 class="section-title">{{translate "Our editors' picks"}}</h2>
+    <a href="/products?featured=1" class="section-link">{{translate "See more →"}}</a>
+  </div>
+  <div class="product-grid">
+    {{range .FeaturedProducts}}
+    <a href="/product/{{.Slug}}" class="product-card">
+      <div class="product-img-wrap">
+        {{if .ThumbnailImg}}
+          <img src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+        {{else}}
+          <div class="product-placeholder">🛍️</div>
+        {{end}}
+        <button class="heart-btn" aria-label="{{translate "Save to favourites"}}">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+      <div class="product-info">
+        {{if .AddedBy}}<div class="product-shop">{{.AddedBy}}</div>{{end}}
+        <div class="product-name">{{.Name}}</div>
+        {{if gt .Rating 0.0}}
+        <div class="product-stars">
+          <span class="stars-filled">★★★★★</span>
+          <span class="review-count">({{printf "%.1f" .Rating}})</span>
+        </div>
+        {{end}}
+        <div class="product-price">
+          {{if gt .Discount 0.0}}{{format_price (subf .UnitPrice .Discount)}}{{else}}{{format_price .UnitPrice}}{{end}}
+          {{if gt .Discount 0.0}}<span class="was">{{format_price .UnitPrice}}</span>{{end}}
+        </div>
+        {{if gt .NumOfSale 100}}
+          <span class="product-badge badge-bestseller">{{translate "Bestseller"}}</span>
+        {{else if gt .Discount 0.0}}
+          <span class="product-badge badge-sale">{{translate "Sale"}}</span>
+        {{else if eq .Featured 1}}
+          <span class="product-badge badge-featured">{{translate "Featured"}}</span>
+        {{end}}
+      </div>
+    </a>
+    {{else}}
+    <p style="grid-column:1/-1;color:var(--gray);padding:24px 0">{{translate "No products yet — check back soon."}}</p>
+    {{end}}
+  </div>
+
+  <!-- New Arrivals & Best Sellers -->
+  <div class="two-col">
+    <div>
+      <div class="section-header" style="margin-top:32px">
+        <h2 class="section-title">{{translate "New arrivals"}}</h2>
+        <a href="/products?sort=newest" class="section-link">{{translate "See all →"}}</a>
+      </div>
+      <div class="mini-list">
+        {{range .NewArrivals}}
+        <a href="/product/{{.Slug}}" class="mini-card">
+          <div class="mini-thumb">
+            {{if .ThumbnailImg}}
+              <img src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+            {{else}}🆕{{end}}
+          </div>
+          <div class="mini-info">
+            <span class="mini-name">{{.Name}}</span>
+            <span class="mini-price">{{format_price .UnitPrice}}</span>
+            <span class="product-badge badge-new" style="align-self:flex-start">{{translate "New"}}</span>
+          </div>
+        </a>
+        {{else}}
+        <p style="color:var(--gray)">{{translate "No new arrivals yet."}}</p>
+        {{end}}
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header" style="margin-top:32px">
+        <h2 class="section-title">{{translate "Best sellers"}}</h2>
+        <a href="/products?sort=popular" class="section-link">{{translate "See all →"}}</a>
+      </div>
+      <div class="mini-list">
+        {{range .BestSellers}}
+        <a href="/product/{{.Slug}}" class="mini-card">
+          <div class="mini-thumb">
+            {{if .ThumbnailImg}}
+              <img src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+            {{else}}🔥{{end}}
+          </div>
+          <div class="mini-info">
+            <span class="mini-name">{{.Name}}</span>
+            <span class="mini-price">{{format_price .UnitPrice}}</span>
+            {{if gt .NumOfSale 0}}
+            <span class="product-badge badge-bestseller" style="align-self:flex-start">{{.NumOfSale}} {{translate "sold"}}</span>
+            {{end}}
+          </div>
+        </a>
+        {{else}}
+        <p style="color:var(--gray)">{{translate "No best sellers yet."}}</p>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <!-- Gift Banner -->
+  {{$giftTitle    := get_setting "gift_banner_title"    "🎁 Find the perfect gift"}}
+  {{$giftSubtitle := get_setting "gift_banner_subtitle" "From personalised keepsakes to handcrafted home goods — every gift tells a story."}}
+  {{$giftCTA      := get_setting "gift_banner_cta_text" "Shop Gifts →"}}
+  {{$giftCTALink  := get_setting "gift_banner_cta_link" "/products"}}
+  <div class="gift-banner">
+    <div class="gift-banner-text">
+      <div class="eyebrow">{{translate "Handpicked for you"}}</div>
+      <h2>{{$giftTitle}}</h2>
+      <p>{{$giftSubtitle}}</p>
+      <a href="{{$giftCTALink}}" class="gift-banner-cta">{{$giftCTA}}</a>
+    </div>
+    <script>
+      (function(){
+        var h2 = document.querySelector('.gift-banner-text h2');
+        if(h2) {
+          h2.innerHTML = h2.textContent.replace(/\bgift\b/gi, '<span class="gift-word">gift</span>');
+        }
+      })();
+    </script>
+    <div class="gift-pills">
+      {{range .Categories}}
+      <a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" class="gift-pill">{{.Name}}</a>
+      {{else}}
+      <span class="gift-pill">{{translate "For Her"}}</span>
+      <span class="gift-pill">{{translate "For Him"}}</span>
+      <span class="gift-pill">{{translate "For Kids"}}</span>
+      <span class="gift-pill">{{translate "Under"}} {{format_price 25}}</span>
+      <span class="gift-pill">{{translate "Personalised"}}</span>
+      {{end}}
+    </div>
+  </div>
+
+  <!-- Trust Strip -->
+  <div class="trust-strip">
+    <div class="trust-item">
+      <span class="trust-icon">🛡️</span>
+      <div>
+        <h4>{{translate "Shop with confidence"}}</h4>
+        <p>{{translate "If something's wrong with your order, we've got your back. Our buyer protection covers your purchase from click to delivery."}}</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">🌍</span>
+      <div>
+        <h4>{{translate "Millions of unique items"}}</h4>
+        <p>{{translate "Browse handcrafted goods from independent sellers in more than 100 countries around the world."}}</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">🤝</span>
+      <div>
+        <h4>{{translate "Support independent creators"}}</h4>
+        <p>{{translate "Your purchase directly supports real people making real things. Every sale makes a difference."}}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- What is PUZB Section -->
+  <section style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); margin: 64px 0 0; padding: 72px 24px">
+    <div style="max-width:1440px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:56px">
+        <h2 style="font-size:36px;font-weight:800;margin-bottom:16px;color:#111827">{{translate "What is"}} {{get_setting "website_name"}}?</h2>
+        <p style="font-size:16px;color:#6b7280;max-width:600px;margin:0 auto">{{translate "Discover authentic Chinese culture and handcrafted gifts from independent sellers around the world. We celebrate creativity, support artisans, and bring meaningful treasures to your home."}}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;margin-bottom:48px">
+        <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+          <div style="font-size:40px;margin-bottom:16px">🎨</div>
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;color:#111827">{{translate "Handcrafted & Unique"}}</h3>
+          <p style="font-size:14px;color:#6b7280;line-height:1.7">{{translate "Every product tells a story. Shop curated items from artisans and makers who put their heart into their craft."}}</p>
+        </div>
+        <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+          <div style="font-size:40px;margin-bottom:16px">🌏</div>
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;color:#111827">{{translate "Global Community"}}</h3>
+          <p style="font-size:14px;color:#6b7280;line-height:1.7">{{translate "Connect with creators worldwide. Our sellers represent diverse cultures and traditions from over 100 countries."}}</p>
+        </div>
+        <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+          <div style="font-size:40px;margin-bottom:16px">💚</div>
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;color:#111827">{{translate "Support Creators"}}</h3>
+          <p style="font-size:14px;color:#6b7280;line-height:1.7">{{translate "Your purchase directly supports independent artisans and small businesses. Shop with purpose and make a real impact."}}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section style="background: linear-gradient(135deg, #253c4b 0%, #1b2d39 100%); margin: 0; padding: 72px 24px; color: #fff">
+    <div style="max-width:600px;margin:0 auto;text-align:center">
+      <span style="display:inline-block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--orange);margin-bottom:14px">{{translate "Newsletter"}}</span>
+      <h2 style="font-size:32px;font-weight:800;margin-bottom:12px">{{translate "Stay in the Loop"}}</h2>
+      <p style="font-size:15px;margin-bottom:32px;color:rgba(255,255,255,.72);line-height:1.6">{{translate "Get the latest curated gifts, exclusive deals, and stories from independent sellers — delivered to your inbox."}}</p>
+      <form style="display:flex;gap:8px;margin-bottom:16px" onsubmit="return false;">
+        <input type="email" placeholder="{{translate "Enter your email"}}" style="flex:1;padding:13px 16px;border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:14px;outline:none;background:#fff;color:#222" required>
+        <button type="submit" style="padding:13px 32px;background:var(--orange);border:none;color:#fff;font-weight:700;border-radius:8px;cursor:pointer;transition:background .2s;font-size:14px" onmouseover="this.style.background='var(--orange-dark)'" onmouseout="this.style.background='var(--orange)'">{{translate "Subscribe"}}</button>
+      </form>
+      <p style="font-size:12px;color:rgba(255,255,255,.55)">{{translate "We respect your privacy. Unsubscribe anytime."}}</p>
+    </div>
+  </section>
+
+</main>
+{{end}}

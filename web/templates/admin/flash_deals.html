@@ -1,0 +1,172 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Flash Deals"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Flash Deal"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/flash-deals">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Title"}} <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Start Date"}}</label>
+            <input type="datetime-local" name="start_date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>{{translate "End Date"}}</label>
+            <input type="datetime-local" name="end_date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Background Color"}}</label>
+            <input type="color" name="background_color" class="form-control form-control-color" value="#ff6b35" style="height:38px">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Text Color"}}</label>
+            <input type="color" name="text_color" class="form-control form-control-color" value="#ffffff" style="height:38px">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Create Deal"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "All Flash Deals"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Title"}}</th>
+                <th>{{translate "Period"}}</th>
+                <th>{{translate "Status"}}</th>
+                <th class="text-right">{{translate "Options"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Deals}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>
+                  {{deref_str .Title}}
+                  {{if .BackgroundColor}}<span class="ml-1 d-inline-block rounded" style="width:14px;height:14px;background:{{deref_str .BackgroundColor}};vertical-align:middle;border:1px solid #ddd"></span>{{end}}
+                </td>
+                <td class="small text-muted">
+                  {{if .StartDate}}{{date_format (unix_to_time .StartDate) "2006-01-02"}}{{else}}—{{end}}
+                  →
+                  {{if .EndDate}}{{date_format (unix_to_time .EndDate) "2006-01-02"}}{{else}}—{{end}}
+                </td>
+                <td>{{if eq .Status 1}}<span class="badge badge-success">{{translate "Active"}}</span>{{else}}<span class="badge badge-secondary">{{translate "Inactive"}}</span>{{end}}</td>
+                <td class="text-right">
+                  <button type="button" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"
+                    onclick="openDealEdit({{.ID}}, '{{deref_str .Title}}', {{.Status}}, {{if .StartDate}}{{.StartDate}}{{else}}0{{end}}, {{if .EndDate}}{{.EndDate}}{{else}}0{{end}}, '{{deref_str .BackgroundColor}}', '{{deref_str .TextColor}}')">
+                    <i class="las la-edit"></i>
+                  </button>
+                  <form method="POST" action="/admin/flash-deals/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this deal?')">
+                    <input type="hidden" name="_token" value="{{csrf_token}}">
+                    <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"><i class="las la-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {{else}}
+              <tr><td colspan="5" class="text-center py-4">{{translate "No flash deals yet"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal fade" id="dealEditModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="dealEditForm">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="modal-header">
+          <h5 class="modal-title">{{translate "Edit Flash Deal"}}</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>{{translate "Title"}} <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="deal_title" class="form-control" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{translate "Start Date"}}</label>
+                <input type="datetime-local" name="start_date" id="deal_start" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{translate "End Date"}}</label>
+                <input type="datetime-local" name="end_date" id="deal_end" class="form-control">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{translate "Background Color"}}</label>
+                <input type="color" name="background_color" id="deal_bg" class="form-control form-control-color" style="height:38px">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{translate "Text Color"}}</label>
+                <input type="color" name="text_color" id="deal_tc" class="form-control form-control-color" style="height:38px">
+              </div>
+            </div>
+          </div>
+          <div class="form-group mb-0">
+            <label>{{translate "Status"}}</label>
+            <select name="status" id="deal_status" class="form-control">
+              <option value="1">{{translate "Active"}}</option>
+              <option value="0">{{translate "Inactive"}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-primary">{{translate "Save"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+function unixToLocal(ts) {
+  if (!ts) return '';
+  var d = new Date(ts * 1000);
+  var pad = function(n) { return n < 10 ? '0' + n : n; };
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function openDealEdit(id, title, status, start, end, bg, tc) {
+  document.getElementById('dealEditForm').action = '/admin/flash-deals/' + id + '/update';
+  document.getElementById('deal_title').value = title;
+  document.getElementById('deal_status').value = status;
+  document.getElementById('deal_start').value = unixToLocal(start);
+  document.getElementById('deal_end').value = unixToLocal(end);
+  document.getElementById('deal_bg').value = bg || '#ff6b35';
+  document.getElementById('deal_tc').value = tc || '#ffffff';
+  $('#dealEditModal').modal('show');
+}
+</script>
+{{end}}

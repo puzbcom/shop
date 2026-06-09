@@ -1,0 +1,122 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Support Tickets"}}</h1></div>
+  </div>
+</div>
+
+{{if .Flash}}
+<div class="alert alert-{{if eq .FlashType "success"}}success{{else}}danger{{end}} alert-dismissible fade show" role="alert">
+  {{.Flash}}
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <ul class="nav nav-tabs card-header-tabs">
+      <li class="nav-item">
+        <a class="nav-link {{if eq .Status ""}}active{{end}}" href="/admin/tickets">
+          {{translate "All"}} <span class="badge badge-secondary ml-1">{{.Counts.All}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{if eq .Status "pending"}}active{{end}}" href="/admin/tickets?status=pending">
+          {{translate "Pending"}} <span class="badge badge-warning ml-1">{{.Counts.Pending}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{if eq .Status "open"}}active{{end}}" href="/admin/tickets?status=open">
+          {{translate "Open"}} <span class="badge badge-info ml-1">{{.Counts.Open}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{if eq .Status "answered"}}active{{end}}" href="/admin/tickets?status=answered">
+          {{translate "Answered"}} <span class="badge badge-success ml-1">{{.Counts.Answered}}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{if eq .Status "closed"}}active{{end}}" href="/admin/tickets?status=closed">
+          {{translate "Closed"}} <span class="badge badge-secondary ml-1">{{.Counts.Closed}}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th style="width:80px">#{{translate "Code"}}</th>
+            <th>{{translate "User"}}</th>
+            <th>{{translate "Subject"}}</th>
+            <th style="width:90px">{{translate "Type"}}</th>
+            <th style="width:90px">{{translate "Priority"}}</th>
+            <th style="width:90px">{{translate "Status"}}</th>
+            <th style="width:120px">{{translate "Created"}}</th>
+            <th style="width:80px" class="text-right">{{translate "Actions"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Tickets}}
+          <tr>
+            <td><strong>#{{.Code}}</strong></td>
+            <td>
+              {{if .User}}
+              <div class="font-weight-600">{{.User.Name}}</div>
+              <small class="text-muted">{{.User.Email}}</small>
+              {{else}}
+              <span class="text-muted">—</span>
+              {{end}}
+            </td>
+            <td>
+              <a href="/admin/tickets/{{.ID}}" class="text-dark font-weight-600">{{.Subject}}</a>
+              {{if eq .Viewed 0}}<span class="badge badge-danger ml-1">{{translate "New"}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Type "general"}}<span class="badge badge-light">{{translate "General"}}</span>
+              {{else if eq .Type "order"}}<span class="badge badge-primary">{{translate "Order"}}</span>
+              {{else if eq .Type "product"}}<span class="badge badge-info">{{translate "Product"}}</span>
+              {{else if eq .Type "payment"}}<span class="badge badge-dark">{{translate "Payment"}}</span>
+              {{else}}<span class="badge badge-light">{{.Type}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Priority "low"}}<span class="badge badge-info">{{translate "Low"}}</span>
+              {{else if eq .Priority "medium"}}<span class="badge badge-warning">{{translate "Medium"}}</span>
+              {{else if eq .Priority "high"}}<span class="badge badge-danger">{{translate "High"}}</span>
+              {{else}}<span class="badge badge-secondary">{{.Priority}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Status "pending"}}<span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{else if eq .Status "open"}}<span class="badge badge-info">{{translate "Open"}}</span>
+              {{else if eq .Status "answered"}}<span class="badge badge-success">{{translate "Answered"}}</span>
+              {{else if eq .Status "closed"}}<span class="badge badge-secondary">{{translate "Closed"}}</span>
+              {{else}}<span class="badge badge-light">{{.Status}}</span>{{end}}
+            </td>
+            <td><small>{{date_format .CreatedAt "Jan 02, 2006"}}</small></td>
+            <td class="text-right">
+              <a href="/admin/tickets/{{.ID}}" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "View"}}">
+                <i class="las la-eye"></i>
+              </a>
+              <form method="POST" action="/admin/tickets/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this ticket and all replies?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}">
+                  <i class="las la-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="8" class="text-center py-5">
+              <i class="las la-headset" style="font-size:40px;color:#ccc"></i>
+              <p class="mt-2 text-muted">{{translate "No support tickets found"}}</p>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,105 @@
+{{define "extra_css"}}
+  .cart-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:1fr 320px; gap:32px; align-items:start; }
+  .cart-wrap h1 { font-size:28px; font-weight:800; margin-bottom:24px; grid-column:1/-1; }
+  .cart-lines { }
+  .cart-line { display:grid; grid-template-columns:80px 1fr auto; gap:16px; align-items:center; padding:18px 0; border-bottom:1px solid var(--border); }
+  .cart-thumb { width:80px; height:80px; border-radius:10px; background:var(--light-gray); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+  .cart-thumb img { width:100%; height:100%; object-fit:cover; }
+  .cart-name { font-size:14px; font-weight:700; margin-bottom:4px; color:var(--black); }
+  .cart-price { font-size:13px; color:var(--gray); }
+  .cart-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .qty-form { display:flex; align-items:center; gap:4px; }
+  .qty-btn { width:28px; height:28px; border:1px solid var(--border); border-radius:6px; background:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .qty-input { width:42px; text-align:center; border:1px solid var(--border); border-radius:6px; padding:4px; font-size:13px; }
+  .remove-btn { font-size:12px; color:var(--gray); cursor:pointer; background:none; border:none; padding:0; text-decoration:underline; }
+  .remove-btn:hover { color:#e00; }
+  .cart-line-total { font-size:15px; font-weight:700; }
+  .cart-summary { border:1px solid var(--border); border-radius:14px; padding:24px; position:sticky; top:90px; }
+  .cart-summary h3 { font-size:16px; font-weight:800; margin-bottom:18px; }
+  .summary-row { display:flex; justify-content:space-between; font-size:14px; margin-bottom:10px; }
+  .summary-total { font-size:18px; font-weight:800; border-top:2px solid var(--black); padding-top:14px; margin-top:14px; display:flex; justify-content:space-between; }
+  .btn-checkout { display:block; width:100%; background:var(--orange); color:#fff; border:none; border-radius:99px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; margin-top:16px; }
+  .btn-checkout:hover { opacity:.9; }
+  .empty-cart { grid-column:1/-1; text-align:center; padding:80px 0; }
+  .empty-cart h2 { font-size:24px; font-weight:800; margin-bottom:10px; }
+  .empty-cart p { color:var(--gray); margin-bottom:24px; }
+  .btn-shop { display:inline-block; background:var(--black); color:#fff; border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; text-decoration:none; }
+{{end}}
+{{define "content"}}
+<div class="cart-wrap">
+  <h1>{{translate "Shopping Cart"}}</h1>
+  {{if .Lines}}
+  <div class="cart-lines">
+    {{range .Lines}}
+    <div class="cart-line">
+      <div class="cart-thumb">
+        {{if .VariantImage}}<img src="{{uploaded_asset .VariantImage}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else if and .Product .Product.ThumbnailImg}}<img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else}}🛍️{{end}}
+      </div>
+      <div>
+        <div class="cart-name">{{if .Product}}{{.Product.Name}}{{end}}</div>
+        {{if .Variation}}<div style="font-size:12px;color:#888;margin-top:2px">{{deref_str .Variation}}</div>{{end}}
+        {{if .Price}}<div class="cart-price">{{format_price .Price}} {{translate "each"}}</div>{{end}}
+      </div>
+      <div class="cart-right">
+        {{if .Price}}<div class="cart-line-total">{{format_price (mul (deref_float .Price) (addf (itof .Quantity) 0))}}</div>{{end}}
+        <div class="qty-form">
+          <form method="POST" action="/cart/update" style="display:contents">
+            <input type="hidden" name="_token" value="{{csrf_token}}">
+            <input type="hidden" name="id" value="{{.ID}}">
+            <button type="button" class="qty-btn" onclick="cartQty(this,-1)">−</button>
+            <input type="number" name="quantity" value="{{.Quantity}}" min="1" class="qty-input" onchange="this.form.submit()">
+            <button type="button" class="qty-btn" onclick="cartQty(this,1)">+</button>
+          </form>
+        </div>
+        <form method="POST" action="/cart/remove/{{.ID}}">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="remove-btn">{{translate "Remove"}}</button>
+        </form>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="cart-summary">
+    <h3>{{translate "Order summary"}}</h3>
+    <div class="summary-row"><span>{{translate "Subtotal"}}</span><span>{{format_price .Subtotal}}</span></div>
+    {{if .ShippingMethod}}
+    <div class="summary-row">
+      <span>{{translate "Shipping"}}<br><span style="font-size:11px;color:var(--gray);font-weight:400">{{.ShippingMethod}}</span></span>
+      <span>{{if gt .ShippingCost 0.0}}{{format_price .ShippingCost}}{{else}}{{translate "Free"}}{{end}}</span>
+    </div>
+    {{if gt .FreeShippingRemaining 0.0}}
+    <div class="summary-row" style="background:#fef3c7;border-radius:8px;padding:8px 10px;margin-top:6px;color:#92400e;font-size:12px;font-weight:600;justify-content:center;">
+      {{translate "Add"}} {{format_price .FreeShippingRemaining}} {{translate "more for free shipping"}}
+    </div>
+    {{end}}
+    {{end}}
+    <div class="summary-total"><span>{{translate "Total"}}</span><span>{{format_price .Total}}</span></div>
+    {{if is_authenticated}}
+    <a href="/checkout" class="btn-checkout">{{translate "Proceed to checkout"}}</a>
+    {{else}}
+    <a href="/login?next=/checkout" class="btn-checkout">{{translate "Sign in to checkout"}}</a>
+    <a href="/checkout" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--gray)">{{translate "or continue as guest"}}</a>
+    {{end}}
+    <p style="font-size:11px;color:var(--gray);text-align:center;margin-top:12px;line-height:1.5">{{translate "🔒 Secure checkout · Free returns · Buyer protection"}}</p>
+  </div>
+  {{else}}
+  <div class="empty-cart">
+    <div style="font-size:72px;margin-bottom:20px">🛒</div>
+    <h2>{{translate "Your cart is empty"}}</h2>
+    <p>{{translate "Looks like you haven't added anything yet."}}</p>
+    <a href="/products" class="btn-shop">{{translate "Start shopping"}}</a>
+  </div>
+  {{end}}
+</div>
+<script>
+function cartQty(btn, delta) {
+  var form = btn.closest('form');
+  var inp = form.querySelector('input[name="quantity"]');
+  var next = (parseInt(inp.value, 10) || 1) + delta;
+  if (next < 1) next = 1;
+  inp.value = next;
+  form.submit();
+}
+</script>
+{{end}}

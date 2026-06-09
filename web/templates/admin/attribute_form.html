@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{if .Attribute}}{{translate "Edit Attribute"}}{{else}}{{translate "Add Attribute"}}{{end}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-body">
+        <form method="POST" action="{{if .Attribute}}/admin/attributes/{{.Attribute.ID}}{{else}}/admin/attributes{{end}}">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Attribute Name"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="name" class="form-control" required {{if .Attribute}}value="{{deref_str .Attribute.Name}}"{{end}}>
+              <small class="text-muted">{{translate "Enter attribute name"}}</small>
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-md-9 ml-auto">
+              <button type="submit" class="btn btn-primary">{{translate "Save"}}</button>
+              <a href="/admin/attributes" class="btn btn-secondary">{{translate "Cancel"}}</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {{if .Attribute}}
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Value"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/attributes/{{.Attribute.ID}}/values">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Value"}}</label>
+            <input type="text" name="value" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">{{translate "Add Value"}}</button>
+        </form>
+      </div>
+    </div>
+
+    {{if .Error}}
+    <div class="alert alert-danger mt-3">{{translate "Cannot delete: this value is currently in use."}}</div>
+    {{end}}
+
+    {{if .Attribute.Values}}
+    <div class="card rounded-0 shadow-none mt-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Values"}}</h5></div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {{range .Attribute.Values}}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{.Value}}</span>
+            <form method="POST" action="/admin/attributes/{{$.Attribute.ID}}/values/{{.ID}}/delete" onsubmit="return confirm('Delete this value?')">
+              <input type="hidden" name="_token" value="{{csrf_token}}">
+              <button type="submit" class="btn btn-soft-danger btn-sm btn-icon" title="Delete">
+                <i class="las la-trash"></i>
+              </button>
+            </form>
+          </li>
+          {{end}}
+        </ul>
+      </div>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}

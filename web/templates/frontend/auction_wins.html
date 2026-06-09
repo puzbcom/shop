@@ -1,0 +1,73 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .page-title { font-size:22px; font-weight:800; margin-bottom:24px; }
+  .win-card { border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .win-thumb { width:70px; height:70px; border-radius:10px; background:var(--light-gray); flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .win-thumb img { width:100%; height:100%; object-fit:cover; }
+  .win-info { flex:1; min-width:0; }
+  .win-name { font-size:15px; font-weight:800; margin-bottom:4px; }
+  .win-meta { font-size:13px; color:var(--gray); }
+  .win-amount { font-size:18px; font-weight:800; color:var(--orange); margin-right:16px; }
+  .badge { display:inline-block; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-paid    { background:#d1fae5; color:#065f46; }
+  .badge-no-bids { background:#f3f4f6; color:#6b7280; }
+  .btn-pay { background:var(--orange); color:#fff; border-radius:99px; padding:10px 22px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; }
+  .btn-pay:hover { opacity:.9; color:#fff; }
+  .btn-view { border:2px solid var(--border); border-radius:99px; padding:9px 20px; font-size:13px; font-weight:700; text-decoration:none; color:var(--black); white-space:nowrap; }
+  .btn-view:hover { border-color:var(--black); }
+  .empty-box { text-align:center; padding:60px 0; color:var(--gray); }
+  @media(max-width:700px){ .account-wrap { grid-template-columns:1fr; } .account-nav { display:none; } }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "auction_wins"}}
+  <div>
+    <div class="page-title">{{translate "🔨 Auction Wins"}}</div>
+
+    {{with flash_success}}<div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#065f46;font-weight:600;">{{.}}</div>{{end}}
+    {{with flash_error}}<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#991b1b;font-weight:600;">{{.}}</div>{{end}}
+
+    {{if .Wins}}
+      {{range .Wins}}
+      <div class="win-card">
+        <div class="win-thumb">
+          {{if and .Product .Product.ThumbnailImg}}
+          <img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">
+          {{else}}&#x1F3C6;{{end}}
+        </div>
+        <div class="win-info">
+          <div class="win-name">{{if .Product}}{{.Product.Name}}{{else}}{{translate "(Product removed)"}}{{end}}</div>
+          <div class="win-meta">{{translate "Won on"}} {{date_format .CreatedAt "Jan 2, 2006"}}</div>
+          {{if .Order}}<div class="win-meta">{{translate "Order #"}}{{.Order.ID}}</div>{{end}}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span class="win-amount">{{format_price .Amount}}</span>
+          {{if eq .Status "pending"}}
+            <span class="badge badge-pending">{{translate "Awaiting Payment"}}</span>
+            <a href="/auction-wins/{{.ID}}/checkout" class="btn-pay">{{translate "Pay Now →"}}</a>
+          {{else if eq .Status "paid"}}
+            <span class="badge badge-paid">{{translate "Paid"}}</span>
+            {{if and .Order .Order.CombinedOrder}}
+            <a href="/purchase_history/{{.Order.CombinedOrder.ID}}" class="btn-view">{{translate "View Order"}}</a>
+            {{end}}
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    {{else}}
+    <div class="empty-box">
+      <div style="font-size:48px;margin-bottom:12px;">&#x1F528;</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">{{translate "No auction wins yet"}}</div>
+      <div style="font-size:14px;">{{translate "Browse active auctions and place your bids!"}}</div>
+      <a href="/products?type=auction" style="display:inline-block;margin-top:20px;background:var(--black);color:#fff;border-radius:99px;padding:12px 28px;font-size:14px;font-weight:700;text-decoration:none;">{{translate "Browse Auctions"}}</a>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

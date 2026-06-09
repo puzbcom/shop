@@ -1,0 +1,32 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:860px; margin:0 auto; padding:32px 24px 64px; }
+  .page-title { font-size:34px; font-weight:800; margin-bottom:8px; letter-spacing:-.4px; }
+  .page-meta { font-size:13px; color:var(--gray); margin-bottom:36px; }
+  .page-body { font-size:15px; line-height:1.8; color:#333; }
+  .page-body h2 { font-size:22px; font-weight:800; margin:32px 0 12px; }
+  .page-body h3 { font-size:18px; font-weight:700; margin:24px 0 10px; }
+  .page-body p { margin-bottom:16px; }
+  .page-body ul, .page-body ol { padding-left:24px; margin-bottom:16px; }
+  .page-body li { margin-bottom:6px; }
+  .page-body a { color:var(--orange); text-decoration:underline; }
+  .page-body strong { font-weight:700; }
+{{end}}
+{{define "content"}}
+{{$pg := .CMSPage}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:28px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span>
+    <span>{{if $pg.Title}}{{$pg.Title}}{{else}}{{translate "Page"}}{{end}}</span>
+  </div>
+  <h1 class="page-title">{{if $pg.Title}}{{$pg.Title}}{{else}}{{translate "Page"}}{{end}}</h1>
+  <div class="page-body">
+    {{if $pg.Content}}{{safe_html (deref_str $pg.Content)}}{{else}}<p style="color:var(--gray)">{{translate "This page has no content yet."}}</p>{{end}}
+  </div>
+</div>
+{{end}}

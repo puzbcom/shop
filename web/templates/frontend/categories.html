@@ -1,0 +1,55 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; }
+  .page-header { margin-bottom:32px; }
+  .page-header h1 { font-size:28px; font-weight:800; margin-bottom:6px; }
+  .page-header p { font-size:14px; color:var(--gray); }
+  .categories-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  .cat-card { display:flex; flex-direction:column; align-items:center; gap:14px; padding:28px 16px; border:1px solid var(--border); border-radius:14px; cursor:pointer; transition:box-shadow .15s,transform .15s; text-align:center; }
+  .cat-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.09); transform:translateY(-3px); }
+  .cat-card:hover .cat-circle { transform:scale(1.06); }
+  .cat-circle { width:100px; height:100px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:36px; transition:transform .2s; flex-shrink:0; }
+  .cat-circle img { width:100%; height:100%; object-fit:cover; }
+  .cat-card:nth-child(5n+1) .cat-circle { background:#fde8d0; }
+  .cat-card:nth-child(5n+2) .cat-circle { background:#d5e8fd; }
+  .cat-card:nth-child(5n+3) .cat-circle { background:#d5fde8; }
+  .cat-card:nth-child(5n+4) .cat-circle { background:#fdd5e8; }
+  .cat-card:nth-child(5n+5) .cat-circle { background:#e8d5fd; }
+  .cat-label { font-size:14px; font-weight:700; }
+  .cat-count { font-size:12px; color:var(--gray); }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); grid-column:1/-1; }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+    <a href="/categories" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid var(--black);display:block">{{translate "All categories"}}</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:24px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Categories"}}</span>
+  </div>
+  <div class="page-header">
+    <h1>{{translate "Browse all categories"}}</h1>
+    <p>{{len .TopCategories}} {{translate "categories to explore"}}</p>
+  </div>
+  <div class="categories-grid">
+    {{range .TopCategories}}
+    <a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" class="cat-card">
+      <div class="cat-circle">
+        {{if .Banner}}<img src="{{uploaded_asset .Banner}}" alt="{{.Name}}" loading="lazy">
+        {{else if .Icon}}<img src="{{uploaded_asset .Icon}}" alt="{{.Name}}" loading="lazy">
+        {{else}}🛍️{{end}}
+      </div>
+      <div>
+        <div class="cat-label">{{.Name}}</div>
+      </div>
+    </a>
+    {{else}}
+    <div class="empty-state"><h3>{{translate "No categories yet"}}</h3><p>{{translate "Categories are being set up."}}</p></div>
+    {{end}}
+  </div>
+</div>
+{{end}}

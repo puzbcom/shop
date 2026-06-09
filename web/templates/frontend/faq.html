@@ -1,0 +1,97 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:800px; margin:0 auto; padding:32px 24px 64px; }
+  .page-header { text-align:center; margin-bottom:48px; }
+  .page-header h1 { font-size:36px; font-weight:800; margin-bottom:12px; }
+  .page-header p { font-size:15px; color:var(--gray); line-height:1.6; }
+  .faq-section { margin-bottom:40px; }
+  .faq-section-title { font-size:18px; font-weight:800; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid var(--border); }
+  .faq-item { border-bottom:1px solid var(--border); }
+  .faq-question { width:100%; background:none; border:none; text-align:left; padding:18px 0; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; font-family:inherit; color:var(--black); }
+  .faq-question:hover { color:var(--orange); }
+  .faq-icon { font-size:18px; font-weight:400; flex-shrink:0; transition:transform .2s; }
+  .faq-answer { font-size:14px; color:var(--gray); line-height:1.7; padding-bottom:18px; display:none; }
+  .faq-item.open .faq-answer { display:block; }
+  .faq-item.open .faq-icon { transform:rotate(45deg); }
+  .contact-cta { margin-top:56px; background:var(--light-gray); border-radius:16px; padding:36px; text-align:center; }
+  .contact-cta h3 { font-size:20px; font-weight:800; margin-bottom:8px; }
+  .contact-cta p { font-size:14px; color:var(--gray); margin-bottom:20px; }
+  .btn-primary { display:inline-block; background:var(--black); color:#fff; border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; }
+  .btn-primary:hover { background:#3a3a3a; }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:28px;display:flex;gap:6px;justify-content:center">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "FAQ"}}</span>
+  </div>
+  <div class="page-header">
+    <h1>{{translate "Frequently asked questions"}}</h1>
+    <p>{{translate "Everything you need to know about shopping, selling, and getting help."}}</p>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-section-title">{{translate "Buying on"}} {{get_setting "website_name" "our marketplace"}}</div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How do I place an order?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Browse products, add items to your cart, and proceed to checkout. You'll need to enter your shipping address and payment details to complete the order."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "What payment methods are accepted?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "We accept major credit and debit cards, PayPal, and other payment methods depending on your region. All transactions are secured with SSL encryption."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "Can I track my order?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Yes! Once your order ships, you'll receive a tracking number by email. You can also view your order status in your account dashboard under Purchase History."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How do I return or exchange an item?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Each seller sets their own return policy. Check the product listing for details. If you have an issue, contact the seller directly through your order page. Our buyer protection covers you if something goes wrong."}}</div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-section-title">{{translate "Selling on"}} {{get_setting "website_name" "our marketplace"}}</div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How do I open a shop?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Create a free account, then go to your dashboard and click \"Open a Shop\". Fill in your shop details, add your first listing, and you're ready to sell."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "What are the selling fees?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Listing products is free. We charge a small commission on each completed sale. Exact rates depend on your seller plan — see the pricing page for details."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How do I get paid?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Earnings from sales are deposited to your seller wallet. You can request a withdrawal to your bank account at any time from your seller dashboard."}}</div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-section-title">{{translate "Account & Privacy"}}</div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How do I reset my password?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "Click \"Sign in\" then \"Forgot password\". Enter your email address and we'll send you a reset link within a few minutes."}}</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggle(this)">{{translate "How is my personal data used?"}}<span class="faq-icon">+</span></button>
+      <div class="faq-answer">{{translate "We use your data only to operate the marketplace — processing orders, communicating with you, and improving our service. We never sell your personal information. See our"}} <a href="/page/privacy" style="text-decoration:underline">{{translate "Privacy Policy"}}</a> {{translate "for full details."}}</div>
+    </div>
+  </div>
+
+  <div class="contact-cta">
+    <h3>{{translate "Still have questions?"}}</h3>
+    <p>{{translate "Our support team is here to help — get in touch and we'll reply within one business day."}}</p>
+    <a href="/contact" class="btn-primary">{{translate "Contact support →"}}</a>
+  </div>
+</div>
+<script>
+function toggle(btn) {
+  const item = btn.closest('.faq-item');
+  item.classList.toggle('open');
+}
+</script>
+{{end}}

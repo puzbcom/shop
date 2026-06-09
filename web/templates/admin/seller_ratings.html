@@ -1,0 +1,68 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Ratings & Performance"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Seller"}}</th>
+            <th>{{translate "Shop"}}</th>
+            <th>{{translate "Rating"}}</th>
+            <th>{{translate "Reviews"}}</th>
+            <th>{{translate "Sales"}}</th>
+            <th>{{translate "Verified"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range $i, $s := .Sellers}}
+          <tr>
+            <td>{{add $i 1}}</td>
+            <td>
+              <div class="fw-600">{{$s.Name}}</div>
+              <div class="text-muted small">{{deref_str $s.Email}}</div>
+            </td>
+            <td>{{if $s.Shop}}{{deref_str $s.Shop.Name}}{{else}}<span class="text-muted">—</span>{{end}}</td>
+            <td>
+              {{if $s.Shop}}
+              <span style="color:#f59e0b;letter-spacing:1px">
+                {{$r := $s.Shop.Rating}}
+                {{if ge $r 1.0}}★{{else}}☆{{end}}{{if ge $r 2.0}}★{{else}}☆{{end}}{{if ge $r 3.0}}★{{else}}☆{{end}}{{if ge $r 4.0}}★{{else}}☆{{end}}{{if ge $r 5.0}}★{{else}}☆{{end}}
+              </span>
+              <span class="ml-1 text-muted small">{{printf "%.1f" $s.Shop.Rating}}</span>
+              {{else}}<span class="text-muted">—</span>{{end}}
+            </td>
+            <td>{{if $s.Shop}}{{$s.Shop.NumOfReviews}}{{else}}0{{end}}</td>
+            <td>{{if $s.Shop}}{{$s.Shop.NumOfSale}}{{else}}0{{end}}</td>
+            <td>
+              {{if and $s.Shop (eq $s.Shop.VerificationStatus 1)}}
+              <span class="badge badge-success">{{translate "Verified"}}</span>
+              {{else}}<span class="badge badge-warning">{{translate "Pending"}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq $s.Banned 1}}<span class="badge badge-danger">{{translate "Banned"}}</span>
+              {{else}}<span class="badge badge-success">{{translate "Active"}}</span>{{end}}
+            </td>
+            <td class="text-right">
+              <a href="/admin/sellers/{{$s.ID}}" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "View"}}">
+                <i class="las la-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="9" class="text-center py-4 text-muted">{{translate "No sellers found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

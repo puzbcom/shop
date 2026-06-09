@@ -1,0 +1,107 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h1 class="h3">Auction Bids &mdash; <span class="text-muted font-weight-normal">{{.Product.Name}}</span></h1>
+    </div>
+    <div class="col-md-4 text-md-right">
+      <a href="/admin/products/{{.Product.ID}}/edit" class="btn btn-sm btn-light"><i class="las la-arrow-left mr-1"></i>Back to product</a>
+      {{if eq .HasWinner false}}
+      <form method="POST" action="/admin/products/{{.Product.ID}}/auction/close" class="d-inline ml-2"
+            onsubmit="return confirm('Close this auction and record the winner now?')">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <button type="submit" class="btn btn-sm btn-danger"><i class="las la-gavel mr-1"></i>Close Auction</button>
+      </form>
+      {{end}}
+    </div>
+  </div>
+</div>
+
+{{with flash_success}}<div class="alert alert-success">{{.}}</div>{{end}}
+{{with flash_error}}<div class="alert alert-danger">{{.}}</div>{{end}}
+
+{{$p := .Product}}
+
+{{if .HasWinner}}
+{{$w := .Winner}}
+<div class="alert {{if eq $w.Status "no_bids"}}alert-secondary{{else if eq $w.Status "paid"}}alert-success{{else}}alert-warning{{end}} mb-4">
+  <strong>Auction Closed</strong>
+  {{if eq $w.Status "no_bids"}}
+    — No bids were placed on this auction.
+  {{else if eq $w.Status "paid"}}
+    — <strong>{{if $w.User}}{{$w.User.Name}}{{else}}User #{{$w.UserID}}{{end}}</strong>
+      won with a bid of <strong>{{format_price $w.Amount}}</strong> and has completed payment.
+      {{if $w.Order}}<a href="/admin/orders/{{$w.Order.ID}}" class="alert-link">View Order #{{$w.Order.ID}}</a>{{end}}
+  {{else}}
+    &mdash; <strong>{{if $w.User}}{{$w.User.Name}}{{else}}User #{{$w.UserID}}{{end}}</strong>
+      won with a bid of <strong>{{format_price $w.Amount}}</strong>.
+      Awaiting payment from winner.
+  {{end}}
+</div>
+{{end}}
+
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card rounded-0 shadow-none text-center p-3">
+      <div class="h2 font-weight-bold mb-0">{{len .Bids}}</div>
+      <div class="small text-muted">Total bids</div>
+    </div>
+  </div>
+  {{if .Bids}}
+  {{$top := index .Bids 0}}
+  <div class="col-md-3">
+    <div class="card rounded-0 shadow-none text-center p-3">
+      <div class="h2 font-weight-bold mb-0 text-success">{{format_price $top.Amount}}</div>
+      <div class="small text-muted">Highest bid</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card rounded-0 shadow-none text-center p-3">
+      <div class="h5 font-weight-bold mb-0">{{if $top.User}}{{$top.User.Name}}{{else}}&mdash;{{end}}</div>
+      <div class="small text-muted">Leading bidder</div>
+    </div>
+  </div>
+  {{end}}
+  {{if $p.AuctionEndAt}}
+  <div class="col-md-3">
+    <div class="card rounded-0 shadow-none text-center p-3">
+      <div class="h6 font-weight-bold mb-0">{{date_format (deref_time $p.AuctionEndAt) "Jan 2, 2006 15:04"}}</div>
+      <div class="small text-muted">Auction ends</div>
+    </div>
+  </div>
+  {{end}}
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bidder</th>
+            <th>Email</th>
+            <th>Amount</th>
+            <th>Placed At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{if .Bids}}
+          {{range $i, $b := .Bids}}
+          <tr {{if eq $i 0}}class="table-success font-weight-bold"{{end}}>
+            <td>{{add $i 1}}</td>
+            <td>{{if $b.User}}{{$b.User.Name}}{{else}}&mdash;{{end}}</td>
+            <td>{{if $b.User}}{{$b.User.Email}}{{else}}&mdash;{{end}}</td>
+            <td>{{format_price $b.Amount}}</td>
+            <td>{{date_format $b.CreatedAt "Jan 2, 2006 15:04:05"}}</td>
+          </tr>
+          {{end}}
+          {{else}}
+          <tr><td colspan="5" class="text-center py-4 text-muted">No bids yet.</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

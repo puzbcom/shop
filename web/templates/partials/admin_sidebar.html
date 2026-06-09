@@ -1,0 +1,295 @@
+{{define "partials/admin_sidebar"}}
+<div class="aiz-sidebar bg-dark d-flex flex-column" style="width:240px;min-height:calc(100vh - 60px)">
+    <div class="flex-grow-1 overflow-auto py-3">
+        <ul class="aiz-side-nav-list">
+
+            <li class="aiz-side-nav-item">
+                <a href="/admin" class="aiz-side-nav-link">
+                    <i class="las la-th-large aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Dashboard"}}</span>
+                </a>
+            </li>
+
+            {{$_sa_user := current_user}}
+            {{if and $_sa_user (eq $_sa_user.UserType "super_admin")}}
+            <li class="aiz-side-nav-item">
+                <a href="/super-admin/theme" class="aiz-side-nav-link">
+                    <i class="las la-palette aiz-side-nav-icon" style="color:#6366f1"></i>
+                    <span class="aiz-side-nav-text" style="color:#a5b4fc">{{translate "Theme Switcher"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "products.view"}}
+            <li class="aiz-side-nav-item">
+                <a href="#products" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-box aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Products"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="products">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/products" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Products"}}</span></a></li>
+                        {{if hasPermission "products.edit"}}
+                        <li class="aiz-side-nav-item"><a href="/admin/products/create" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Add New Product"}}</span></a></li>
+                        {{end}}
+                        <li class="aiz-side-nav-item"><a href="/admin/products/pending" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Pending Products"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/products/digital" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Digital Products"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/products/classified" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Auction Products"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "catalog.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="#catalog" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-list aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Categories"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="catalog">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/categories" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Categories"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/attributes" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Attributes"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/colors" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Colors"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/warranties" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Warranties"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/custom-labels" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Custom Labels"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "orders.view"}}
+            <li class="aiz-side-nav-item">
+                <a href="#orders" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-shopping-bag aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Orders"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="orders">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/orders" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Orders"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/orders/inhouse" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Inhouse Orders"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/orders/seller" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Seller Orders"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/orders/pickup" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Pickup Point Orders"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/refunds" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Refund Requests"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "delivery.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/delivery-boys" class="aiz-side-nav-link">
+                    <i class="las la-motorcycle aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Delivery"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "catalog.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/brands" class="aiz-side-nav-link">
+                    <i class="las la-copyright aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Brands"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "sellers.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="#sellers" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-store aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Sellers"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="sellers">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/sellers" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Sellers"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/sellers/applied" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Applied Sellers"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/sellers?status=verified" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Verified Sellers"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/sellers/ratings" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Ratings & Performance"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/sellers/payout-requests" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Payout Requests"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "customers.view"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/customers" class="aiz-side-nav-link">
+                    <i class="las la-users aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Customers"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "users.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="#user-management" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-user-shield aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Users & Roles"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="user-management">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/users" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Users"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/roles" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Roles"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/role-permissions" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Role Permissions"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "reviews.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/reviews" class="aiz-side-nav-link">
+                    <i class="las la-star aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Reviews"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "support.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/tickets" class="aiz-side-nav-link">
+                    <i class="las la-headset aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Support Tickets"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "marketing.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/contacts" class="aiz-side-nav-link">
+                    <i class="las la-envelope aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Contact Messages"}}</span>
+                </a>
+            </li>
+            {{end}}
+
+            {{if hasPermission "marketing.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="#marketing" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-bullhorn aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Marketing"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="marketing">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/flash-deals" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Flash Deals"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/coupons" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Coupons"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/newsletter" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Newsletter"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "affiliates.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="#affiliates" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-handshake aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Affiliates"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="affiliates">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/affiliates" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Affiliates"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/affiliate-withdraws" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Affiliate Payouts"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if or (hasPermission "reports.finance") (hasPermission "reports.ops")}}
+            <li class="aiz-side-nav-item">
+                <a href="#reports" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-chart-bar aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Reports"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="reports">
+                    <ul class="aiz-side-nav-list level-2">
+                        {{if hasPermission "reports.finance"}}
+                        <li class="aiz-side-nav-item"><a href="/admin/reports/sales" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Sales Report"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/reports/earning" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Earning Report"}}</span></a></li>
+                        {{end}}
+                        {{if hasPermission "reports.ops"}}
+                        <li class="aiz-side-nav-item"><a href="/admin/reports/wishlist" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Wishlist Report"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/reports/search" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Search Report"}}</span></a></li>
+                        {{end}}
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            {{if hasPermission "content.edit"}}
+            <li class="aiz-side-nav-item">
+                <a href="/admin/menu" class="aiz-side-nav-link">
+                    <i class="las la-bars aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Main Menu"}}</span>
+                </a>
+            </li>
+            <li class="aiz-side-nav-item">
+                <a href="/admin/pages" class="aiz-side-nav-link">
+                    <i class="las la-file-alt aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Pages"}}</span>
+                </a>
+            </li>
+            <li class="aiz-side-nav-item">
+                <a href="#blogs" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-blog aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Blogs"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="blogs">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/admin/blogs" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Blogs"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/blogs/create" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Add New Blog"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/admin/blog-categories" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Blog Categories"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+            <li class="aiz-side-nav-item">
+                <a href="/admin/languages" class="aiz-side-nav-link">
+                    <i class="las la-language aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Languages"}}</span>
+                </a>
+            </li>
+
+            {{if hasPermission "settings.edit"}}
+            <li class="aiz-side-nav-item">
+                <a class="aiz-side-nav-link" data-toggle="collapse" href="#nav-settings" aria-expanded="false">
+                    <i class="las la-cog aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Settings"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="nav-settings">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item">
+                            <a href="/admin/business-settings" class="aiz-side-nav-link">{{translate "Business Settings"}}</a>
+                        </li>
+                        <li class="aiz-side-nav-item">
+                            <a href="/admin/payment-settings" class="aiz-side-nav-link">{{translate "Payment Gateways"}}</a>
+                        </li>
+                        <li class="aiz-side-nav-item">
+                            <a href="/admin/social-media" class="aiz-side-nav-link">{{translate "Social Media"}}</a>
+                        </li>
+                        <li class="aiz-side-nav-item">
+                            <a href="/admin/smtp-settings" class="aiz-side-nav-link">{{translate "SMTP / Email"}}</a>
+                        </li>
+                        <li class="aiz-side-nav-item">
+                            <a href="/admin/ai-settings" class="aiz-side-nav-link">{{translate "AI API"}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {{end}}
+
+        </ul>
+    </div>
+</div>
+{{end}}

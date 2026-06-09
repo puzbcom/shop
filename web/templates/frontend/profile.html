@@ -1,0 +1,94 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .page-title { font-size:22px; font-weight:800; margin-bottom:24px; }
+  .profile-header { display:flex; align-items:center; gap:20px; margin-bottom:32px; padding:24px; border:1px solid var(--border); border-radius:14px; }
+  .profile-avatar { width:72px; height:72px; border-radius:50%; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; flex-shrink:0; overflow:hidden; }
+  .profile-avatar img { width:100%; height:100%; object-fit:cover; }
+  .profile-name { font-size:20px; font-weight:800; }
+  .profile-email { font-size:13px; color:var(--gray); }
+  .section-card { border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+  .section-card h2 { font-size:16px; font-weight:800; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .form-group input { width:100%; border:2px solid var(--border); border-radius:10px; padding:10px 14px; font-size:14px; outline:none; transition:border .15s; box-sizing:border-box; }
+  .form-group input:focus { border-color:var(--black); }
+  .form-group input[disabled] { background:var(--light-gray); color:var(--gray); cursor:not-allowed; }
+  .btn-save { background:var(--black); color:#fff; border:none; border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; }
+  .btn-save:hover { background:#333; }
+  .alert-success { background:#d1fae5; border:1px solid #6ee7b7; border-radius:10px; padding:12px 16px; font-size:13px; color:#065f46; margin-bottom:20px; }
+  .alert-error { background:#fff0f0; border:1px solid #fca5a5; border-radius:10px; padding:12px 16px; font-size:13px; color:#b91c1c; margin-bottom:20px; }
+  .hint { font-size:11px; color:var(--gray); margin-top:4px; }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "profile"}}
+  <div>
+    <div class="page-title">{{translate "My Profile"}}</div>
+
+    {{if .Success}}<div class="alert-success">{{translate "✓ Profile updated successfully."}}</div>{{end}}
+    {{if eq .Error "wrong_password"}}<div class="alert-error">{{translate "Current password is incorrect."}}</div>{{end}}
+    {{if eq .Error "password_too_short"}}<div class="alert-error">{{translate "New password must be at least 8 characters."}}</div>{{end}}
+
+    <div class="profile-header">
+      <div class="profile-avatar">
+        {{if .User.Avatar}}<img src="{{uploaded_asset .User.Avatar}}" alt="{{.User.Name}}">{{else}}{{first_char .User.Name}}{{end}}
+      </div>
+      <div>
+        <div class="profile-name">{{.User.Name}}</div>
+        {{if .User.Email}}<div class="profile-email">{{deref_str .User.Email}}</div>{{end}}
+        <div style="font-size:12px;color:var(--gray);margin-top:2px;text-transform:capitalize">{{.User.UserType}} {{translate "account"}}</div>
+      </div>
+    </div>
+
+    <form method="POST" action="/profile">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <div class="section-card">
+        <h2>{{translate "Personal information"}}</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{translate "Full name"}}</label>
+            <input type="text" name="name" value="{{.User.Name}}" placeholder="{{translate "Your name"}}" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Phone number"}}</label>
+            <input type="tel" name="phone" value="{{if .User.Phone}}{{deref_str .User.Phone}}{{end}}" placeholder="+1 555 000 0000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>{{translate "Email address"}}</label>
+          <input type="email" value="{{if .User.Email}}{{deref_str .User.Email}}{{end}}" disabled>
+          <div class="hint">{{translate "Email cannot be changed. Contact support if needed."}}</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2>{{translate "Change password"}}</h2>
+        <div class="form-group">
+          <label>{{translate "Current password"}}</label>
+          <input type="password" name="current_password" placeholder="{{translate "Enter current password"}}" autocomplete="current-password">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{translate "New password"}}</label>
+            <input type="password" name="new_password" placeholder="{{translate "At least 8 characters"}}" minlength="8" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Confirm new password"}}</label>
+            <input type="password" name="new_password_confirmation" placeholder="{{translate "Repeat new password"}}" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="hint" style="margin-bottom:0">{{translate "Leave blank to keep your current password."}}</div>
+      </div>
+
+      <button type="submit" class="btn-save">{{translate "Save changes"}}</button>
+    </form>
+  </div>
+</div>
+{{end}}

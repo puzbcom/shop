@@ -1,0 +1,177 @@
+{{define "content"}}
+<style>
+  .ticket-thread { display:flex; flex-direction:column; gap:0; }
+  .thread-msg { display:flex; gap:14px; align-items:flex-start; padding:18px 0; border-bottom:1px solid #f1f3f5; }
+  .thread-msg:first-child { padding-top:0; }
+  .thread-msg:last-child { border-bottom:none; }
+  .thread-msg.admin-msg { flex-direction:row-reverse; }
+  .msg-avatar { width:40px; height:40px; border-radius:50%; background:#adb5bd; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; text-transform:uppercase; }
+  .admin-msg .msg-avatar { background:#007bff; }
+  .msg-body { flex:1; min-width:0; }
+  .msg-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+  .admin-msg .msg-header { flex-direction:row-reverse; }
+  .msg-name { font-size:13px; font-weight:700; }
+  .msg-time { font-size:11px; color:#adb5bd; }
+  .msg-badge { font-size:9px; font-weight:700; background:#007bff; color:#fff; border-radius:3px; padding:2px 5px; text-transform:uppercase; }
+  .msg-bubble { background:#f8f9fa; border:1px solid #e9ecef; border-radius:12px; padding:12px 16px; font-size:14px; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+  .admin-msg .msg-bubble { background:#e8f4fd; border-color:#b8daff; }
+</style>
+
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-7">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 bg-transparent p-0">
+          <li class="breadcrumb-item"><a href="/seller/tickets">{{translate "Support Tickets"}}</a></li>
+          <li class="breadcrumb-item active">#{{.Ticket.Code}}</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mt-1">
+        {{.Ticket.Subject}}
+        {{if eq .Ticket.Status "pending"}}<span class="badge badge-warning ml-2">{{translate "Pending"}}</span>
+        {{else if eq .Ticket.Status "open"}}<span class="badge badge-info ml-2">{{translate "Open"}}</span>
+        {{else if eq .Ticket.Status "answered"}}<span class="badge badge-success ml-2">{{translate "Answered"}}</span>
+        {{else if eq .Ticket.Status "closed"}}<span class="badge badge-secondary ml-2">{{translate "Closed"}}</span>{{end}}
+        {{if eq .Ticket.Priority "high"}}<span class="badge badge-danger ml-1">{{translate "High Priority"}}</span>{{end}}
+      </h1>
+    </div>
+    <div class="col-md-5 text-md-right mt-2 mt-md-0">
+      <a href="/seller/tickets" class="btn btn-light btn-sm">
+        <i class="las la-arrow-left mr-1"></i>{{translate "Back to Tickets"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Thread -->
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 h6"><i class="las la-comments mr-1"></i>{{translate "Conversation"}}</h5>
+        <small class="text-muted">{{len .Ticket.Replies}} {{translate "replies"}}</small>
+      </div>
+      <div class="card-body">
+        <div class="ticket-thread">
+
+          {{if .Ticket.Details}}
+          <div class="thread-msg">
+            <div class="msg-avatar">{{first_char .User.Name}}</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">{{.User.Name}}</span>
+                <span class="msg-time">{{date_format .Ticket.CreatedAt "Jan 02, 2006 · 15:04"}}</span>
+                <span class="badge badge-light" style="font-size:10px;">{{translate "You"}}</span>
+              </div>
+              <div class="msg-bubble">{{deref_str .Ticket.Details}}</div>
+            </div>
+          </div>
+          {{end}}
+
+          {{range .Ticket.Replies}}
+          {{$isAdmin := false}}
+          {{if .User}}{{if eq .User.UserType "admin"}}{{$isAdmin = true}}{{end}}{{end}}
+          <div class="thread-msg {{if $isAdmin}}admin-msg{{end}}">
+            <div class="msg-avatar">{{if .User}}{{first_char .User.Name}}{{else}}?{{end}}</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                {{if $isAdmin}}<span class="msg-badge">Support</span>{{end}}
+                <span class="msg-name">{{if $isAdmin}}{{translate "Support Team"}}{{else if .User}}{{.User.Name}}{{else}}Unknown{{end}}</span>
+                <span class="msg-time">{{date_format .CreatedAt "Jan 02, 2006 · 15:04"}}</span>
+              </div>
+              <div class="msg-bubble">{{.Reply}}</div>
+            </div>
+          </div>
+          {{end}}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply or closed notice -->
+    {{if eq .Ticket.Status "closed"}}
+    <div class="alert alert-secondary d-flex align-items-center justify-content-between">
+      <div><i class="las la-lock mr-1"></i>{{translate "This ticket is closed."}}</div>
+      <a href="/seller/tickets/create" class="btn btn-sm btn-outline-secondary">
+        {{translate "Open a new ticket"}}
+      </a>
+    </div>
+    {{else}}
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6"><i class="las la-reply mr-1"></i>{{translate "Add a Reply"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/seller/tickets/{{.Ticket.ID}}/reply">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group mb-2">
+            <textarea name="reply" rows="5" class="form-control"
+                      placeholder="{{translate "Describe your update or question..."}}" required></textarea>
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <small class="text-muted"><i class="las la-info-circle mr-1"></i>{{translate "We typically reply within 1 business day"}}</small>
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i class="las la-paper-plane mr-1"></i>{{translate "Send Reply"}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Ticket Info"}}</h5></div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tr>
+            <td class="text-muted pl-3" width="45%">{{translate "Code"}}</td>
+            <td class="pr-3"><strong>#{{.Ticket.Code}}</strong></td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Status"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Status "pending"}}<span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{else if eq .Ticket.Status "open"}}<span class="badge badge-info">{{translate "Open"}}</span>
+              {{else if eq .Ticket.Status "answered"}}<span class="badge badge-success">{{translate "Answered"}}</span>
+              {{else if eq .Ticket.Status "closed"}}<span class="badge badge-secondary">{{translate "Closed"}}</span>
+              {{else}}<span class="badge badge-light">{{.Ticket.Status}}</span>{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Priority"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Priority "low"}}<span class="badge badge-info">{{translate "Low"}}</span>
+              {{else if eq .Ticket.Priority "medium"}}<span class="badge badge-warning">{{translate "Medium"}}</span>
+              {{else if eq .Ticket.Priority "high"}}<span class="badge badge-danger">{{translate "High"}}</span>
+              {{else}}<span class="badge badge-secondary">{{.Ticket.Priority}}</span>{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Category"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Type "general"}}💬 {{translate "General"}}
+              {{else if eq .Ticket.Type "order"}}📦 {{translate "Order"}}
+              {{else if eq .Ticket.Type "product"}}🛍️ {{translate "Product"}}
+              {{else if eq .Ticket.Type "payment"}}💳 {{translate "Payment"}}
+              {{else}}{{.Ticket.Type}}{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Replies"}}</td>
+            <td class="pr-3">{{len .Ticket.Replies}}</td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Opened"}}</td>
+            <td class="pr-3"><small>{{date_format .Ticket.CreatedAt "Jan 02, 2006"}}</small></td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Updated"}}</td>
+            <td class="pr-3"><small>{{date_format .Ticket.UpdatedAt "Jan 02, 2006"}}</small></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,129 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "AI API Settings"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  {{translate "Settings saved successfully."}}
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{{end}}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "AI Provider"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/ai-settings">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Provider"}}</label>
+            <div class="col-md-9">
+              <select name="ai_provider" id="ai_provider" class="form-control" onchange="toggleProvider()">
+                <option value="ollama" {{if eq (index .Settings "ai_provider") "ollama"}}selected{{end}}>Ollama / OpenAI-compatible</option>
+                <option value="gemini" {{if eq (index .Settings "ai_provider") "gemini"}}selected{{end}}>Google Gemini</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Ollama / OpenAI-compatible -->
+          <div id="ollama_section">
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "API Endpoint"}}</label>
+              <div class="col-md-9">
+                <input type="text" name="ollama_url" class="form-control"
+                  placeholder="http://localhost:11434/v1/chat/completions"
+                  value="{{index .Settings "ollama_url"}}">
+                <small class="text-muted">OpenAI-compatible chat completions URL (Ollama, LM Studio, vLLM, etc.)</small>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Model"}}</label>
+              <div class="col-md-9">
+                <input type="text" name="ollama_model" class="form-control"
+                  placeholder="deepseek-r1:8b"
+                  value="{{index .Settings "ollama_model"}}">
+                <small class="text-muted">Model name served at the endpoint above.</small>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "API Key"}} <small class="text-muted">(optional)</small></label>
+              <div class="col-md-9">
+                <input type="password" name="ollama_api_key" class="form-control" autocomplete="new-password"
+                  value="{{index .Settings "ollama_api_key"}}">
+                <small class="text-muted">Leave blank if your server requires no authentication.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gemini -->
+          <div id="gemini_section" style="display:none;">
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Gemini API Key"}}</label>
+              <div class="col-md-9">
+                <input type="password" name="gemini_api_key" class="form-control" autocomplete="new-password"
+                  value="{{index .Settings "gemini_api_key"}}">
+                <small class="text-muted">Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>.</small>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Gemini Model"}}</label>
+              <div class="col-md-9">
+                <input type="text" name="gemini_model" class="form-control"
+                  placeholder="gemini-1.5-flash"
+                  value="{{index .Settings "gemini_model"}}">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-9 ml-auto">
+              <button type="submit" class="btn btn-primary">{{translate "Save Settings"}}</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-body">
+        <h6 class="font-weight-bold mb-2"><i class="las la-robot mr-1"></i>{{translate "Where AI is used"}}</h6>
+        <ul class="small text-muted pl-3 mb-3">
+          <li>Product description typesetting</li>
+          <li>SEO meta title / description generation</li>
+          <li>Meta keyword suggestions</li>
+        </ul>
+        <h6 class="font-weight-bold mb-2">{{translate "Ollama quick start"}}</h6>
+        <ul class="small text-muted pl-3 mb-3">
+          <li><code>ollama pull deepseek-r1:8b</code></li>
+          <li><code>ollama serve</code></li>
+          <li>Endpoint: <code>http://localhost:11434/v1/chat/completions</code></li>
+        </ul>
+        <h6 class="font-weight-bold mb-2">{{translate "Gemini free tier"}}</h6>
+        <ul class="small text-muted pl-3 mb-0">
+          <li>gemini-1.5-flash — fast &amp; free</li>
+          <li>gemini-1.5-pro — higher quality</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+function toggleProvider() {
+  var p = document.getElementById('ai_provider').value;
+  document.getElementById('ollama_section').style.display = (p === 'ollama') ? '' : 'none';
+  document.getElementById('gemini_section').style.display = (p === 'gemini') ? '' : 'none';
+}
+toggleProvider();
+</script>
+{{end}}

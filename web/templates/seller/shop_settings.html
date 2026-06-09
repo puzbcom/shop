@@ -1,0 +1,66 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Shop Settings"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{translate "Shop settings updated successfully."}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <form method="POST" action="/seller/shop/settings">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Shop Name"}} <span class="text-danger">*</span></label>
+        <div class="col-md-9">
+          <input type="text" name="name" class="form-control" value="{{deref_str .Shop.Name}}" required>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Phone"}}</label>
+        <div class="col-md-9">
+          <input type="tel" name="phone" class="form-control" value="{{deref_str .Shop.Phone}}">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Address"}}</label>
+        <div class="col-md-9">
+          <textarea name="address" class="form-control" rows="3">{{deref_str .Shop.Address}}</textarea>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Social Links"}}</label>
+        <div class="col-md-9">
+          <div class="input-group mb-2">
+            <div class="input-group-prepend"><span class="input-group-text"><i class="lab la-facebook-f"></i></span></div>
+            <input type="url" name="facebook" class="form-control" placeholder="Facebook URL" value="{{deref_str .Shop.Facebook}}">
+          </div>
+          <div class="input-group mb-2">
+            <div class="input-group-prepend"><span class="input-group-text"><i class="lab la-instagram"></i></span></div>
+            <input type="url" name="instagram" class="form-control" placeholder="Instagram URL" value="{{deref_str .Shop.Instagram}}">
+          </div>
+          <div class="input-group mb-2">
+            <div class="input-group-prepend"><span class="input-group-text"><i class="lab la-twitter"></i></span></div>
+            <input type="url" name="twitter" class="form-control" placeholder="Twitter URL" value="{{deref_str .Shop.Twitter}}">
+          </div>
+          <div class="input-group">
+            <div class="input-group-prepend"><span class="input-group-text"><i class="lab la-youtube"></i></span></div>
+            <input type="url" name="youtube" class="form-control" placeholder="YouTube URL" value="{{deref_str .Shop.Youtube}}">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save Settings"}}</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

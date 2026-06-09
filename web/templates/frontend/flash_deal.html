@@ -1,0 +1,100 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; }
+  .deal-hero { border-radius:16px; padding:40px 48px; margin-bottom:40px; display:flex; align-items:center; justify-content:space-between; gap:32px; color:#fff; overflow:hidden; position:relative; }
+  .deal-hero-bg { background:linear-gradient(135deg,#c0392b 0%,#e74c3c 100%); }
+  .deal-hero-text h1 { font-size:34px; font-weight:800; margin-bottom:8px; }
+  .deal-hero-text p { font-size:15px; opacity:.85; max-width:420px; line-height:1.6; }
+  .deal-countdown { display:flex; gap:12px; flex-shrink:0; }
+  .countdown-block { background:rgba(0,0,0,.25); border-radius:10px; padding:14px 18px; text-align:center; min-width:72px; }
+  .countdown-num { font-size:32px; font-weight:800; line-height:1; display:block; }
+  .countdown-label { font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; margin-top:4px; display:block; }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .toolbar-left { font-size:13px; color:var(--gray); }
+  .product-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  .product-card { cursor:pointer; }
+  .product-card:hover .product-img-wrap { transform:translateY(-3px); }
+  .product-img-wrap { position:relative; border-radius:10px; overflow:hidden; background:var(--light-gray); aspect-ratio:1; transition:transform .2s; }
+  .product-img-wrap img { width:100%; height:100%; object-fit:cover; }
+  .product-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:44px; }
+  .deal-ribbon { position:absolute; top:10px; left:10px; background:#c0392b; color:#fff; border-radius:4px; padding:3px 8px; font-size:11px; font-weight:700; text-transform:uppercase; }
+  .product-info { padding:10px 0 0; }
+  .product-name { font-size:13px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+  .product-price { font-size:14px; font-weight:700; }
+  .product-price .was { font-size:12px; color:var(--gray); text-decoration:line-through; font-weight:400; margin-left:4px; }
+  .badge-deal { display:inline-block; background:#ffe8e8; color:#c0392b; border-radius:4px; padding:2px 7px; font-size:10px; font-weight:700; margin-top:4px; text-transform:uppercase; }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+{{$d := .Deal}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+    <a href="/flash-deals/{{$d.ID}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid #c0392b;color:#c0392b;display:block">{{translate "⚡ Flash Deal"}}</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:24px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Flash Deals"}}</span>
+  </div>
+  <div class="deal-hero deal-hero-bg">
+    <div class="deal-hero-text">
+      <h1>⚡ {{if $d.Title}}{{$d.Title}}{{else}}{{translate "Flash Deal"}}{{end}}</h1>
+      <p>{{translate "Limited-time prices — grab these deals before they're gone!"}}</p>
+    </div>
+    <div class="deal-countdown" id="countdown" data-end="{{if $d.EndDate}}{{$d.EndDate}}{{end}}">
+      <div class="countdown-block"><span class="countdown-num" id="cd-h">--</span><span class="countdown-label">{{translate "Hours"}}</span></div>
+      <div class="countdown-block"><span class="countdown-num" id="cd-m">--</span><span class="countdown-label">{{translate "Mins"}}</span></div>
+      <div class="countdown-block"><span class="countdown-num" id="cd-s">--</span><span class="countdown-label">{{translate "Secs"}}</span></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left"><strong>{{len .Products}}</strong> {{translate "deals available"}}</div>
+  </div>
+
+  <div class="product-grid">
+    {{range .Products}}
+    <a href="/product/{{.Slug}}" class="product-card">
+      <div class="product-img-wrap">
+        {{if .ThumbnailImg}}<img src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+        {{else}}<div class="product-placeholder">⚡</div>{{end}}
+        <span class="deal-ribbon">{{translate "Flash Deal"}}</span>
+      </div>
+      <div class="product-info">
+        <div class="product-name">{{.Name}}</div>
+        <div class="product-price">{{if gt .Discount 0.0}}{{format_price (subf .UnitPrice .Discount)}}{{else}}{{format_price .UnitPrice}}{{end}}
+          {{if gt .Discount 0.0}}<span class="was">{{format_price .UnitPrice}}</span>{{end}}
+        </div>
+        <span class="badge-deal">{{translate "Limited time"}}</span>
+      </div>
+    </a>
+    {{else}}
+    <div class="empty-state" style="grid-column:1/-1">
+      <h3>{{translate "No deals right now"}}</h3>
+      <p>{{translate "Check back soon for new flash deals."}}</p>
+    </div>
+    {{end}}
+  </div>
+</div>
+<script>
+(function(){
+  const el = document.getElementById('countdown');
+  const endEpoch = parseInt(el && el.dataset.end || '0', 10);
+  if (!endEpoch) return;
+  const endMs = endEpoch * 1000;
+  function tick() {
+    const diff = Math.max(0, endMs - Date.now());
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+    if (diff > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();
+</script>
+{{end}}

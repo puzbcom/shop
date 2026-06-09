@@ -1,0 +1,110 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Support Tickets"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/tickets/create" class="btn btn-primary btn-sm">
+        <i class="las la-plus mr-1"></i>{{translate "New Ticket"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="row mb-4">
+  <div class="col-6 col-md-3 mb-3">
+    <div class="card rounded-0 shadow-none text-center py-3">
+      <div class="h2 font-weight-800 mb-1">{{index .Stats "all"}}</div>
+      <div class="text-muted small text-uppercase font-weight-700" style="letter-spacing:.05em">{{translate "Total"}}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <div class="card rounded-0 shadow-none text-center py-3" style="border-left:3px solid #ffc107;">
+      <div class="h2 font-weight-800 mb-1 text-warning">{{index .Stats "pending"}}</div>
+      <div class="text-muted small text-uppercase font-weight-700" style="letter-spacing:.05em">{{translate "Pending"}}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <div class="card rounded-0 shadow-none text-center py-3" style="border-left:3px solid #17a2b8;">
+      <div class="h2 font-weight-800 mb-1 text-info">{{index .Stats "open"}}</div>
+      <div class="text-muted small text-uppercase font-weight-700" style="letter-spacing:.05em">{{translate "Open"}}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <div class="card rounded-0 shadow-none text-center py-3" style="border-left:3px solid #28a745;">
+      <div class="h2 font-weight-800 mb-1 text-success">{{index .Stats "answered"}}</div>
+      <div class="text-muted small text-uppercase font-weight-700" style="letter-spacing:.05em">{{translate "Answered"}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    {{if .Tickets}}
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#{{translate "Code"}}</th>
+            <th>{{translate "Subject"}}</th>
+            <th>{{translate "Category"}}</th>
+            <th>{{translate "Priority"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th>{{translate "Replies"}}</th>
+            <th>{{translate "Updated"}}</th>
+            <th class="text-right">{{translate "Actions"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Tickets}}
+          <tr>
+            <td><strong>#{{.Code}}</strong></td>
+            <td>
+              <a href="/seller/tickets/{{.ID}}" class="text-dark font-weight-600">{{.Subject}}</a>
+              {{if eq .Viewed 0}}<span class="badge badge-danger badge-sm ml-1">{{translate "New"}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Type "general"}}<span class="badge badge-light">{{translate "General"}}</span>
+              {{else if eq .Type "order"}}<span class="badge badge-primary">{{translate "Order"}}</span>
+              {{else if eq .Type "product"}}<span class="badge badge-info">{{translate "Product"}}</span>
+              {{else if eq .Type "payment"}}<span class="badge badge-dark">{{translate "Payment"}}</span>
+              {{else}}<span class="badge badge-light">{{.Type}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Priority "low"}}<span class="badge badge-info">{{translate "Low"}}</span>
+              {{else if eq .Priority "medium"}}<span class="badge badge-warning">{{translate "Medium"}}</span>
+              {{else if eq .Priority "high"}}<span class="badge badge-danger">{{translate "High"}}</span>
+              {{else}}<span class="badge badge-secondary">{{.Priority}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Status "pending"}}<span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{else if eq .Status "open"}}<span class="badge badge-info">{{translate "Open"}}</span>
+              {{else if eq .Status "answered"}}<span class="badge badge-success">{{translate "Answered"}}</span>
+              {{else if eq .Status "closed"}}<span class="badge badge-secondary">{{translate "Closed"}}</span>
+              {{else}}<span class="badge badge-light">{{.Status}}</span>{{end}}
+            </td>
+            <td class="text-center">{{len .Replies}}</td>
+            <td><small class="text-muted">{{date_format .UpdatedAt "Jan 02, 2006"}}</small></td>
+            <td class="text-right">
+              <a href="/seller/tickets/{{.ID}}" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "View"}}">
+                <i class="las la-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{else}}
+    <div class="text-center py-5">
+      <i class="las la-headset" style="font-size:48px;color:#dee2e6;display:block;margin-bottom:12px;"></i>
+      <h5 class="text-muted mb-2">{{translate "No support tickets yet"}}</h5>
+      <p class="text-muted small mb-3">{{translate "Having an issue? Our team is here to help."}}</p>
+      <a href="/seller/tickets/create" class="btn btn-primary btn-sm">
+        <i class="las la-plus mr-1"></i>{{translate "Open a Ticket"}}
+      </a>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

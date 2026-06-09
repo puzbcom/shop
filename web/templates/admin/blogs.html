@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Blogs"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/blogs/create" class="btn btn-primary"><i class="las la-plus"></i> {{translate "New Blog"}}</a>
+      <a href="/admin/blog-categories" class="btn btn-light ml-1"><i class="las la-tags"></i> {{translate "Categories"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <form method="GET" action="/admin/blogs" class="form-inline flex-wrap gap-2">
+      <select name="status" class="form-control form-control-sm mr-2">
+        <option value="">{{translate "All Status"}}</option>
+        <option value="1" {{if eq .Status "1"}}selected{{end}}>{{translate "Published"}}</option>
+        <option value="0" {{if eq .Status "0"}}selected{{end}}>{{translate "Draft"}}</option>
+      </select>
+      <input type="text" name="search" value="{{.Search}}" class="form-control form-control-sm mr-2" placeholder="{{translate "Search by title or slug"}}">
+      <button type="submit" class="btn btn-sm btn-primary">{{translate "Filter"}}</button>
+      {{if or .Search .Status}}<a href="/admin/blogs" class="btn btn-sm btn-light ml-1">{{translate "Reset"}}</a>{{end}}
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Title"}}</th>
+            <th>{{translate "Category"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th>{{translate "Created"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Blogs}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>
+              <a href="/blog/{{.Slug}}" target="_blank" class="text-reset">{{.Title}}</a>
+            </td>
+            <td>{{index $.CatMap .CategoryID}}</td>
+            <td>
+              {{if eq .Status 1}}<span class="badge badge-success">{{translate "Published"}}</span>
+              {{else}}<span class="badge badge-secondary">{{translate "Draft"}}</span>{{end}}
+            </td>
+            <td>{{if .CreatedAt}}{{date_format .CreatedAt "Jan 2, 2006"}}{{end}}</td>
+            <td class="text-right">
+              <a href="/admin/blogs/{{.ID}}/edit" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+              <form method="POST" action="/admin/blogs/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('{{translate "Delete this blog post?"}}')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="6" class="text-center py-4">{{translate "No blog posts found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}&search={{$.Search}}&status={{$.Status}}"
+         class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

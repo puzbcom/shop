@@ -1,0 +1,47 @@
+{{define "layouts/auth_boxed"}}
+<!DOCTYPE html>
+{{if is_rtl}}<html dir="rtl" lang="{{current_lang}}">{{else}}<html lang="{{current_lang}}">{{end}}
+<head>
+    <meta name="csrf-token" content="{{csrf_token}}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="{{uploaded_asset (get_setting "site_icon")}}">
+    <title>{{block "meta_title" .}}{{get_setting "website_name"}}{{end}}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap">
+    <link rel="stylesheet" href="/static/assets/css/vendors.css">
+    {{if is_rtl}}<link rel="stylesheet" href="/static/assets/css/bootstrap-rtl.min.css">{{end}}
+    <link rel="stylesheet" href="/static/assets/css/aiz-core.css">
+    <link rel="stylesheet" href="/static/assets/css/custom-style.css">
+    <style>
+        :root{--primary:{{get_setting "base_color" "#d43533"}};--secondary-base:{{get_setting "secondary_base_color" "#ffc519"}};}
+        body{font-family:{{safe_html (get_setting "system_font_family" "'Public Sans', sans-serif")}},sans-serif;}
+    </style>
+    {{block "styles" .}}{{end}}
+</head>
+<body class="aiz-auth bg-white">
+    <div class="min-h-100vh d-flex flex-column">
+        <div class="d-flex flex-column flex-root">
+            <div class="d-flex flex-column flex-lg-row flex-column-fluid">
+                <div class="d-flex flex-column flex-lg-row-fluid py-10">
+                    <div class="d-flex flex-center flex-column flex-column-fluid">
+                        <div class="w-lg-500px bg-white rounded shadow-sm p-10 p-lg-15 mx-auto">
+                            <div class="text-center mb-10">
+                                <a href="/" class="d-block mb-5">
+                                    <img src="{{uploaded_asset (get_setting "header_logo")}}" alt="{{get_setting "website_name"}}" height="50">
+                                </a>
+                            </div>
+                            {{$s := flash_success}}{{if $s}}<div class="alert alert-success">{{$s}}</div>{{end}}
+                            {{$e := flash_error}}{{if $e}}<div class="alert alert-danger">{{$e}}</div>{{end}}
+                            {{block "content" .}}{{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/assets/js/vendors.js"></script>
+    <script src="/static/assets/js/aiz-core.js"></script>
+    {{block "scripts" .}}{{end}}
+</body>
+</html>
+{{end}}

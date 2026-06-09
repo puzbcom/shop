@@ -1,0 +1,109 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:1fr 420px; gap:64px; align-items:start; }
+  .contact-info h1 { font-size:32px; font-weight:800; margin-bottom:12px; }
+  .contact-info p { font-size:15px; color:var(--gray); line-height:1.7; margin-bottom:40px; max-width:480px; }
+  .contact-items { display:flex; flex-direction:column; gap:24px; }
+  .contact-item { display:flex; gap:16px; align-items:flex-start; }
+  .contact-icon { width:44px; height:44px; border-radius:12px; background:var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .contact-item h4 { font-size:14px; font-weight:700; margin-bottom:3px; }
+  .contact-item p { font-size:13px; color:var(--gray); line-height:1.5; margin:0; }
+  .contact-form-card { background:#fff; border:1px solid var(--border); border-radius:16px; padding:36px; }
+  .contact-form-card h2 { font-size:20px; font-weight:800; margin-bottom:24px; }
+  .success-banner { background:#d5fde8; color:#1a7f4b; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+  .form-group { margin-bottom:18px; }
+  .form-label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .form-control { width:100%; border:2px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; outline:none; font-family:inherit; transition:border-color .15s; background:#fff; }
+  .form-control:focus { border-color:var(--black); }
+  textarea.form-control { resize:vertical; min-height:120px; }
+  .btn-submit { width:100%; background:var(--black); color:#fff; border:none; border-radius:99px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; transition:background .15s; margin-top:4px; }
+  .btn-submit:hover { background:#3a3a3a; }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+  </div>
+</nav>
+<div class="page-wrap">
+  <div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:28px;display:flex;gap:6px">
+      <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Contact"}}</span>
+    </div>
+    <div class="contact-info">
+      <h1>{{get_setting "contact_heading" "Get in touch"}}</h1>
+      <p>{{get_setting "contact_subtitle" "We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within one business day."}}</p>
+      <div class="contact-items">
+        {{$email := get_setting "support_email" ""}}
+        {{if $email}}
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <h4>{{translate "Email us"}}</h4>
+            <p>{{$email}}</p>
+          </div>
+        </div>
+        {{end}}
+        {{$phone := get_setting "support_phone" ""}}
+        {{if $phone}}
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <h4>{{translate "Call us"}}</h4>
+            <p>{{$phone}}</p>
+          </div>
+        </div>
+        {{end}}
+        {{$hours := get_setting "contact_hours" ""}}
+        {{if $hours}}
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <h4>{{translate "Working hours"}}</h4>
+            <p>{{$hours}}</p>
+          </div>
+        </div>
+        {{end}}
+        {{$addr := get_setting "address" ""}}
+        {{if $addr}}
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <h4>{{translate "Address"}}</h4>
+            <p>{{$addr}}</p>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-form-card">
+    <h2>{{translate "Send us a message"}}</h2>
+    {{if .Success}}
+    <div class="success-banner">{{translate "✓ Your message has been sent! We'll be in touch soon."}}</div>
+    {{end}}
+    {{if .Error}}
+    <div style="background:#ffe8e8; color:#c0392b; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+      ✗ {{.Error}}
+    </div>
+    {{end}}
+    <form method="POST" action="/contact">
+      {{csrf_field}}
+      <div class="form-group">
+        <label class="form-label" for="name">{{translate "Your name"}}</label>
+        <input class="form-control" type="text" id="name" name="name" placeholder="{{translate "Jane Smith"}}" value="{{.FormName}}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">{{translate "Email address"}}</label>
+        <input class="form-control" type="email" id="email" name="email" placeholder="{{translate "jane@example.com"}}" value="{{.FormEmail}}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="message">{{translate "Message"}}</label>
+        <textarea class="form-control" id="message" name="message" placeholder="{{translate "How can we help you?"}}" required>{{.FormMsg}}</textarea>
+      </div>
+      <button class="btn-submit" type="submit">{{translate "Send message →"}}</button>
+    </form>
+  </div>
+</div>
+{{end}}

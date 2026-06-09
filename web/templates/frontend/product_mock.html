@@ -1,0 +1,300 @@
+{{define "content"}}
+<style>
+  :root {
+    --primary: #6c5ce7;
+    --secondary: #a29bfe;
+    --success: #00b894;
+    --danger: #d63031;
+    --warning: #fdcb6e;
+    --info: #74b9ff;
+    --light: #f5f6fa;
+    --dark: #2d3436;
+    --border: #dfe6e9;
+    --gray: #636e72;
+    --light-gray: #f0f0f0;
+    --star: #fdcb6e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--dark); line-height: 1.6; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  /* Breadcrumb */
+  .breadcrumb { display: flex; gap: 8px; margin-bottom: 30px; font-size: 13px; }
+  .breadcrumb a { color: var(--primary); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* Product Section */
+  .product-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 60px; }
+
+  /* Images */
+  .product-images { }
+  .main-image { width: 100%; aspect-ratio: 1; background: var(--light); border-radius: 8px; overflow: hidden; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+  .main-image img { width: 100%; height: 100%; object-fit: cover; }
+  .thumbnail-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .thumbnail { width: 100%; aspect-ratio: 1; background: var(--light); border: 2px solid transparent; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+  .thumbnail:hover { border-color: var(--primary); }
+  .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Product Info */
+  .product-info { }
+  .product-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+  .rating-section { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .stars { color: var(--star); font-size: 18px; }
+  .rating-num { font-size: 14px; font-weight: 600; }
+  .rating-count { font-size: 13px; color: var(--gray); }
+
+  .price-section { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+  .current-price { font-size: 32px; font-weight: 700; color: var(--danger); }
+  .original-price { font-size: 18px; color: var(--gray); text-decoration: line-through; }
+
+  .description-section { margin-bottom: 28px; }
+  .description-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
+  .description-body { font-size: 14px; line-height: 1.7; color: var(--gray); white-space: pre-wrap; }
+
+  /* Specs */
+  .specs-section { margin-bottom: 28px; }
+  .spec-list { display: flex; flex-direction: column; gap: 12px; }
+  .spec-row { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .spec-label { font-weight: 600; font-size: 13px; color: var(--dark); }
+  .spec-value { font-size: 13px; color: var(--gray); }
+
+  /* Variants/Options */
+  .variant-section { margin-bottom: 28px; }
+  .variant-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .variant-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .variant-btn { padding: 8px 12px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-size: 12px; transition: all 0.3s; text-align: center; }
+  .variant-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .variant-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+
+  /* Stock */
+  .stock-section { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 14px; }
+  .stock-badge { background: var(--success); color: white; padding: 4px 12px; border-radius: 4px; }
+
+  /* Actions */
+  .action-buttons { display: flex; gap: 12px; margin-bottom: 28px; }
+  .btn { padding: 12px 24px; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+  .btn-primary { background: var(--primary); color: white; flex: 1; }
+  .btn-primary:hover { background: #5f4db3; }
+  .btn-secondary { background: var(--light); color: var(--dark); border: 2px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* Reviews */
+  .reviews-section { margin-top: 48px; }
+  .reviews-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .big-rating { font-size: 48px; font-weight: 800; line-height: 1; }
+  .review-list { display: flex; flex-direction: column; gap: 20px; }
+  .review-card { border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+  .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .review-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--light-gray); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--gray); }
+  .review-meta { flex: 1; }
+  .review-name { font-size: 13px; font-weight: 700; }
+  .review-date { font-size: 11px; color: var(--gray); }
+  .review-stars { color: var(--star); font-size: 12px; }
+  .review-body { font-size: 13px; line-height: 1.6; color: var(--gray); }
+
+  /* Related */
+  .related-section { margin-top: 60px; }
+  .section-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+  .product-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: all 0.3s; }
+  .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .product-image { width: 100%; aspect-ratio: 1; background: var(--light); display: flex; align-items: center; justify-content: center; }
+  .product-image img { width: 100%; height: 100%; object-fit: cover; }
+  .product-body { padding: 12px; }
+  .product-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+  .product-price { font-size: 14px; font-weight: 700; color: var(--danger); }
+</style>
+
+<div class="container">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="/">{{translate "Home"}}</a>
+    <span>/</span>
+    <a href="/search?category=jewelry">{{translate "Jewelry"}}</a>
+    <span>/</span>
+    <span>{{translate "Zodiac Guardian Keychains"}}</span>
+  </div>
+
+  <!-- Main Product Section -->
+  <div class="product-container">
+    <!-- Image Gallery -->
+    <div class="product-images">
+      <div class="main-image">
+        <img src="https://via.placeholder.com/500x500?text=Zodiac+Keychain" alt="Zodiac Guardian Keychain">
+      </div>
+      <div class="thumbnail-list">
+        <div class="thumbnail"><img src="https://via.placeholder.com/100?text=View+1" alt=""></div>
+        <div class="thumbnail"><img src="https://via.placeholder.com/100?text=View+2" alt=""></div>
+        <div class="thumbnail"><img src="https://via.placeholder.com/100?text=View+3" alt=""></div>
+        <div class="thumbnail"><img src="https://via.placeholder.com/100?text=View+4" alt=""></div>
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="product-info">
+      <h1 class="product-title">{{translate "Zodiac Guardian & Wealth Magnet Keychains | Double-Sided Deity & Sign Sacred Charms"}}</h1>
+
+      <div class="rating-section">
+        <span class="stars">★★★★★</span>
+        <span class="rating-num">0.0</span>
+        <span class="rating-count">{{translate "(0 reviews)"}}</span>
+      </div>
+
+      <div class="price-section">
+        <span class="current-price">$3.27</span>
+        <span class="original-price">$5.99</span>
+      </div>
+
+      <div class="description-section">
+        <div class="description-title">{{translate "About This Product"}}</div>
+        <div class="description-body">This keychain combines Chinese zodiac symbolism with spiritual protection. It features dual engravings—the zodiac animal on one side and a protective guardian deity on the reverse. The piece incorporates a hand-carved peach wood gourd and miniature Five Emperor Coins replica for wealth attraction.
+
+Key Benefits:
+• Personalized to your birth year with corresponding natal guardian deity
+• Double-sided charm design with zodiac animal and protective deity
+• Peach wood gourd - traditional symbol for absorbing negative energy
+• Five Emperor Coins - Feng Shui element for financial prosperity
+• Durable construction for daily wear and travel
+• Perfect gift for zodiac enthusiasts and spiritual collectors</div>
+      </div>
+
+      <div class="specs-section">
+        <div class="spec-list">
+          <div class="spec-row">
+            <div class="spec-label">{{translate "Available Zodiac Signs"}}</div>
+            <div class="spec-value">{{translate "Rat, Ox, Tiger, Rabbit, Dragon, Snake, Horse, Goat, Monkey, Rooster, Dog, Pig"}}</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">{{translate "Material"}}</div>
+            <div class="spec-value">{{translate "Peach Wood, Zinc Alloy, Resin"}}</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">{{translate "Dimension"}}</div>
+            <div class="spec-value">{{translate "5.5 x 3.5 cm"}}</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">{{translate "Weight"}}</div>
+            <div class="spec-value">{{translate "28g"}}</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">{{translate "Minimum Order"}}</div>
+            <div class="spec-value">{{translate "1 piece"}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="variant-section">
+        <div class="variant-label">{{translate "Select Your Zodiac Sign"}}:</div>
+        <div class="variant-options">
+          <button class="variant-btn active">{{translate "Rat"}}</button>
+          <button class="variant-btn">{{translate "Ox"}}</button>
+          <button class="variant-btn">{{translate "Tiger"}}</button>
+          <button class="variant-btn">{{translate "Rabbit"}}</button>
+          <button class="variant-btn">{{translate "Dragon"}}</button>
+          <button class="variant-btn">{{translate "Snake"}}</button>
+          <button class="variant-btn">{{translate "Horse"}}</button>
+          <button class="variant-btn">{{translate "Goat"}}</button>
+          <button class="variant-btn">{{translate "Monkey"}}</button>
+          <button class="variant-btn">{{translate "Rooster"}}</button>
+          <button class="variant-btn">{{translate "Dog"}}</button>
+          <button class="variant-btn">{{translate "Pig"}}</button>
+        </div>
+      </div>
+
+      <div class="stock-section">
+        <span class="stock-badge">✓ {{translate "In Stock"}}</span>
+        <span>9,168 {{translate "available"}}</span>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary">
+          <i class="las la-shopping-cart"></i> {{translate "Add to Cart"}}
+        </button>
+        <button class="btn btn-secondary">
+          <i class="las la-heart"></i> {{translate "Wishlist"}}
+        </button>
+      </div>
+
+      <div style="padding: 12px; background: var(--light); border-radius: 4px; font-size: 13px; color: var(--gray);">
+        <strong>{{translate "Shipping Info"}}:</strong> Free shipping on orders over $50. Estimated delivery: 10-20 business days.
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="reviews-section">
+    <h2 class="section-title">{{translate "Customer Reviews"}}</h2>
+    <div class="reviews-summary">
+      <div class="big-rating">0.0</div>
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="stars">★★★★★</span>
+          <span style="font-size:13px; color:var(--gray);">0 {{translate "reviews"}}</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 40px 20px; text-align: center; background: var(--light); border-radius: 8px;">
+      <p style="color: var(--gray); margin-bottom: 16px;">{{translate "No reviews yet. Be the first to review this product!"}}</p>
+      <button class="btn btn-primary" style="max-width: 200px; margin: 0 auto;">
+        {{translate "Write a Review"}}
+      </button>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <div class="related-section">
+    <h2 class="section-title">{{translate "Related Products"}}</h2>
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-image"><img src="https://via.placeholder.com/200x200?text=Crystal+Bracelet" alt=""></div>
+        <div class="product-body">
+          <div class="product-name">{{translate "Crystal Healing Bracelet"}}</div>
+          <div class="product-price">$4.99</div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-image"><img src="https://via.placeholder.com/200x200?text=Feng+Shui+Coin" alt=""></div>
+        <div class="product-body">
+          <div class="product-name">{{translate "Feng Shui Prosperity Coin"}}</div>
+          <div class="product-price">$2.49</div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-image"><img src="https://via.placeholder.com/200x200?text=Peach+Wood+Charm" alt=""></div>
+        <div class="product-body">
+          <div class="product-name">{{translate "Peach Wood Charm Pendant"}}</div>
+          <div class="product-price">$3.79</div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-image"><img src="https://via.placeholder.com/200x200?text=Lucky+Gourd" alt=""></div>
+        <div class="product-body">
+          <div class="product-name">{{translate "Lucky Gourd Hanging"}}</div>
+          <div class="product-price">$5.99</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Thumbnail click handler
+  document.querySelectorAll('.thumbnail').forEach(thumb => {
+    thumb.addEventListener('click', function() {
+      const img = this.querySelector('img');
+      document.querySelector('.main-image img').src = img.src;
+    });
+  });
+
+  // Variant selection
+  document.querySelectorAll('.variant-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+
+{{end}}

@@ -1,0 +1,105 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Dashboard"}}</h1></div>
+  </div>
+</div>
+
+<div class="row gutters-10">
+  <div class="col-md-3 col-sm-6">
+    <a href="/delivery/assigned-orders" class="card rounded-0 mb-3 text-reset text-decoration-none">
+      <div class="card-body">
+        <div class="row align-items-center gutters-5">
+          <div class="col">
+            <div class="h1 fw-700 text-warning mb-0">{{.Assigned}}</div>
+            <div class="opacity-60">{{translate "Assigned Orders"}}</div>
+          </div>
+          <div class="col-auto"><i class="las la-clipboard-list la-3x opacity-60 text-warning"></i></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="/delivery/on-the-way" class="card rounded-0 mb-3 text-reset text-decoration-none">
+      <div class="card-body">
+        <div class="row align-items-center gutters-5">
+          <div class="col">
+            <div class="h1 fw-700 text-primary mb-0">{{.OnTheWay}}</div>
+            <div class="opacity-60">{{translate "On The Way"}}</div>
+          </div>
+          <div class="col-auto"><i class="las la-motorcycle la-3x opacity-60 text-primary"></i></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="/delivery/delivered" class="card rounded-0 mb-3 text-reset text-decoration-none">
+      <div class="card-body">
+        <div class="row align-items-center gutters-5">
+          <div class="col">
+            <div class="h1 fw-700 text-success mb-0">{{.Delivered}}</div>
+            <div class="opacity-60">{{translate "Delivered"}}</div>
+          </div>
+          <div class="col-auto"><i class="las la-check-circle la-3x opacity-60 text-success"></i></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="/delivery/cancelled" class="card rounded-0 mb-3 text-reset text-decoration-none">
+      <div class="card-body">
+        <div class="row align-items-center gutters-5">
+          <div class="col">
+            <div class="h1 fw-700 text-danger mb-0">{{.Cancelled}}</div>
+            <div class="opacity-60">{{translate "Cancelled"}}</div>
+          </div>
+          <div class="col-auto"><i class="las la-times-circle la-3x opacity-60 text-danger"></i></div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header"><h5 class="mb-0 h6">{{translate "Recent Orders"}}</h5></div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>{{translate "Order #"}}</th>
+            <th>{{translate "Customer"}}</th>
+            <th>{{translate "Amount"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Action"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .RecentOrders}}
+          <tr>
+            <td>#{{.ID}}</td>
+            <td>{{if .Buyer}}{{.Buyer.Name}}{{else}}Guest{{end}}</td>
+            <td>{{if .GrandTotal}}{{deref_float .GrandTotal | format_price}}{{end}}</td>
+            <td><span class="badge badge-info">{{deref_str .DeliveryStatus}}</span></td>
+            <td class="text-right">
+              <form method="POST" action="/delivery/orders/{{.ID}}/status">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <select name="delivery_status" class="form-control form-control-sm d-inline-block w-auto mr-1">
+                  <option value="processing">{{translate "Processing"}}</option>
+                  <option value="on the way">{{translate "On The Way"}}</option>
+                  <option value="delivered">{{translate "Delivered"}}</option>
+                  <option value="cancelled">{{translate "Cancelled"}}</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">{{translate "Update"}}</button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="5" class="text-center py-4">{{translate "No orders assigned yet"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

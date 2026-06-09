@@ -1,0 +1,149 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+
+  .tk-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+  .tk-header h1 { font-size:22px; font-weight:800; margin:0; }
+  .btn-new-ticket { display:inline-flex; align-items:center; gap:8px; background:var(--black); color:#fff; border-radius:99px; padding:10px 20px; font-size:13px; font-weight:700; text-decoration:none; transition:background .15s; }
+  .btn-new-ticket:hover { background:#333; color:#fff; }
+  .btn-new-ticket svg { width:16px; height:16px; stroke:#fff; stroke-width:2.5; fill:none; flex-shrink:0; }
+
+  /* stat cards */
+  .tk-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .tk-stat { border:1px solid var(--border); border-radius:12px; padding:14px 16px; background:#fff; }
+  .tk-stat .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#999; margin-bottom:4px; }
+  .tk-stat .value { font-size:22px; font-weight:800; }
+  .tk-stat.stat-pending .value { color:#b45309; }
+  .tk-stat.stat-open    .value { color:#1d4ed8; }
+  .tk-stat.stat-answered .value { color:#15803d; }
+  .tk-stat.stat-closed  .value { color:#6b7280; }
+
+  /* table */
+  .tk-card { border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#fff; }
+  .tk-table { width:100%; border-collapse:collapse; }
+  .tk-table thead tr { background:#f9f9f9; }
+  .tk-table th { text-align:left; padding:11px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#888; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .tk-table td { padding:14px 16px; font-size:13px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .tk-table tbody tr:last-child td { border-bottom:none; }
+  .tk-table tbody tr:hover td { background:#fafafa; }
+  .tk-subject-link { font-weight:700; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:8px; }
+  .tk-subject-link:hover { color:var(--orange); }
+  .tk-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--orange); flex-shrink:0; }
+  .tk-subject-sub { font-size:11px; color:#999; font-weight:400; margin-top:2px; }
+
+  /* badges */
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .badge-pending  { background:#fef3c7; color:#92400e; }
+  .badge-open     { background:#dbeafe; color:#1e40af; }
+  .badge-answered { background:#dcfce7; color:#166534; }
+  .badge-closed   { background:#f3f4f6; color:#4b5563; }
+  .badge-high     { background:#fee2e2; color:#991b1b; }
+  .badge-medium   { background:#fef3c7; color:#92400e; }
+  .badge-low      { background:#eff6ff; color:#1d4ed8; }
+
+  /* empty state */
+  .tk-empty { padding:64px 20px; text-align:center; }
+  .tk-empty-icon { width:64px; height:64px; border-radius:16px; background:var(--light-gray); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+  .tk-empty-icon svg { width:32px; height:32px; stroke:#aaa; stroke-width:1.5; fill:none; }
+  .tk-empty h3 { font-size:17px; font-weight:800; margin-bottom:8px; }
+  .tk-empty p { font-size:13px; color:#999; margin-bottom:20px; }
+
+  @media (max-width:900px) {
+    .account-wrap { grid-template-columns:1fr; }
+    .account-nav { position:static; }
+    .tk-stats { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:600px) {
+    .account-wrap { padding:16px 12px 48px; }
+    .tk-stats { grid-template-columns:repeat(2,1fr); gap:8px; }
+    .tk-table th:nth-child(3), .tk-table td:nth-child(3),
+    .tk-table th:nth-child(5), .tk-table td:nth-child(5) { display:none; }
+  }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "tickets"}}
+  <div>
+    <div class="tk-header">
+      <h1>{{translate "Support Tickets"}}</h1>
+      <a href="/tickets/create" class="btn-new-ticket">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Ticket
+      </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="tk-stats">
+      <div class="tk-stat"><div class="label">{{translate "Total"}}</div><div class="value">{{index .Stats "all"}}</div></div>
+      <div class="tk-stat stat-pending"><div class="label">{{translate "Pending"}}</div><div class="value">{{index .Stats "pending"}}</div></div>
+      <div class="tk-stat stat-open"><div class="label">{{translate "Open"}}</div><div class="value">{{index .Stats "open"}}</div></div>
+      <div class="tk-stat stat-answered"><div class="label">{{translate "Answered"}}</div><div class="value">{{index .Stats "answered"}}</div></div>
+    </div>
+
+    <div class="tk-card">
+      {{if .Tickets}}
+      <div style="overflow-x:auto">
+        <table class="tk-table">
+          <thead>
+            <tr>
+              <th>{{translate "Ticket"}}</th>
+              <th>{{translate "Category"}}</th>
+              <th>{{translate "Priority"}}</th>
+              <th>{{translate "Status"}}</th>
+              <th>{{translate "Replies"}}</th>
+              <th>{{translate "Updated"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Tickets}}
+            <tr>
+              <td>
+                <a href="/tickets/{{.ID}}" class="tk-subject-link">
+                  {{if eq .ClientViewed 0}}<span class="tk-unread-dot"></span>{{end}}
+                  {{.Subject}}
+                </a>
+                <div class="tk-subject-sub">#{{.Code}}</div>
+              </td>
+              <td>
+                {{if eq .Type "order"}}📦 Order
+                {{else if eq .Type "product"}}🛍️ Product
+                {{else if eq .Type "payment"}}💳 Payment
+                {{else}}💬 General{{end}}
+              </td>
+              <td>
+                {{if eq .Priority "high"}}<span class="badge badge-high">{{translate "High"}}</span>
+                {{else if eq .Priority "low"}}<span class="badge badge-low">{{translate "Low"}}</span>
+                {{else}}<span class="badge badge-medium">{{translate "Medium"}}</span>{{end}}
+              </td>
+              <td>
+                {{if eq .Status "pending"}}<span class="badge badge-pending">{{translate "Pending"}}</span>
+                {{else if eq .Status "open"}}<span class="badge badge-open">{{translate "Open"}}</span>
+                {{else if eq .Status "answered"}}<span class="badge badge-answered">{{translate "Answered"}}</span>
+                {{else if eq .Status "closed"}}<span class="badge badge-closed">{{translate "Closed"}}</span>
+                {{else}}<span class="badge">{{.Status}}</span>{{end}}
+              </td>
+              <td style="text-align:center;color:#555">{{len .Replies}}</td>
+              <td style="color:#999;white-space:nowrap">{{date_format .UpdatedAt "Jan 02, 2006"}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      {{else}}
+      <div class="tk-empty">
+        <div class="tk-empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>{{translate "No tickets yet"}}</h3>
+        <p>{{translate "Having an issue? Our support team is here to help."}}</p>
+        <a href="/tickets/create" class="btn-new-ticket">{{translate "Open a Ticket"}}</a>
+      </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}

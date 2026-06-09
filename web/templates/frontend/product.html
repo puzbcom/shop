@@ -1,0 +1,927 @@
+{{define "seo_head"}}
+{{$p := .Product}}
+{{if $p}}
+<meta name="description" content="{{if $p.MetaDescription}}{{deref_str $p.MetaDescription}}{{end}}">
+<meta name="keywords" content="{{if $p.MetaKeywords}}{{deref_str $p.MetaKeywords}}{{end}}">
+{{if .SEO}}
+<meta property="og:title" content="{{if .SEO.OGTitle}}{{.SEO.OGTitle}}{{else}}{{$p.Name}}{{end}}">
+<meta property="og:description" content="{{if .SEO.OGDescription}}{{.SEO.OGDescription}}{{else}}{{if $p.MetaDescription}}{{deref_str $p.MetaDescription}}{{end}}{{end}}">
+{{if .SEO.OGImage}}<meta property="og:image" content="{{.SEO.OGImage}}">{{end}}
+{{if .SEO.CanonicalURL}}<link rel="canonical" href="{{.SEO.CanonicalURL}}">{{end}}
+{{if eq .SEO.RobotsIndex 0}}<meta name="robots" content="noindex{{if eq .SEO.RobotsFollow 0}},nofollow{{end}}">{{end}}
+{{end}}
+{{end}}
+{{end}}
+
+{{define "extra_css"}}
+/* ── page shell ── */
+.pdp-wrap { max-width:1280px; margin:0 auto; padding:20px 20px 80px; }
+.pdp-breadcrumb { display:flex; align-items:center; gap:6px; font-size:12px; color:#595959; margin-bottom:20px; flex-wrap:wrap; }
+.pdp-breadcrumb a { color:#595959; }
+.pdp-breadcrumb a:hover { color:#222; text-decoration:underline; }
+.pdp-breadcrumb span { color:#959595; }
+
+/* ── main two-column layout ── */
+.pdp-main { display:grid; grid-template-columns:1fr 430px; gap:40px; align-items:start; }
+
+/* ── gallery: vertical thumbs LEFT + main image ── */
+.pdp-gallery { display:grid; grid-template-columns:76px 1fr; gap:10px; }
+.pdp-thumbs { display:flex; flex-direction:column; gap:8px; }
+.pdp-thumb {
+  width:72px; height:72px; border-radius:4px; overflow:hidden;
+  border:2px solid transparent; cursor:pointer; flex-shrink:0;
+  background:#f0f0f0; display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s;
+}
+.pdp-thumb.active { border-color:#222; }
+.pdp-thumb img { width:100%; height:100%; object-fit:cover; }
+.pdp-main-img-wrap { position:relative; border-radius:8px; overflow:hidden; background:#f0f0f0; aspect-ratio:1; }
+.pdp-main-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity .2s; }
+.pdp-img-arrow {
+  position:absolute; top:50%; transform:translateY(-50%);
+  background:rgba(255,255,255,.85); border:none; border-radius:50%;
+  width:36px; height:36px; cursor:pointer; font-size:18px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; z-index:2;
+  box-shadow:0 1px 4px rgba(0,0,0,.15); transition:background .15s;
+}
+.pdp-img-arrow:hover { background:#fff; }
+.pdp-img-prev { left:10px; }
+.pdp-img-next { right:10px; }
+.pdp-img-counter { position:absolute; bottom:10px; right:12px; background:rgba(0,0,0,.45); color:#fff; font-size:11px; border-radius:99px; padding:2px 8px; }
+
+/* ── info panel ── */
+.pdp-info { position:sticky; top:80px; }
+.pdp-shop-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.pdp-shop-name { font-size:13px; color:#222; font-weight:700; }
+.pdp-shop-name:hover { text-decoration:underline; }
+.pdp-star-seller {
+  display:inline-flex; align-items:center; gap:4px;
+  background:#fff7f0; border:1px solid #f1641e; border-radius:99px;
+  padding:2px 8px; font-size:11px; font-weight:700; color:#b35000;
+}
+.pdp-title { font-size:22px; font-weight:700; line-height:1.25; color:#222; margin-bottom:10px; letter-spacing:-.2px; }
+.pdp-rating-row { display:flex; align-items:center; gap:6px; margin-bottom:14px; font-size:13px; }
+.pdp-stars { color:#e8a201; font-size:13px; letter-spacing:1px; }
+.pdp-rating-num { font-weight:700; color:#222; }
+.pdp-rating-count { color:#595959; }
+.pdp-price-row { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+.pdp-price { font-size:26px; font-weight:700; color:#222; }
+.pdp-price-was { font-size:16px; color:#959595; text-decoration:line-through; }
+.pdp-sale-badge { font-size:12px; font-weight:700; color:#c0392b; background:#ffeaea; border-radius:4px; padding:2px 8px; }
+.pdp-digital-badge { font-size:12px; font-weight:700; color:#6f42c1; background:#f3ecff; border-radius:4px; padding:2px 8px; }
+.pdp-free-ship-badge { font-size:12px; font-weight:700; color:#1a6e35; background:#eafaef; border-radius:4px; padding:2px 8px; }
+.pdp-bestseller-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:#b35000; background:#fff7f0; border-radius:4px; padding:3px 8px; margin-bottom:14px; }
+.pdp-divider { border:none; border-top:1px solid #e8e8e8; margin:16px 0; }
+
+/* ── variants ── */
+.pdp-option-label { font-size:13px; font-weight:700; color:#222; margin-bottom:8px; }
+.pdp-option-label span { font-weight:400; color:#595959; }
+.pdp-option-btns { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.pdp-opt-btn {
+  padding:7px 16px; border:1.5px solid #d8d9db; border-radius:2px;
+  background:#fff; font-size:13px; cursor:pointer; transition:all .15s; color:#222;
+}
+.pdp-opt-btn:hover { border-color:#595959; }
+.pdp-opt-btn.selected { border-color:#222; background:#fff; font-weight:700; }
+
+/* ── qty ── */
+.pdp-qty-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.pdp-qty-label { font-size:13px; font-weight:700; color:#222; white-space:nowrap; }
+.pdp-qty-ctrl { display:flex; align-items:center; border:1.5px solid #d8d9db; border-radius:2px; overflow:hidden; }
+.pdp-qty-btn { background:none; border:none; width:38px; height:38px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; transition:background .1s; }
+.pdp-qty-btn:hover { background:#f4f4f4; }
+.pdp-qty-val { width:44px; text-align:center; font-size:14px; font-weight:700; border:none; border-left:1.5px solid #d8d9db; border-right:1.5px solid #d8d9db; outline:none; height:38px; }
+.pdp-stock { font-size:12px; color:#595959; }
+
+/* ── CTA buttons ── */
+.pdp-btn-cart {
+  display:block; width:100%; padding:14px; border:none; border-radius:2px;
+  background:#222; color:#fff; font-size:15px; font-weight:700;
+  cursor:pointer; text-align:center; margin-bottom:10px; transition:background .15s;
+}
+.pdp-btn-cart:hover { background:#444; }
+.pdp-btn-cart:disabled { background:#bdbdbd; cursor:not-allowed; }
+.pdp-btn-cart:disabled:hover { background:#bdbdbd; }
+.pdp-btn-fav {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; padding:13px; border:1.5px solid #222; border-radius:2px;
+  background:#fff; color:#222; font-size:14px; font-weight:700;
+  cursor:pointer; transition:background .15s; margin-bottom:14px;
+}
+.pdp-btn-fav:hover { background:#f4f4f4; }
+
+/* ── digital purchase ── */
+.pdp-digital-box { background:#faf7ff; border:1.5px solid #d8b4fe; border-radius:6px; padding:18px; margin-bottom:14px; text-align:center; }
+.pdp-btn-download { display:block; width:100%; padding:14px; border:none; border-radius:2px; background:#6f42c1; color:#fff; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; transition:background .15s; }
+.pdp-btn-download:hover { background:#5a32a3; }
+.pdp-digital-note { font-size:12px; color:#6f42c1; }
+
+/* ── auction box ── */
+.pdp-auction-box { background:#fffbf0; border:1.5px solid #e8a201; border-radius:6px; padding:18px; margin-bottom:14px; }
+.pdp-auction-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.pdp-auction-label { font-size:13px; font-weight:700; color:#b35000; }
+.pdp-auction-timer { font-size:12px; font-weight:700; color:#c0392b; background:#ffeaea; border-radius:99px; padding:3px 10px; }
+.pdp-auction-current { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+.pdp-auction-lbl { font-size:12px; color:#595959; }
+.pdp-auction-amount { font-size:28px; font-weight:700; color:#222; }
+.pdp-auction-msg { font-size:13px; border-radius:4px; padding:8px 12px; margin-bottom:12px; }
+.pdp-auction-err { background:#ffeaea; color:#c0392b; }
+.pdp-auction-ok  { background:#eafaef; color:#1a6e35; }
+.pdp-auction-form { margin-bottom:12px; }
+.pdp-auction-input-row { display:flex; align-items:center; border:1.5px solid #d8d9db; border-radius:2px; overflow:hidden; }
+.pdp-auction-currency { padding:0 10px; font-size:15px; font-weight:700; color:#595959; background:#f4f4f4; border-right:1.5px solid #d8d9db; line-height:46px; }
+.pdp-auction-input { flex:1; border:none; padding:12px; font-size:15px; outline:none; }
+.pdp-auction-btn { background:#e8a201; border:none; padding:0 18px; font-size:14px; font-weight:700; color:#fff; cursor:pointer; height:46px; transition:background .15s; white-space:nowrap; }
+.pdp-auction-btn:hover { background:#c88a00; }
+.pdp-auction-history { border-top:1px solid #e8d9a0; margin-top:14px; padding-top:12px; }
+.pdp-auction-history-title { font-size:12px; font-weight:700; color:#595959; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
+.pdp-auction-bid-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #f0e8c0; font-size:13px; }
+.pdp-auction-bidder { flex:1; color:#222; font-weight:600; }
+.pdp-auction-bid-amt { font-weight:700; color:#222; }
+.pdp-auction-bid-time { font-size:11px; color:#959595; white-space:nowrap; }
+
+/* ── shipping / trust block ── */
+.pdp-trust { background:#f7f7f7; border-radius:4px; padding:14px 16px; margin-bottom:14px; }
+.pdp-trust-row { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:#222; padding:6px 0; }
+.pdp-trust-row + .pdp-trust-row { border-top:1px solid #e8e8e8; }
+.pdp-trust-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+
+/* ── accordion ── */
+.pdp-accordion { border-top:1px solid #d8d9db; }
+.pdp-acc-item { border-bottom:1px solid #d8d9db; }
+.pdp-acc-trigger {
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; background:none; border:none; padding:16px 0;
+  font-size:14px; font-weight:700; color:#222; cursor:pointer; text-align:left;
+}
+.pdp-acc-trigger svg { flex-shrink:0; transition:transform .2s; }
+.pdp-acc-trigger.open svg { transform:rotate(180deg); }
+.pdp-acc-body { padding:0 0 16px; font-size:13px; color:#595959; line-height:1.7; display:none; }
+.pdp-acc-body.open { display:block; }
+
+/* ── item details ── */
+.pdp-item-details { margin-top:32px; }
+.pdp-item-details-title { font-size:18px; font-weight:700; color:#222; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #e8e8e8; }
+.pdp-item-details-body { font-size:14px; color:#222; line-height:1.8; }
+.pdp-item-details-body img { max-width:100%; height:auto; border-radius:4px; margin:8px 0; }
+.pdp-item-details-body p { margin-bottom:12px; }
+.pdp-item-details-body ul, .pdp-item-details-body ol { padding-left:20px; margin-bottom:12px; }
+
+/* ── reviews ── */
+.pdp-reviews { margin-top:48px; padding-top:32px; border-top:2px solid #e8e8e8; }
+.pdp-reviews-header { display:flex; align-items:center; gap:24px; margin-bottom:28px; }
+.pdp-big-rating { font-size:52px; font-weight:700; line-height:1; color:#222; }
+.pdp-rating-breakdown { flex:1; }
+.pdp-bar-row { display:flex; align-items:center; gap:8px; font-size:12px; color:#595959; margin-bottom:5px; }
+.pdp-bar-track { flex:1; height:6px; background:#e8e8e8; border-radius:3px; overflow:hidden; }
+.pdp-bar-fill { height:100%; background:#e8a201; border-radius:3px; }
+.pdp-review-list { display:flex; flex-direction:column; }
+.pdp-review { padding:20px 0; border-bottom:1px solid #e8e8e8; }
+.pdp-review:first-child { border-top:1px solid #e8e8e8; }
+.pdp-review-top { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.pdp-review-avatar { width:36px; height:36px; border-radius:50%; background:#d8d9db; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#595959; flex-shrink:0; }
+.pdp-review-meta .name { font-size:13px; font-weight:700; color:#222; }
+.pdp-review-meta .stars { color:#e8a201; font-size:12px; }
+.pdp-review-meta .date { font-size:11px; color:#959595; }
+.pdp-review-body { font-size:13px; color:#222; line-height:1.6; }
+
+/* ── seller products carousel ── */
+.pdp-seller-section { margin-top:56px; padding-top:40px; border-top:2px solid #e8e8e8; position:relative; }
+.pdp-seller-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.pdp-seller-title { font-size:22px; font-weight:700; color:#222; }
+.pdp-seller-arrow {
+  width:40px; height:40px; border-radius:50%; border:1.5px solid #d8d9db;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px; font-weight:700; color:#222;
+  transition:background .15s, border-color .15s; flex-shrink:0;
+}
+.pdp-seller-arrow:hover { background:#f4f4f4; border-color:#999; }
+.pdp-seller-track-wrap { overflow:hidden; }
+.pdp-seller-track {
+  display:flex; gap:16px;
+  transition:transform .3s ease;
+}
+.pdp-seller-card { flex:0 0 calc((100% - 80px) / 6); min-width:0; text-decoration:none; color:inherit; }
+.pdp-seller-card:hover .pdp-seller-img { transform:scale(1.03); }
+.pdp-seller-img-wrap { border-radius:4px; overflow:hidden; aspect-ratio:1; background:#f0f0f0; margin-bottom:8px; }
+.pdp-seller-img { width:100%; height:100%; object-fit:cover; transition:transform .2s; display:block; }
+.pdp-seller-name { font-size:13px; color:#222; line-height:1.4; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.pdp-seller-price { font-size:14px; font-weight:700; color:#222; }
+@media(max-width:900px){ .pdp-seller-card { flex:0 0 calc((100% - 48px) / 4); } }
+@media(max-width:600px){ .pdp-seller-card { flex:0 0 calc((100% - 24px) / 2.5); } }
+
+/* ── related searches ── */
+.pdp-related-searches { margin-top:56px; padding-top:40px; border-top:2px solid #e8e8e8; }
+.pdp-rs-title { font-size:22px; font-weight:700; color:#222; margin-bottom:20px; }
+.pdp-rs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.pdp-rs-card {
+  display:flex; align-items:center; gap:12px;
+  background:#fff; border:1px solid #e8e8e8; border-radius:8px;
+  padding:10px; cursor:pointer; text-decoration:none;
+  transition:box-shadow .15s, border-color .15s;
+}
+.pdp-rs-card:hover { border-color:#c0c0c0; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.pdp-rs-img { width:72px; height:72px; border-radius:6px; object-fit:cover; flex-shrink:0; background:#f0f0f0; }
+.pdp-rs-name { font-size:13px; font-weight:600; color:#222; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+@media(max-width:900px){ .pdp-rs-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:600px){ .pdp-rs-grid { grid-template-columns:1fr; } }
+
+/* ── reviews (etsy style) ── */
+.pdp-reviews { margin-top:56px; padding-top:40px; border-top:2px solid #e8e8e8; }
+.pdp-reviews-h { font-size:22px; font-weight:700; color:#222; margin-bottom:16px; }
+.pdp-highlights { font-size:13px; color:#222; margin-bottom:24px; line-height:2; }
+.pdp-highlights strong { font-weight:700; }
+.pdp-highlights-dot { color:#959595; margin:0 6px; }
+.pdp-rating-summary { display:flex; align-items:center; gap:32px; margin-bottom:28px; flex-wrap:wrap; }
+.pdp-big-num { font-size:52px; font-weight:700; color:#222; line-height:1; }
+.pdp-big-star { color:#e8a201; font-size:28px; margin-left:6px; }
+.pdp-big-label { font-size:12px; color:#595959; text-decoration:underline; white-space:nowrap; }
+.pdp-circles { display:flex; gap:24px; flex-wrap:wrap; }
+.pdp-circle-item { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.pdp-circle { position:relative; width:56px; height:56px; }
+.pdp-circle svg { transform:rotate(-90deg); }
+.pdp-circle-val { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#222; }
+.pdp-circle-lbl { font-size:11px; color:#595959; text-align:center; max-width:64px; line-height:1.3; }
+.pdp-recommend { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.pdp-recommend-pct { font-size:22px; font-weight:700; color:#222; }
+.pdp-recommend-lbl { font-size:11px; color:#595959; text-align:center; max-width:64px; line-height:1.3; }
+.pdp-filter-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; }
+.pdp-filter-tab {
+  padding:8px 16px; border:1px solid #d8d9db; border-radius:99px;
+  font-size:13px; color:#222; background:#fff; cursor:pointer;
+  display:flex; align-items:center; gap:4px; transition:background .1s, border-color .1s;
+}
+.pdp-filter-tab:hover { background:#f4f4f4; }
+.pdp-filter-tab.active { background:#222; color:#fff; border-color:#222; }
+.pdp-review-list { display:flex; flex-direction:column; }
+.pdp-review { padding:20px 0; border-bottom:1px solid #e8e8e8; }
+.pdp-review:first-child { border-top:1px solid #e8e8e8; }
+.pdp-review-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.pdp-review-left { display:flex; align-items:center; gap:12px; }
+.pdp-review-avatar { width:36px; height:36px; border-radius:50%; background:#d8d9db; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#595959; flex-shrink:0; }
+.pdp-review-meta .name { font-size:13px; font-weight:700; color:#222; }
+.pdp-review-stars { color:#e8a201; font-size:13px; letter-spacing:1px; }
+.pdp-review-right { text-align:right; font-size:12px; color:#595959; flex-shrink:0; }
+.pdp-review-body { font-size:13px; color:#222; line-height:1.65; margin-top:6px; }
+.pdp-review-tag { display:inline-block; border:1px solid #d8d9db; border-radius:99px; padding:2px 10px; font-size:11px; color:#595959; margin-top:6px; }
+
+/* ── related ── */
+.pdp-related { margin-top:56px; }
+.pdp-related-title { font-size:22px; font-weight:700; color:#222; margin-bottom:20px; }
+.pdp-related-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
+.pdp-rel-card { cursor:pointer; }
+.pdp-rel-card:hover .pdp-rel-img { transform:scale(1.03); }
+.pdp-rel-img-wrap { border-radius:4px; overflow:hidden; aspect-ratio:1; background:#f0f0f0; }
+.pdp-rel-img { width:100%; height:100%; object-fit:cover; transition:transform .2s; display:block; }
+.pdp-rel-name { font-size:13px; line-height:1.4; color:#222; margin:6px 0 3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.pdp-rel-price { font-size:13px; font-weight:700; color:#222; }
+
+@media(max-width:900px){
+  .pdp-main { grid-template-columns:1fr; }
+  .pdp-info { position:static; }
+  .pdp-related-grid { grid-template-columns:repeat(3,1fr); }
+  .pdp-seller-grid { grid-template-columns:repeat(3,1fr) !important; }
+}
+@media(max-width:768px){
+  .pdp-wrap { padding:12px 12px 48px; }
+  .pdp-gallery { grid-template-columns:56px 1fr; gap:8px; }
+  .pdp-thumb { width:52px; height:52px; }
+  .pdp-title { font-size:18px; }
+  .pdp-price { font-size:22px !important; }
+  .pdp-related-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .pdp-seller-grid { grid-template-columns:repeat(2,1fr) !important; }
+  .pdp-rs-grid { grid-template-columns:repeat(2,1fr) !important; }
+  .pdp-reviews { margin-top:32px; }
+  .pdp-rating-summary { flex-direction:column; gap:16px; }
+}
+@media(max-width:480px){
+  .pdp-gallery { grid-template-columns:1fr; }
+  .pdp-thumbs { flex-direction:row; overflow-x:auto; scrollbar-width:none; }
+  .pdp-thumb { width:56px; height:56px; flex-shrink:0; }
+  .pdp-related-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .pdp-option-btns { gap:6px; }
+  .pdp-opt-btn { padding:6px 12px; font-size:12px; }
+}
+{{end}}
+
+{{define "content"}}
+{{$p := .Product}}
+
+<div class="pdp-wrap">
+
+  <!-- breadcrumb -->
+  <div class="pdp-breadcrumb">
+    <a href="/">{{translate "Home"}}</a><span>›</span>
+    {{if $p.Category}}
+      <a href="/category/{{if $p.Category.Slug}}{{deref_str $p.Category.Slug}}{{else}}{{$p.Category.ID}}{{end}}">{{$p.Category.Name}}</a><span>›</span>
+    {{end}}
+    <span>{{$p.Name}}</span>
+  </div>
+
+  <!-- main two-column layout -->
+  <div class="pdp-main">
+
+    <!-- ── Left column: gallery + item details ── -->
+    <div class="pdp-left">
+
+    <!-- ── Gallery ── -->
+    <div class="pdp-gallery">
+
+      <!-- vertical thumbnail strip -->
+      <div class="pdp-thumbs" id="pdp-thumbs">
+        {{if $p.ThumbnailImg}}
+        <div class="pdp-thumb active" data-src="{{uploaded_asset $p.ThumbnailImg}}" data-variation-image="{{deref_str $p.ThumbnailImg}}" onclick="pdpSetImg(this)">
+          <img src="{{uploaded_asset $p.ThumbnailImg}}" alt="{{str_default $p.ThumbnailImgAlt $p.Name}}">
+        </div>
+        {{end}}
+        {{if $p.Photos}}
+          {{range (split_comma (deref_str $p.Photos))}}
+          {{if .}}
+          <div class="pdp-thumb" data-src="{{uploaded_asset .}}" data-variation-image="{{.}}" onclick="pdpSetImg(this)">
+            <img src="{{uploaded_asset .}}" alt="" loading="lazy">
+          </div>
+          {{end}}
+          {{end}}
+        {{end}}
+      </div>
+
+      <!-- main image -->
+      <div class="pdp-main-img-wrap" id="pdp-main-wrap">
+        {{if $p.ThumbnailImg}}
+        <img id="pdp-main-img" src="{{uploaded_asset $p.ThumbnailImg}}" alt="{{str_default $p.ThumbnailImgAlt $p.Name}}">
+        {{else}}
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:80px;">🛍️</div>
+        {{end}}
+        <button class="pdp-img-arrow pdp-img-prev" onclick="pdpStep(-1)" id="pdp-prev" style="display:none">&#8249;</button>
+        <button class="pdp-img-arrow pdp-img-next" onclick="pdpStep(1)" id="pdp-next" style="display:none">&#8250;</button>
+        <span class="pdp-img-counter" id="pdp-counter" style="display:none"></span>
+      </div>
+
+    </div><!-- /gallery -->
+
+    <!-- ── Item details ── -->
+    {{if $p.Description}}
+    <div class="pdp-item-details">
+      <h2 class="pdp-item-details-title">{{translate "Item details"}}</h2>
+      <div class="pdp-item-details-body">
+        {{safe_html (deref_str $p.Description)}}
+      </div>
+    </div>
+    {{end}}
+
+    </div><!-- /pdp-left -->
+
+    <!-- ── Info panel ── -->
+    <div class="pdp-info">
+
+      <!-- shop + star seller -->
+      <div class="pdp-shop-row">
+        <a href="/shops" class="pdp-shop-name">{{if $p.AddedBy}}{{$p.AddedBy}}{{else}}{{translate "Our Shop"}}{{end}}</a>
+        <span class="pdp-star-seller">{{translate "⭐ Star Seller"}}</span>
+      </div>
+
+      <!-- title -->
+      <h1 class="pdp-title">{{$p.Name}}</h1>
+
+      <!-- rating -->
+      {{if gt $p.Rating 0.0}}
+      <div class="pdp-rating-row">
+        <span class="pdp-stars">{{range seq (round_int $p.Rating)}}★{{end}}</span>
+        <span class="pdp-rating-num">{{printf "%.1f" $p.Rating}}</span>
+        <span class="pdp-rating-count">({{len $p.Reviews}} {{translate "reviews)"}}</span>
+        {{if gt $p.NumOfSale 0}}<span style="color:#959595">·</span><span style="font-size:13px;color:#595959">{{$p.NumOfSale}} {{translate "sales"}}</span>{{end}}
+      </div>
+      {{end}}
+
+      <!-- bestseller badge -->
+      {{if gt $p.NumOfSale 100}}
+      <div class="pdp-bestseller-badge">{{translate "🏆 Bestseller"}}</div>
+      {{end}}
+
+      <!-- price -->
+      <div class="pdp-price-row">
+        <span class="pdp-price" id="display-price">
+          {{if gt $p.Discount 0.0}}{{format_price (subf $p.UnitPrice $p.Discount)}}{{else}}{{format_price $p.UnitPrice}}{{end}}
+        </span>
+        {{if gt $p.Discount 0.0}}
+        <span class="pdp-price-was">{{format_price $p.UnitPrice}}</span>
+        <span class="pdp-sale-badge">{{translate "Sale"}}</span>
+        {{end}}
+        {{if eq $p.Digital 1}}<span class="pdp-digital-badge">{{translate "⬇ Digital"}}</span>{{end}}
+        {{if and (eq $p.Digital 0) (eq (deref_str $p.ShippingType) "free")}}<span class="pdp-free-ship-badge">{{translate "✓ Free shipping"}}</span>{{end}}
+      </div>
+
+      <hr class="pdp-divider">
+
+      <!-- variant selectors -->
+      {{if eq $p.VariantProduct 1}}
+      <script id="variant-data" type="application/json">
+      {"choices":{{if $p.ChoiceOptions}}{{safe_js (deref_str $p.ChoiceOptions)}}{{else}}[]{{end}},"stocks":[{{range $i,$s:=$p.Stocks}}{{if $i}},{{end}}{"variant":"{{$s.Variant}}","price":{{$s.Price}},"qty":{{$s.Qty}},"image":"{{if $s.VariantImage}}{{deref_str $s.VariantImage}}{{end}}"}{{end}}]}
+      </script>
+      <div id="variant-selectors"></div>
+      {{end}}
+
+      {{if eq $p.AuctionProduct 1}}
+      <!-- ── Auction box ── -->
+      <div class="pdp-auction-box">
+        <div class="pdp-auction-header">
+          <span class="pdp-auction-label">{{translate "🔨 Live Auction"}}</span>
+          {{if $p.AuctionEndAt}}
+          <span class="pdp-auction-timer" id="auction-timer" data-end="{{.AuctionEndUnix}}">
+            {{if .AuctionEnded}}Auction ended{{else}}Loading…{{end}}
+          </span>
+          {{end}}
+        </div>
+        <div class="pdp-auction-current">
+          <span class="pdp-auction-lbl">{{translate "Current bid"}}</span>
+          <span class="pdp-auction-amount" id="current-bid-display">
+            {{if .TopBid}}{{format_price .TopBid.Amount}}{{else if $p.AuctionStartPrice}}{{format_price (deref_float $p.AuctionStartPrice)}}{{else}}—{{end}}
+          </span>
+        </div>
+        {{if $p.AuctionMinBidIncrement}}
+        <div style="font-size:12px;color:#595959;margin-bottom:12px;">{{translate "Min increment:"}} {{format_price (deref_float $p.AuctionMinBidIncrement)}}</div>
+        {{end}}
+        {{if not .AuctionEnded}}
+        {{$bidErr := query "bid_error"}}
+        {{$bidMin := query "min"}}
+        {{if eq $bidErr "low"}}<div class="pdp-auction-msg pdp-auction-err">{{translate "Your bid is too low. Minimum:"}} {{$bidMin}}</div>{{end}}
+        {{if eq $bidErr "ended"}}<div class="pdp-auction-msg pdp-auction-err">{{translate "This auction has ended."}}</div>{{end}}
+        {{if eq $bidErr "invalid"}}<div class="pdp-auction-msg pdp-auction-err">{{translate "Please enter a valid amount."}}</div>{{end}}
+        {{if eq $bidErr "own_product"}}<div class="pdp-auction-msg pdp-auction-err">{{translate "You cannot bid on your own auction."}}</div>{{end}}
+        {{if eq (query "bid_ok") "1"}}<div class="pdp-auction-msg pdp-auction-ok">{{translate "✓ Your bid was placed successfully!"}}</div>{{end}}
+        {{if is_authenticated}}
+        <form method="POST" action="/product/{{$p.Slug}}/bid" class="pdp-auction-form">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="pdp-auction-input-row">
+            <span class="pdp-auction-currency">$</span>
+            <input type="number" name="amount" step="0.01" min="0" placeholder="{{translate "Your bid"}}" class="pdp-auction-input" required>
+            <button type="submit" class="pdp-auction-btn">{{translate "Place Bid"}}</button>
+          </div>
+        </form>
+        {{else}}
+        <a href="/login" class="pdp-btn-cart" style="display:block;text-align:center;text-decoration:none;">{{translate "Sign in to bid"}}</a>
+        {{end}}
+        {{else}}
+        <div class="pdp-auction-msg pdp-auction-err" style="margin-top:0">{{translate "This auction has ended."}}</div>
+        {{end}}
+        {{if .AuctionBids}}
+        <div class="pdp-auction-history">
+          <div class="pdp-auction-history-title">{{translate "Bid history ("}}{{len .AuctionBids}})</div>
+          {{range .AuctionBids}}
+          <div class="pdp-auction-bid-row">
+            <span class="pdp-auction-bidder">{{if .User}}{{.User.Name}}{{else}}{{translate "Bidder"}}{{end}}</span>
+            <span class="pdp-auction-bid-amt">{{format_price .Amount}}</span>
+            <span class="pdp-auction-bid-time">{{date_format .CreatedAt "Jan 2, 15:04"}}</span>
+          </div>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+
+      {{else if eq $p.Digital 1}}
+      <!-- Digital download -->
+      <div class="pdp-digital-box">
+        <div style="font-size:36px;margin-bottom:8px;">💾</div>
+        <button class="pdp-btn-download" onclick="addToCart({{$p.ID}})">{{translate "⬇ Buy & Download —"}} {{if gt $p.Discount 0.0}}{{format_price (subf $p.UnitPrice $p.Discount)}}{{else}}{{format_price $p.UnitPrice}}{{end}}</button>
+        <div class="pdp-digital-note">{{translate "Instant delivery · No shipping needed"}}{{if $p.FileName}} · {{deref_str $p.FileName}}{{end}}</div>
+      </div>
+      <button class="pdp-btn-fav">{{translate "♡ Add to favourites"}}</button>
+
+      {{else}}
+      <!-- Physical product -->
+      <div class="pdp-qty-row">
+        <span class="pdp-qty-label">{{translate "Quantity"}}</span>
+        <div class="pdp-qty-ctrl">
+          <button class="pdp-qty-btn" onclick="adjustQty(-1)">−</button>
+          <input class="pdp-qty-val" id="qty" type="number" value="{{$p.MinQty}}" min="{{$p.MinQty}}" max="{{$p.CurrentStock}}" data-min-qty="{{$p.MinQty}}">
+          <button class="pdp-qty-btn" onclick="adjustQty(1)">+</button>
+        </div>
+        <span class="pdp-stock" id="stock-display">{{if gt $p.CurrentStock 0}}{{$p.CurrentStock}} {{translate "available"}}{{end}}</span>
+      </div>
+      {{if gt $p.MinQty 1}}
+      <div class="pdp-moq-note" style="font-size:.85rem;color:#6b7280;margin-top:4px;">{{translate "Minimum order quantity"}}: {{$p.MinQty}}</div>
+      {{end}}
+
+      <button class="pdp-btn-cart" id="add-to-cart-btn" onclick="addToCart({{$p.ID}})"{{if le $p.CurrentStock 0}} disabled{{end}}>{{if le $p.CurrentStock 0}}{{translate "Out of stock"}}{{else}}{{translate "Add to cart"}}{{end}}</button>
+      <button class="pdp-btn-fav">{{translate "♡ Add to favourites"}}</button>
+      {{end}}
+
+      <!-- trust / shipping block -->
+      <div class="pdp-trust">
+        {{if eq $p.Digital 1}}
+        <div class="pdp-trust-row"><span class="pdp-trust-icon">⚡</span><div><strong>{{translate "Instant digital download"}}</strong><br>{{translate "Files available immediately after payment"}}</div></div>
+        <div class="pdp-trust-row"><span class="pdp-trust-icon">♾️</span><div>{{translate "Lifetime access to your files"}}</div></div>
+        <div class="pdp-trust-row"><span class="pdp-trust-icon">🔒</span><div>{{translate "Secure and encrypted checkout"}}</div></div>
+        {{else}}
+        <div class="pdp-trust-row">
+          <span class="pdp-trust-icon">🚚</span>
+          <div>
+            <strong>{{if eq (deref_str $p.ShippingType) "free"}}{{translate "Free shipping"}}{{else}}{{translate "Shipping available"}}{{end}}</strong><br>
+            {{if $p.EstShippingDays}}Estimated delivery: <strong>{{deref_int $p.EstShippingDays}} {{translate "days"}}</strong>{{else}}Delivery times vary by location{{end}}
+          </div>
+        </div>
+        <div class="pdp-trust-row"><span class="pdp-trust-icon">↩️</span><div>{{translate "Returns & exchanges accepted within 30 days"}}</div></div>
+        <div class="pdp-trust-row"><span class="pdp-trust-icon">🔒</span><div>{{translate "Secure and encrypted checkout"}}</div></div>
+        {{end}}
+      </div>
+
+      <!-- accordion sections -->
+      <div class="pdp-accordion">
+
+        <div class="pdp-acc-item">
+          <button class="pdp-acc-trigger" onclick="pdpToggle(this)">
+            Shipping and returns
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="pdp-acc-body">
+            {{if eq $p.Digital 1}}
+            <p>{{translate "This is a digital product. No physical shipping is required. Your files will be available for download immediately after payment is confirmed."}}</p>
+            {{else}}
+            <p>{{if eq (deref_str $p.ShippingType) "free"}}Free shipping on this item.{{else}}Standard shipping rates apply.{{end}}
+            {{if $p.EstShippingDays}}Estimated delivery time is {{deref_int $p.EstShippingDays}} business days.{{end}}</p>
+            <p>{{translate "Returns and exchanges accepted within 30 days. Contact us if you have any issues with your order."}}</p>
+            {{end}}
+          </div>
+        </div>
+
+        <div class="pdp-acc-item">
+          <button class="pdp-acc-trigger" onclick="pdpToggle(this)">
+            Help &amp; FAQs
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="pdp-acc-body">
+            <p>{{translate "Have a question? Use the contact form or message the seller directly. We typically respond within 24 hours."}}</p>
+          </div>
+        </div>
+
+      </div><!-- /accordion -->
+
+    </div><!-- /info panel -->
+  </div><!-- /pdp-main -->
+
+  <!-- ── Products from this Seller ── -->
+  {{if .SellerProducts}}
+  <div class="pdp-seller-section">
+    <div class="pdp-seller-header">
+      <h2 class="pdp-seller-title">{{translate "Products from this Seller"}}</h2>
+      <button class="pdp-seller-arrow" onclick="sellerScroll()" id="seller-arrow">&#8250;</button>
+    </div>
+    <div class="pdp-seller-track-wrap">
+      <div class="pdp-seller-track" id="seller-track">
+        {{range .SellerProducts}}
+        <a href="/product/{{.Slug}}" class="pdp-seller-card">
+          <div class="pdp-seller-img-wrap">
+            {{if .ThumbnailImg}}
+            <img class="pdp-seller-img" src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+            {{else}}
+            <div class="pdp-seller-img" style="display:flex;align-items:center;justify-content:center;font-size:32px;">🛍️</div>
+            {{end}}
+          </div>
+          <div class="pdp-seller-name">{{.Name}}</div>
+          <div class="pdp-seller-price">{{format_price .UnitPrice}}</div>
+        </a>
+        {{end}}
+      </div>
+    </div>
+  </div>
+  {{end}}
+
+  <!-- ── Related searches ── -->
+  {{if .RelatedSearches}}
+  <div class="pdp-related-searches">
+    <h2 class="pdp-rs-title">{{translate "Related searches"}}</h2>
+    <div class="pdp-rs-grid">
+      {{range .RelatedSearches}}
+      <a href="/search?q={{.Name}}" class="pdp-rs-card">
+        {{if .ThumbnailImg}}
+        <img class="pdp-rs-img" src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+        {{else}}
+        <div class="pdp-rs-img" style="display:flex;align-items:center;justify-content:center;font-size:28px;">🛍️</div>
+        {{end}}
+        <span class="pdp-rs-name">{{.Name}}</span>
+      </a>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
+  <!-- ── Reviews ── -->
+  {{if $p.Reviews}}
+  <div class="pdp-reviews">
+    <h2 class="pdp-reviews-h">{{translate "Reviews for this item"}}</h2>
+
+    <!-- Buyer highlights -->
+    {{if .ReviewHighlights}}
+    <div class="pdp-highlights">
+      <strong>{{translate "Buyer highlights, summarized by AI:"}}</strong>
+      {{range $i, $h := .ReviewHighlights}}{{if $i}}<span class="pdp-highlights-dot">·</span>{{end}}{{$h}}{{end}}
+    </div>
+    {{end}}
+
+    <!-- Rating summary + circles -->
+    <div class="pdp-rating-summary">
+      <div>
+        <span class="pdp-big-num">{{printf "%.1f" .ReviewAvg}}</span>
+        <span class="pdp-big-star">★</span>
+        <div class="pdp-big-label">{{translate "Item average"}}<br>({{.ReviewCount}} {{translate "reviews)"}}</div>
+      </div>
+
+      <div class="pdp-circles">
+        <!-- Item quality circle -->
+        {{$qpct := mulf .ReviewAvg 20.0}}
+        <div class="pdp-circle-item">
+          <div class="pdp-circle">
+            <svg width="56" height="56" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#e8e8e8" stroke-width="4"/>
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#e8a201" stroke-width="4"
+                stroke-dasharray="{{printf "%.1f" (mulf $qpct 1.382)}} 138.2"
+                stroke-linecap="round"/>
+            </svg>
+            <div class="pdp-circle-val">{{printf "%.1f" .ReviewAvg}}</div>
+          </div>
+          <div class="pdp-circle-lbl">{{translate "Item quality"}}</div>
+        </div>
+
+        <!-- Buyers recommend -->
+        <div class="pdp-circle-item">
+          <div class="pdp-circle">
+            <svg width="56" height="56" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#e8e8e8" stroke-width="4"/>
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#e8a201" stroke-width="4"
+                stroke-dasharray="{{printf "%.1f" (mulf (itof .BuyersRecommend) 1.382)}} 138.2"
+                stroke-linecap="round"/>
+            </svg>
+            <div class="pdp-circle-val" style="font-size:11px">{{.BuyersRecommend}}%</div>
+          </div>
+          <div class="pdp-circle-lbl">{{translate "Buyers recommend"}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="pdp-filter-tabs">
+      <button class="pdp-filter-tab active" onclick="pdpFilter(this,'all')">{{translate "Suggested"}}</button>
+      {{range $i, $pct := .BarPcts}}
+      {{if gt $pct 0.0}}
+      <button class="pdp-filter-tab" onclick="pdpFilter(this,'{{sub 5 $i}}')">{{sub 5 $i}} ★</button>
+      {{end}}
+      {{end}}
+    </div>
+
+    <!-- Review list -->
+    <div class="pdp-review-list" id="pdp-review-list">
+      {{range $p.Reviews}}
+      {{$reviewerName := "Verified buyer"}}
+      {{if .CustomReviewerName}}{{$reviewerName = deref_str .CustomReviewerName}}{{else if .User}}{{$reviewerName = .User.Name}}{{end}}
+      <div class="pdp-review" data-rating="{{.Rating}}">
+        <div class="pdp-review-header">
+          <div class="pdp-review-left">
+            <div class="pdp-review-avatar">{{first_char $reviewerName}}</div>
+            <div class="pdp-review-meta">
+              <div class="name">{{$reviewerName}}</div>
+              <div class="pdp-review-stars">
+                {{$ratingVal := .Rating}}{{range $i := iterate 5}}{{if le (add $i 1) $ratingVal}}★{{else}}☆{{end}}{{end}}
+                <strong style="font-size:12px;color:#222;margin-left:4px;">{{$ratingVal}}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="pdp-review-right">
+            <div>{{date_format .CreatedAt "Jan 2, 2006"}}</div>
+            <span class="pdp-review-tag">{{translate "This item"}}</span>
+          </div>
+        </div>
+        <div class="pdp-review-body">{{.Comment}}</div>
+      </div>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
+  <!-- ── Related ── -->
+  {{if .Related}}
+  <div class="pdp-related">
+    <h2 class="pdp-related-title">{{translate "You may also like"}}</h2>
+    <div class="pdp-related-grid">
+      {{range .Related}}
+      <a href="/product/{{.Slug}}" class="pdp-rel-card">
+        <div class="pdp-rel-img-wrap">
+          {{if .ThumbnailImg}}
+          <img class="pdp-rel-img" src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+          {{else}}
+          <div class="pdp-rel-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;">🛍️</div>
+          {{end}}
+        </div>
+        <div class="pdp-rel-name">{{.Name}}</div>
+        <div class="pdp-rel-price">{{format_price .UnitPrice}}</div>
+      </a>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
+</div><!-- /pdp-wrap -->
+
+<script>
+// ── Auction countdown ─────────────────────────────────────────
+(function(){
+  var el = document.getElementById('auction-timer');
+  if (!el) return;
+  var endTs = parseInt(el.dataset.end, 10) * 1000;
+  function tick() {
+    var diff = endTs - Date.now();
+    if (diff <= 0) { el.textContent = 'Auction ended'; return; }
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    el.textContent = (d > 0 ? d + 'd ' : '') +
+      String(h).padStart(2,'0') + ':' +
+      String(m).padStart(2,'0') + ':' +
+      String(s).padStart(2,'0');
+    setTimeout(tick, 1000);
+  }
+  tick();
+})();
+
+// ── Gallery ──────────────────────────────────────────────────
+(function(){
+  var thumbs = Array.from(document.querySelectorAll('.pdp-thumb'));
+  if (!thumbs.length) return;
+  var mainImg = document.getElementById('pdp-main-img');
+  var prev = document.getElementById('pdp-prev');
+  var next = document.getElementById('pdp-next');
+  var counter = document.getElementById('pdp-counter');
+  var cur = 0;
+
+  function show(idx) {
+    thumbs[cur].classList.remove('active');
+    cur = (idx + thumbs.length) % thumbs.length;
+    thumbs[cur].classList.add('active');
+    if (mainImg) mainImg.src = thumbs[cur].dataset.src;
+    counter.textContent = (cur+1) + ' / ' + thumbs.length;
+    thumbs[cur].scrollIntoView({block:'nearest'});
+  }
+
+  if (thumbs.length > 1) {
+    prev.style.display = next.style.display = counter.style.display = '';
+    prev.onclick = function(){ show(cur-1); };
+    next.onclick = function(){ show(cur+1); };
+  }
+
+  window.pdpSetImg = function(el) { show(thumbs.indexOf(el)); };
+  window.pdpStep   = function(d)  { show(cur+d); };
+
+  // Show the gallery photo matching a variant's stored image path (mirrors old.cyshop.com).
+  // Matches the raw path against each thumb's data-variation-image; if none match, resets to the first slide.
+  window.pdpShowVariantImage = function(path) {
+    if (!path) return;
+    var idx = thumbs.findIndex(function(t){ return String(t.dataset.variationImage) === String(path); });
+    show(idx >= 0 ? idx : 0);
+  };
+
+  // initialise counter
+  if (thumbs.length > 1) counter.textContent = '1 / ' + thumbs.length;
+})();
+
+// ── Accordion ────────────────────────────────────────────────
+window.pdpToggle = function(btn) {
+  var body = btn.nextElementSibling;
+  var open = body.classList.toggle('open');
+  btn.classList.toggle('open', open);
+};
+
+// ── Qty ─────────────────────────────────────────────────────
+function adjustQty(d) {
+  var el = document.getElementById('qty');
+  if (!el) return;
+  var min = parseInt(el.getAttribute('data-min-qty')) || 1;
+  el.value = Math.max(min, (parseInt(el.value) || min) + d);
+}
+
+// ── Add to cart ──────────────────────────────────────────────
+function addToCart(id) {
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/cart/add';
+  var qtyEl = document.getElementById('qty');
+  var fields = [['_token','{{csrf_token}}'],['product_id',id],['quantity',qtyEl?qtyEl.value:1]];
+  var varInput = document.getElementById('selected-variant');
+  if (varInput && varInput.value) fields.push(['variant', varInput.value]);
+  fields.forEach(function(p){ var i=document.createElement('input'); i.type='hidden'; i.name=p[0]; i.value=p[1]; form.appendChild(i); });
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// ── Seller carousel ──────────────────────────────────────────
+(function(){
+  var track = document.getElementById('seller-track');
+  if (!track) return;
+  var pos = 0;
+  var cardWidth = function(){ return track.children[0] ? track.children[0].offsetWidth + 16 : 200; };
+  var maxPos = function(){ return track.scrollWidth - track.parentElement.offsetWidth; };
+  window.sellerScroll = function(){
+    pos += cardWidth() * 3;
+    if (pos >= maxPos()) pos = 0;
+    track.style.transform = 'translateX(-' + Math.min(pos, maxPos()) + 'px)';
+  };
+})();
+
+// ── Review filter tabs ───────────────────────────────────────
+window.pdpFilter = function(btn, rating) {
+  document.querySelectorAll('.pdp-filter-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('#pdp-review-list .pdp-review').forEach(function(r){
+    r.style.display = (rating === 'all' || r.dataset.rating === String(rating)) ? '' : 'none';
+  });
+};
+
+// ── Variant selectors ────────────────────────────────────────
+(function(){
+  var dataEl = document.getElementById('variant-data');
+  if (!dataEl) return;
+  var data; try { data = JSON.parse(dataEl.textContent); } catch(e){ return; }
+  // Fallback: if no structured choices (e.g. 1688 import), build a flat selector from stock variants
+  if (!data.choices || !data.choices.length) {
+    if (!data.stocks || !data.stocks.length) return;
+    data.choices = [{ attribute_name: 'Variant', values: data.stocks.map(function(s){ return s.variant; }) }];
+  }
+
+  var stockMap = {};
+  data.stocks.forEach(function(s){ stockMap[s.variant]=s; });
+
+  var wrap = document.getElementById('variant-selectors');
+  var selects = [];
+
+  data.choices.forEach(function(choice, idx) {
+    var group = document.createElement('div');
+    group.style.marginBottom = '16px';
+
+    var lbl = document.createElement('div');
+    lbl.className = 'pdp-option-label';
+    lbl.textContent = choice.attribute_name;
+    group.appendChild(lbl);
+
+    var row = document.createElement('div');
+    row.className = 'pdp-option-btns';
+
+    var btns = [];
+    choice.values.forEach(function(val, vi) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pdp-opt-btn';
+      btn.textContent = val;
+      btn.addEventListener('click', function(){
+        btns.forEach(function(b){ b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selects[idx] = val;
+        updateVariant();
+      });
+      row.appendChild(btn);
+      btns.push(btn);
+      if (vi===0) btn.click();
+    });
+
+    var hidden = document.createElement('input');
+    hidden.type='hidden'; hidden.id='selected-variant'; hidden.name='variant';
+    group.appendChild(row);
+    group.appendChild(hidden);
+    wrap.appendChild(group);
+  });
+
+  function updateVariant() {
+    // Try variant key formats in order of preference:
+    //   1. "Color-Red | Size-S"  (current)
+    //   2. "Color-Red-Size-S"    (interim, name-prefixed but '-' joined)
+    //   3. "Red-S"               (legacy plain values)
+    var parts = selects.map(function(v, i){
+      var nm = (data.choices[i] && data.choices[i].attribute_name) || ('Opt'+i);
+      return nm + '-' + v;
+    });
+    var newKey  = parts.join(' | ');
+    var midKey  = parts.join('-');
+    var oldKey  = selects.join('-');
+    var key = newKey;
+    if (!stockMap[key] && stockMap[midKey]) key = midKey;
+    if (!stockMap[key] && stockMap[oldKey]) key = oldKey;
+    var hid = document.getElementById('selected-variant');
+    if (hid) hid.value = key;
+    var s = stockMap[key];
+    if (s) {
+      var pr = document.getElementById('display-price');
+      if (pr) pr.textContent = '$'+parseFloat(s.price).toFixed(2);
+      var st = document.getElementById('stock-display');
+      if (st) st.textContent = s.qty>0 ? s.qty+' available' : 'Out of stock';
+      var q = document.getElementById('qty');
+      if (q) q.max = s.qty;
+      var cartBtn = document.getElementById('add-to-cart-btn');
+      if (cartBtn) {
+        cartBtn.disabled = s.qty<=0;
+        cartBtn.textContent = s.qty<=0 ? 'Out of stock' : 'Add to cart';
+      }
+      if (s.image && window.pdpShowVariantImage) window.pdpShowVariantImage(s.image);
+    }
+  }
+})();
+</script>
+
+{{end}}

@@ -1,0 +1,90 @@
+{{define "extra_css"}}
+  .confirmed-wrap { max-width:680px; margin:60px auto; padding:0 24px 80px; text-align:center; }
+  .confirmed-icon { font-size:80px; margin-bottom:20px; }
+  .confirmed-wrap h1 { font-size:32px; font-weight:800; margin-bottom:10px; }
+  .confirmed-wrap p { font-size:15px; color:var(--gray); margin-bottom:32px; }
+  .order-card { border:1px solid var(--border); border-radius:14px; padding:28px; text-align:left; margin-bottom:28px; }
+  .order-card h3 { font-size:15px; font-weight:800; margin-bottom:16px; }
+  .order-ref { font-family:monospace; background:var(--light-gray); border-radius:8px; padding:8px 14px; font-size:15px; display:inline-block; margin-bottom:16px; }
+  .order-line { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+  .order-thumb { width:44px; height:44px; border-radius:8px; background:var(--light-gray); flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .order-thumb img { width:100%; height:100%; object-fit:cover; }
+  .order-item-name { font-size:13px; font-weight:600; flex:1; }
+  .order-item-qty { font-size:12px; color:var(--gray); }
+  .order-item-price { font-size:13px; font-weight:700; }
+  .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn-primary { background:var(--black); color:#fff; border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; text-decoration:none; }
+  .btn-outline { border:2px solid var(--border); border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; text-decoration:none; color:var(--black); }
+  .btn-primary:hover { background:#333; }
+  .btn-outline:hover { border-color:var(--black); }
+  .btn-download { display:inline-flex; align-items:center; gap:6px; background:#0ea5e9; color:#fff; border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none; margin-left:8px; vertical-align:middle; }
+  .btn-download:hover { background:#0284c7; color:#fff; }
+  .digital-note { font-size:13px; background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:12px 16px; margin-bottom:16px; color:#0369a1; font-weight:600; }
+  .steps { display:flex; gap:0; justify-content:center; margin-bottom:40px; }
+  .step { display:flex; flex-direction:column; align-items:center; flex:1; max-width:140px; }
+  .step-dot { width:32px; height:32px; border-radius:50%; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; margin-bottom:6px; }
+  .step-label { font-size:11px; color:var(--gray); font-weight:600; text-align:center; }
+  .step-line { flex:1; height:2px; background:var(--orange); align-self:center; margin-bottom:22px; max-width:60px; }
+{{end}}
+{{define "content"}}
+<div class="confirmed-wrap">
+  <div class="confirmed-icon">🎉</div>
+  <h1>{{translate "Order confirmed!"}}</h1>
+  <p>{{translate "Thank you for shopping with us. We'll send you updates as your order is prepared."}}</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-dot">✓</div>
+      <div class="step-label">{{translate "Order placed"}}</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot" style="background:var(--border);color:var(--gray)">2</div>
+      <div class="step-label">{{translate "Processing"}}</div>
+    </div>
+    <div class="step-line" style="background:var(--border)"></div>
+    <div class="step">
+      <div class="step-dot" style="background:var(--border);color:var(--gray)">3</div>
+      <div class="step-label">{{translate "Shipped"}}</div>
+    </div>
+    <div class="step-line" style="background:var(--border)"></div>
+    <div class="step">
+      <div class="step-dot" style="background:var(--border);color:var(--gray)">4</div>
+      <div class="step-label">{{translate "Delivered"}}</div>
+    </div>
+  </div>
+
+  {{if .Order}}
+  <div class="order-card">
+    <h3>{{translate "Order #"}}{{.Order.ID}} {{translate "details"}}</h3>
+    <div class="order-ref">#{{.Order.ID}}</div>
+    {{range .Order.Orders}}
+      {{$subID := .ID}}
+      {{range .OrderDetails}}
+      <div class="order-line">
+        <div class="order-thumb">
+          {{if .VariantImage}}<img src="{{uploaded_asset .VariantImage}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else if and .Product .Product.ThumbnailImg}}<img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else}}&#x1F6CD;{{end}}
+        </div>
+        <div class="order-item-name">
+          {{if .Product}}{{.Product.Name}}{{end}}
+          {{if and .Product (eq .Product.Digital 1)}}
+          <a href="/download/{{$subID}}/{{.ID}}" class="btn-download">{{translate "⬇ Download"}}</a>
+          {{end}}
+        </div>
+        {{if .Quantity}}<div class="order-item-qty">&#xD7; {{deref_int .Quantity}}</div>{{end}}
+        {{if .Price}}<div class="order-item-price">{{format_price (mul (deref_float .Price) (itof (deref_int .Quantity)))}}</div>{{end}}
+      </div>
+      {{end}}
+    {{end}}
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px;display:flex;justify-content:space-between;font-size:15px;font-weight:800">
+      <span>{{translate "Total paid"}}</span><span>{{format_price .Order.GrandTotal}}</span>
+    </div>
+  </div>
+  {{end}}
+
+  <div class="btn-row">
+    <a href="/purchase_history" class="btn-primary">{{translate "View my orders"}}</a>
+    <a href="/products" class="btn-outline">{{translate "Continue shopping"}}</a>
+  </div>
+</div>
+{{end}}

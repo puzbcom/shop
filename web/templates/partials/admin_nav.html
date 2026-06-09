@@ -1,0 +1,42 @@
+{{define "partials/admin_nav"}}
+<div class="aiz-topbar d-flex align-items-stretch bg-white border-bottom px-4" style="height:60px">
+    <div class="d-flex align-items-center mr-auto">
+        <a href="/admin" class="aiz-brand d-flex align-items-center mr-5">
+            <img src="{{uploaded_asset (get_setting "site_icon")}}" alt="{{get_setting "website_name"}}" height="28" class="mr-2">
+            <span class="fw-700 fs-15 text-dark">{{get_setting "website_name"}}</span>
+        </a>
+        <button class="btn btn-sm btn-icon btn-light" id="sidebar-toggle">
+            <i class="las la-bars fs-18"></i>
+        </button>
+    </div>
+    <div class="d-flex align-items-center">
+        <a href="/" target="_blank" class="btn btn-sm btn-light mr-2" title="{{translate "Visit site"}}">
+            <i class="las la-external-link-alt"></i>
+        </a>
+        {{$activeLang := current_lang}}{{$langs := get_languages}}
+        {{if gt (len $langs) 1}}
+        <div class="dropdown mr-2">
+            <button class="btn btn-sm btn-light d-flex align-items-center dropdown-toggle" data-toggle="dropdown" title="{{translate "Language"}}">
+                <i class="las la-globe fs-16 mr-1"></i><span class="fs-13 text-uppercase">{{$activeLang}}</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right shadow-sm" style="max-height:340px;overflow-y:auto">
+                {{range $langs}}<a class="dropdown-item fs-13{{if eq .Code $activeLang}} active{{end}}" href="/set-language?lang={{.Code}}">{{.Name}}</a>{{end}}
+            </div>
+        </div>
+        {{end}}
+        <div class="dropdown">
+            <button class="btn btn-sm btn-light d-flex align-items-center dropdown-toggle" data-toggle="dropdown">
+                <span class="avatar avatar-xs rounded-circle mr-2 bg-primary text-white">
+                    {{if current_user}}{{slice (current_user).Name 0 1}}{{end}}
+                </span>
+                <span class="d-none d-md-inline fs-13">{{if current_user}}{{(current_user).Name}}{{end}}</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right shadow-sm">
+                <a class="dropdown-item" href="/profile"><i class="las la-user mr-2"></i>{{translate "Profile"}}</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/logout"><i class="las la-sign-out-alt mr-2"></i>{{translate "Logout"}}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

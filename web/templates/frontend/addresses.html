@@ -1,0 +1,219 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .page-title { font-size:22px; font-weight:800; margin-bottom:24px; }
+  .addr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-bottom:28px; }
+  .addr-card { border:2px solid var(--border); border-radius:14px; padding:18px; position:relative; }
+  .addr-card.default { border-color:var(--black); }
+  .addr-card.default::before { content:"Default"; position:absolute; top:-11px; left:14px; background:var(--black); color:#fff; font-size:10px; font-weight:700; padding:2px 10px; border-radius:99px; text-transform:uppercase; }
+  .addr-name { font-size:14px; font-weight:700; margin-bottom:2px; }
+  .addr-text { font-size:13px; color:#374151; margin-bottom:2px; }
+  .addr-sub  { font-size:12px; color:var(--gray); margin-bottom:14px; }
+  .addr-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .addr-btn { border:1px solid var(--border); background:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+  .addr-btn:hover { border-color:var(--black); }
+  .addr-btn.danger:hover { border-color:#e00; color:#e00; }
+  .add-card { border:2px dashed var(--border); border-radius:14px; padding:28px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; min-height:160px; }
+  .add-card:hover { border-color:var(--black); background:var(--light-gray); }
+  .add-card-icon { font-size:28px; }
+  .add-card-label { font-size:13px; font-weight:700; }
+  /* modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:18px; padding:28px 28px 24px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-size:18px; font-weight:800; margin-bottom:20px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--gray); margin-bottom:5px; }
+  .form-group input, .form-group select { width:100%; border:2px solid var(--border); border-radius:10px; padding:10px 13px; font-size:14px; outline:none; transition:border .15s; box-sizing:border-box; background:#fff; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--black); }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+  .btn-cancel { border:2px solid var(--border); background:#fff; border-radius:99px; padding:10px 22px; font-size:14px; font-weight:700; cursor:pointer; }
+  .btn-save { background:var(--black); color:#fff; border:none; border-radius:99px; padding:10px 22px; font-size:14px; font-weight:700; cursor:pointer; }
+  .alert-success { background:#d1fae5; border:1px solid #6ee7b7; border-radius:10px; padding:12px 16px; font-size:13px; color:#065f46; margin-bottom:20px; }
+  @media(max-width:700px){ .account-wrap{grid-template-columns:1fr} .account-nav{display:none} .form-row{grid-template-columns:1fr} }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "addresses"}}
+  <div>
+    <div class="page-title">{{translate "My Addresses"}}</div>
+    {{if .Success}}<div class="alert-success">{{translate "✓ Address saved successfully."}}</div>{{end}}
+
+    <div class="addr-grid">
+      {{range .Addresses}}
+      <div class="addr-card {{if .SetDefault}}default{{end}}">
+        {{if .Name}}<div class="addr-name">{{deref_str .Name}}</div>{{end}}
+        {{if .Address}}<div class="addr-text">{{deref_str .Address}}</div>{{end}}
+        {{if or .City .State .Country}}
+        <div class="addr-text">
+          {{if .City}}{{deref_str .City}}{{end}}{{if and .City .State}}, {{end}}{{if .State}}{{deref_str .State}}{{end}}{{if and (or .City .State) .Country}} · {{end}}{{if .Country}}{{deref_str .Country}}{{end}}
+        </div>
+        {{end}}
+        <div class="addr-sub">
+          {{if .Phone}}📞 {{deref_str .Phone}}{{end}}
+          {{if and .Phone .PostalCode}} &nbsp;·&nbsp; {{end}}
+          {{if .PostalCode}}📮 {{deref_str .PostalCode}}{{end}}
+          {{if .Email}}<br>✉️ {{deref_str .Email}}{{end}}
+        </div>
+        <div class="addr-actions">
+          <button type="button" class="addr-btn"
+            onclick="openEdit({{.ID}},'{{if .Name}}{{js (deref_str .Name)}}{{end}}','{{if .Email}}{{js (deref_str .Email)}}{{end}}','{{if .Address}}{{js (deref_str .Address)}}{{end}}','{{if .City}}{{js (deref_str .City)}}{{end}}','{{if .State}}{{js (deref_str .State)}}{{end}}','{{if .Country}}{{js (deref_str .Country)}}{{end}}','{{if .Phone}}{{js (deref_str .Phone)}}{{end}}','{{if .PostalCode}}{{js (deref_str .PostalCode)}}{{end}}')">
+            Edit
+          </button>
+          {{if not .SetDefault}}
+          <form method="POST" action="/addresses/default/{{.ID}}" style="display:inline">
+            <input type="hidden" name="_token" value="{{csrf_token}}">
+            <button type="submit" class="addr-btn">{{translate "Set default"}}</button>
+          </form>
+          {{end}}
+          <form method="POST" action="/addresses/delete/{{.ID}}" style="display:inline">
+            <input type="hidden" name="_token" value="{{csrf_token}}">
+            <button type="submit" class="addr-btn danger" onclick="return confirm('Delete this address?')">{{translate "Delete"}}</button>
+          </form>
+        </div>
+      </div>
+      {{end}}
+
+      <div class="add-card" onclick="openAdd()">
+        <div class="add-card-icon">＋</div>
+        <div class="add-card-label">{{translate "Add new address"}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add modal -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3>{{translate "Add new address"}}</h3>
+    <form method="POST" action="/addresses">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "Full name"}}</label>
+          <input type="text" name="name" placeholder="{{translate "Jane Smith"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "Email"}}</label>
+          <input type="email" name="email" placeholder="{{translate "jane@example.com"}}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{translate "Street address"}}</label>
+        <input type="text" name="address" placeholder="{{translate "123 Main St, Apt 4B"}}" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "City"}}</label>
+          <input type="text" name="city" placeholder="{{translate "New York"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "State / Province"}}</label>
+          <input type="text" name="state" placeholder="{{translate "NY"}}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "Country"}}</label>
+          <input type="text" name="country" placeholder="{{translate "United States"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "Postal / ZIP code"}}</label>
+          <input type="text" name="postal_code" placeholder="10001">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{translate "Phone number"}}</label>
+        <input type="tel" name="phone" placeholder="+1 555 000 0000">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeAdd()">{{translate "Cancel"}}</button>
+        <button type="submit" class="btn-save">{{translate "Save address"}}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>{{translate "Edit address"}}</h3>
+    <form method="POST" id="edit-form" action="">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "Full name"}}</label>
+          <input type="text" name="name" id="e_name" placeholder="{{translate "Jane Smith"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "Email"}}</label>
+          <input type="email" name="email" id="e_email" placeholder="{{translate "jane@example.com"}}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{translate "Street address"}}</label>
+        <input type="text" name="address" id="e_address" placeholder="{{translate "123 Main St, Apt 4B"}}" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "City"}}</label>
+          <input type="text" name="city" id="e_city" placeholder="{{translate "New York"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "State / Province"}}</label>
+          <input type="text" name="state" id="e_state" placeholder="{{translate "NY"}}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{translate "Country"}}</label>
+          <input type="text" name="country" id="e_country" placeholder="{{translate "United States"}}">
+        </div>
+        <div class="form-group">
+          <label>{{translate "Postal / ZIP code"}}</label>
+          <input type="text" name="postal_code" id="e_postal" placeholder="10001">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{translate "Phone number"}}</label>
+        <input type="tel" name="phone" id="e_phone" placeholder="+1 555 000 0000">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeEdit()">{{translate "Cancel"}}</button>
+        <button type="submit" class="btn-save">{{translate "Save changes"}}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAdd() { document.getElementById('add-modal').classList.add('open'); }
+function closeAdd() { document.getElementById('add-modal').classList.remove('open'); }
+function closeEdit() { document.getElementById('edit-modal').classList.remove('open'); }
+
+function openEdit(id, name, email, address, city, state, country, phone, postal) {
+  document.getElementById('edit-form').action = '/addresses/' + id + '/update';
+  document.getElementById('e_name').value    = name;
+  document.getElementById('e_email').value   = email;
+  document.getElementById('e_address').value = address;
+  document.getElementById('e_city').value    = city;
+  document.getElementById('e_state').value   = state;
+  document.getElementById('e_country').value = country;
+  document.getElementById('e_phone').value   = phone;
+  document.getElementById('e_postal').value  = postal;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+// Close on backdrop click
+['add-modal','edit-modal'].forEach(function(id){
+  document.getElementById(id).addEventListener('click', function(e){
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+</script>
+{{end}}

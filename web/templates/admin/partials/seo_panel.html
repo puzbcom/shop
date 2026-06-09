@@ -1,0 +1,459 @@
+{{define "admin/partials/seo_panel"}}
+<div class="card rounded-0 shadow-none mb-4" id="seo-panel">
+  <div class="card-header d-flex align-items-center justify-content-between" style="background:#1e2a38;color:#fff;cursor:pointer" onclick="seoTogglePanel()">
+    <h5 class="mb-0 h6 d-flex align-items-center" style="color:#fff">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      SEO Meta &amp; Analysis
+    </h5>
+    <div class="d-flex align-items-center">
+      <span id="seo-score-badge" class="badge badge-secondary mr-2" style="font-size:13px;min-width:38px">—</span>
+      <svg id="seo-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+
+  <div id="seo-panel-body" class="card-body p-0">
+
+    <!-- Score Gauge Row -->
+    <div class="d-flex align-items-center p-3 border-bottom" style="background:#f8f9fc">
+      <div style="flex-shrink:0">
+        <svg id="seo-gauge-svg" width="120" height="70" viewBox="0 0 120 70">
+          <!-- track -->
+          <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#e5e7eb" stroke-width="10" stroke-linecap="round"/>
+          <!-- fill -->
+          <path id="seo-gauge-fill" d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#e5e7eb" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="157" stroke-dashoffset="157"/>
+          <!-- score text -->
+          <text id="seo-gauge-text" x="60" y="58" text-anchor="middle" font-size="22" font-weight="700" fill="#374151">0</text>
+          <text x="60" y="68" text-anchor="middle" font-size="9" fill="#9ca3af">/ 100</text>
+        </svg>
+      </div>
+      <div class="ml-3 flex-grow-1">
+        <div class="mb-1" style="font-weight:700;font-size:15px">SEO Score</div>
+        <div id="seo-score-label" class="text-muted small">Fill in the fields below to improve your score.</div>
+        <div class="mt-2" style="height:6px;background:#e5e7eb;border-radius:4px;overflow:hidden">
+          <div id="seo-score-bar" style="height:100%;width:0%;background:#ef4444;border-radius:4px;transition:width .4s,background .4s"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checklist -->
+    <div class="px-3 pt-3 pb-2 border-bottom" style="background:#fff">
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0" id="seo-checklist-left" style="font-size:13px"></ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0" id="seo-checklist-right" style="font-size:13px"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERP Preview -->
+    <div class="p-3 border-bottom" style="background:#f8f9fc">
+      <div class="mb-2" style="font-weight:600;font-size:13px;color:#374151">Google SERP Preview</div>
+      <div style="background:#fff;border:1px solid #dfe1e5;border-radius:8px;padding:14px 18px;max-width:600px;font-family:arial,sans-serif">
+        <div id="serp-site" style="font-size:12px;color:#4d5156;margin-bottom:2px">yourdomain.com &rsaquo; <span id="serp-slug-seg" style="color:#4d5156"></span></div>
+        <div id="serp-title" style="font-size:20px;color:#1a0dab;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:560px;cursor:pointer">(SEO Title)</div>
+        <div id="serp-desc" style="font-size:14px;color:#4d5156;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">(Meta Description)</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs px-3 pt-2" style="border-bottom:1px solid #dee2e6">
+      <li class="nav-item"><a class="nav-link active" href="#" onclick="seoTab(event,'seo-tab-general')">General</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" onclick="seoTab(event,'seo-tab-og')">Social / OG</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" onclick="seoTab(event,'seo-tab-advanced')">Advanced</a></li>
+    </ul>
+
+    <!-- ── General Tab ── -->
+    <div id="seo-tab-general" class="seo-tab-pane p-3">
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">Focus Keyword</label>
+        <input type="text" name="seo_focus_keyword" id="seo_focus_keyword" class="form-control form-control-sm"
+          placeholder="Primary keyword this page should rank for"
+          value="{{if .SEO}}{{.SEO.FocusKeyword}}{{end}}">
+        <small class="text-muted">The main keyword you want this page to rank for.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">SEO Title <span class="text-muted font-weight-normal">(meta_title)</span></label>
+        <input type="text" name="meta_title" id="seo_meta_title" class="form-control form-control-sm"
+          placeholder="Enter SEO title (50–60 chars ideal)"
+          value="{{if .Product}}{{deref_str .Product.MetaTitle}}{{else if .Category}}{{deref_str .Category.MetaTitle}}{{else if .CMSPage}}{{deref_str .CMSPage.MetaTitle}}{{end}}">
+        <div class="d-flex align-items-center mt-1">
+          <div style="flex:1;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-right:8px">
+            <div id="title-len-bar" style="height:100%;width:0%;border-radius:2px;transition:width .2s,background .2s"></div>
+          </div>
+          <small id="title-len-label" class="text-muted" style="white-space:nowrap;font-size:11px">0 chars</small>
+        </div>
+        <small class="text-muted">Ideal: 50–60 characters. Appears in search results.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">Meta Description <span class="text-muted font-weight-normal">(meta_description)</span></label>
+        <textarea name="meta_description" id="seo_meta_description" class="form-control form-control-sm" rows="3"
+          placeholder="Write a compelling description (120–160 chars ideal)">{{if .Product}}{{deref_str .Product.MetaDescription}}{{else if .Category}}{{deref_str .Category.MetaDescription}}{{else if .CMSPage}}{{deref_str .CMSPage.MetaDescription}}{{end}}</textarea>
+        <div class="d-flex align-items-center mt-1">
+          <div style="flex:1;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-right:8px">
+            <div id="desc-len-bar" style="height:100%;width:0%;border-radius:2px;transition:width .2s,background .2s"></div>
+          </div>
+          <small id="desc-len-label" class="text-muted" style="white-space:nowrap;font-size:11px">0 chars</small>
+        </div>
+        <small class="text-muted">Ideal: 120–160 characters. Shown under the title in search results.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">Meta Keywords <span class="text-muted font-weight-normal">(meta_keywords)</span></label>
+        <input type="text" name="meta_keywords" id="seo_meta_keywords" class="form-control form-control-sm"
+          placeholder="keyword1, keyword2, keyword3"
+          value="{{if .Product}}{{deref_str .Product.MetaKeywords}}{{else if .Category}}{{deref_str .Category.MetaKeywords}}{{else if .CMSPage}}{{deref_str .CMSPage.Keywords}}{{end}}">
+        <small class="text-muted">Comma-separated keywords (legacy; still useful for some engines).</small>
+      </div>
+
+    </div>
+
+    <!-- ── OG Tab ── -->
+    <div id="seo-tab-og" class="seo-tab-pane p-3" style="display:none">
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">OG Title</label>
+        <input type="text" name="seo_og_title" id="seo_og_title" class="form-control form-control-sm"
+          placeholder="Title for Facebook / Twitter shares"
+          value="{{if .SEO}}{{.SEO.OGTitle}}{{end}}">
+        <small class="text-muted">Leave blank to use SEO Title.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">OG Description</label>
+        <textarea name="seo_og_description" id="seo_og_description" class="form-control form-control-sm" rows="3"
+          placeholder="Description shown when shared on social media">{{if .SEO}}{{.SEO.OGDescription}}{{end}}</textarea>
+        <small class="text-muted">Leave blank to use Meta Description.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">OG Image URL</label>
+        <input type="text" name="seo_og_image" id="seo_og_image" class="form-control form-control-sm"
+          placeholder="https://…/image.jpg (1200×630 recommended)"
+          value="{{if .SEO}}{{.SEO.OGImage}}{{end}}">
+        <small class="text-muted">Recommended size: 1200×630 px.</small>
+      </div>
+
+      <!-- OG Image Preview -->
+      <div id="og-img-preview-wrap" style="display:none;margin-top:8px">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Preview</div>
+        <img id="og-img-preview" src="" alt="OG preview" style="max-width:300px;border-radius:6px;border:1px solid #e5e7eb">
+      </div>
+
+    </div>
+
+    <!-- ── Advanced Tab ── -->
+    <div id="seo-tab-advanced" class="seo-tab-pane p-3" style="display:none">
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">Canonical URL</label>
+        <input type="text" name="seo_canonical_url" id="seo_canonical_url" class="form-control form-control-sm"
+          placeholder="https://yourdomain.com/your-page"
+          value="{{if .SEO}}{{.SEO.CanonicalURL}}{{end}}">
+        <small class="text-muted">Set if this content has a preferred canonical URL.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" style="font-size:13px">Schema Type</label>
+        {{/* Pre-compute schema type — avoids eager .SEO.SchemaType access when .SEO is nil */}}
+        {{$schemaType := ""}}{{if .SEO}}{{$schemaType = .SEO.SchemaType}}{{end}}
+        <select name="seo_schema_type" id="seo_schema_type" class="form-control form-control-sm">
+          <option value="">None</option>
+          <option value="Product"       {{if eq $schemaType "Product"}}selected{{end}}>Product</option>
+          <option value="Article"       {{if eq $schemaType "Article"}}selected{{end}}>Article</option>
+          <option value="WebPage"       {{if eq $schemaType "WebPage"}}selected{{end}}>WebPage</option>
+          <option value="Organization"  {{if eq $schemaType "Organization"}}selected{{end}}>Organization</option>
+          <option value="BreadcrumbList" {{if eq $schemaType "BreadcrumbList"}}selected{{end}}>BreadcrumbList</option>
+        </select>
+        <small class="text-muted">Structured data schema type for rich snippets.</small>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="font-weight-bold" style="font-size:13px">Robots Index</label>
+            <div class="d-flex align-items-center mt-1">
+              <label class="aiz-switch aiz-switch-success mb-0 mr-2">
+                <input type="hidden" name="seo_robots_index" value="0">
+                {{/* Default checked (index=1) when SEO is nil or RobotsIndex==1; nested if avoids eager .SEO.RobotsIndex access on nil */}}
+                {{$robotsIndex := true}}{{if .SEO}}{{if ne .SEO.RobotsIndex 1}}{{$robotsIndex = false}}{{end}}{{end}}
+                <input type="checkbox" id="seo_robots_index" name="seo_robots_index" value="1"
+                  {{if $robotsIndex}}checked{{end}}>
+                <span></span>
+              </label>
+              <span id="seo-robots-index-label" style="font-size:13px">Index this page</span>
+            </div>
+            <small class="text-muted">Allow search engines to index this page.</small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="font-weight-bold" style="font-size:13px">Robots Follow</label>
+            <div class="d-flex align-items-center mt-1">
+              <label class="aiz-switch aiz-switch-success mb-0 mr-2">
+                <input type="hidden" name="seo_robots_follow" value="0">
+                {{$robotsFollow := true}}{{if .SEO}}{{if ne .SEO.RobotsFollow 1}}{{$robotsFollow = false}}{{end}}{{end}}
+                <input type="checkbox" id="seo_robots_follow" name="seo_robots_follow" value="1"
+                  {{if $robotsFollow}}checked{{end}}>
+                <span></span>
+              </label>
+              <span id="seo-robots-follow-label" style="font-size:13px">Follow links</span>
+            </div>
+            <small class="text-muted">Allow search engines to follow links on this page.</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Hidden score input -->
+    <input type="hidden" name="seo_score" id="seo_score_hidden" value="{{if .SEO}}{{.SEO.SEOScore}}{{else}}0{{end}}">
+
+  </div><!-- /card-body -->
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  var panelOpen = true;
+
+  // ── Panel toggle ──────────────────────────────────────────────────────────
+  window.seoTogglePanel = function() {
+    panelOpen = !panelOpen;
+    document.getElementById('seo-panel-body').style.display = panelOpen ? '' : 'none';
+    var ch = document.getElementById('seo-chevron');
+    ch.style.transform = panelOpen ? '' : 'rotate(-90deg)';
+  };
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  window.seoTab = function(e, id) {
+    e.preventDefault();
+    document.querySelectorAll('.seo-tab-pane').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('#seo-panel .nav-link').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById(id).style.display = '';
+    e.target.classList.add('active');
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function slugFromForm() {
+    var el = document.querySelector('input[name="slug"]') ||
+             document.querySelector('[id="slug"]');
+    if (el) return el.value.trim();
+    // Try to read from name field as fallback
+    var nameEl = document.querySelector('input[name="name"]');
+    if (nameEl) {
+      return nameEl.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+    return '';
+  }
+
+  // ── Length bars ──────────────────────────────────────────────────────────
+  function updateLenBar(barId, labelId, len, ideal1, ideal2) {
+    var bar = document.getElementById(barId);
+    var label = document.getElementById(labelId);
+    if (!bar || !label) return;
+    label.textContent = len + ' chars';
+    var pct, color;
+    if (len === 0) { pct = 0; color = '#e5e7eb'; }
+    else if (len < ideal1) { pct = Math.round(len / ideal1 * 60); color = '#f59e0b'; }
+    else if (len <= ideal2) { pct = Math.round(60 + (len - ideal1) / (ideal2 - ideal1) * 40); color = '#22c55e'; }
+    else { pct = Math.min(100, Math.round(100 + (len - ideal2) * 2)); color = '#ef4444'; }
+    bar.style.width = Math.min(pct, 100) + '%';
+    bar.style.background = color;
+  }
+
+  // ── Score computation ────────────────────────────────────────────────────
+  function computeScore() {
+    var focusKw    = val('seo_focus_keyword').toLowerCase();
+    var title      = val('seo_meta_title');
+    var desc       = val('seo_meta_description');
+    var ogImage    = val('seo_og_image');
+    var schemaType = val('seo_schema_type');
+    var slug       = slugFromForm();
+    var robotsIndex = document.getElementById('seo_robots_index') ? document.getElementById('seo_robots_index').checked : true;
+
+    var titleLow = title.toLowerCase();
+    var descLow  = desc.toLowerCase();
+
+    var checks = [
+      { id: 'chk-focus-kw',    label: 'Focus keyword set',             ok: focusKw.length > 0,                                  pts: 10 },
+      { id: 'chk-kw-title',    label: 'Keyword in SEO title',          ok: focusKw.length > 0 && titleLow.indexOf(focusKw) >= 0, pts: 15 },
+      { id: 'chk-kw-desc',     label: 'Keyword in meta description',   ok: focusKw.length > 0 && descLow.indexOf(focusKw) >= 0,  pts: 15 },
+      { id: 'chk-kw-slug',     label: 'Keyword in URL slug',           ok: focusKw.length > 0 && slug.indexOf(focusKw.replace(/\s+/g,'-')) >= 0, pts: 10 },
+      { id: 'chk-title-len',   label: 'Title length (50–60 chars)',     ok: title.length >= 50 && title.length <= 60,            pts: 10, partial: title.length > 0, partialPts: 5 },
+      { id: 'chk-desc-len',    label: 'Description length (120–160)',   ok: desc.length >= 120 && desc.length <= 160,            pts: 15, partial: desc.length > 0,  partialPts: 7 },
+      { id: 'chk-og-image',    label: 'OG image set',                  ok: ogImage.length > 0,                                  pts: 10 },
+      { id: 'chk-schema',      label: 'Schema type set',               ok: schemaType.length > 0,                               pts: 5  },
+      { id: 'chk-robots',      label: 'Page is indexable',             ok: robotsIndex,                                         pts: 10 },
+    ];
+
+    var score = 0;
+    checks.forEach(function(chk) {
+      if (chk.ok) {
+        score += chk.pts;
+      } else if (chk.partial) {
+        score += chk.partialPts;
+      }
+    });
+    score = Math.min(score, 100);
+
+    renderChecklist(checks);
+    renderGauge(score);
+    updateSerp(title, desc, slug);
+    updateLenBar('title-len-bar', 'title-len-label', title.length, 50, 60);
+    updateLenBar('desc-len-bar',  'desc-len-label',  desc.length,  120, 160);
+
+    // store for form submission
+    var hiddenScore = document.getElementById('seo_score_hidden');
+    if (hiddenScore) hiddenScore.value = score;
+
+    // update badge
+    var badge = document.getElementById('seo-score-badge');
+    if (badge) {
+      badge.textContent = score;
+      badge.className = 'badge mr-2';
+      if (score >= 80)      badge.className += ' badge-success';
+      else if (score >= 50) badge.className += ' badge-warning';
+      else                  badge.className += ' badge-danger';
+      badge.style.fontSize = '13px';
+      badge.style.minWidth = '38px';
+    }
+
+    return score;
+  }
+
+  function renderGauge(score) {
+    var fill = document.getElementById('seo-gauge-fill');
+    var text = document.getElementById('seo-gauge-text');
+    var bar  = document.getElementById('seo-score-bar');
+    var lbl  = document.getElementById('seo-score-label');
+    if (!fill) return;
+
+    // half-circle arc length ≈ π * r = π * 50 ≈ 157
+    var arcLen = 157;
+    var offset = arcLen - (score / 100) * arcLen;
+    fill.setAttribute('stroke-dashoffset', offset.toFixed(1));
+
+    var color;
+    if (score >= 80)      { color = '#22c55e'; }
+    else if (score >= 50) { color = '#f59e0b'; }
+    else                  { color = '#ef4444'; }
+    fill.setAttribute('stroke', color);
+    if (text) { text.textContent = score; text.setAttribute('fill', color); }
+
+    if (bar) { bar.style.width = score + '%'; bar.style.background = color; }
+    if (lbl) {
+      if (score >= 80)      lbl.textContent = 'Good — this page is well-optimised!';
+      else if (score >= 50) lbl.textContent = 'Needs improvement — check the checklist below.';
+      else                  lbl.textContent = 'Poor — fill in the SEO fields to improve.';
+    }
+  }
+
+  function renderChecklist(checks) {
+    var leftEl  = document.getElementById('seo-checklist-left');
+    var rightEl = document.getElementById('seo-checklist-right');
+    if (!leftEl || !rightEl) return;
+    leftEl.innerHTML  = '';
+    rightEl.innerHTML = '';
+    checks.forEach(function(chk, i) {
+      var isPartial = !chk.ok && chk.partial;
+      var icon, color;
+      if (chk.ok)         { icon = '&#10003;'; color = '#22c55e'; }
+      else if (isPartial) { icon = '&#9679;';  color = '#f59e0b'; }
+      else                { icon = '&#10007;'; color = '#ef4444'; }
+      var li = document.createElement('li');
+      li.style.marginBottom = '6px';
+      li.innerHTML = '<span style="color:' + color + ';font-weight:700;margin-right:6px">' + icon + '</span>' +
+                     '<span style="color:#374151">' + chk.label + '</span>' +
+                     '<span style="color:#9ca3af;font-size:11px;margin-left:4px">(+' + (chk.ok ? chk.pts : (isPartial ? chk.partialPts : 0)) + 'pts)</span>';
+      (i < 5 ? leftEl : rightEl).appendChild(li);
+    });
+  }
+
+  function updateSerp(title, desc, slug) {
+    var titleEl = document.getElementById('serp-title');
+    var descEl  = document.getElementById('serp-desc');
+    var slugEl  = document.getElementById('serp-slug-seg');
+    if (titleEl) titleEl.textContent = title || '(SEO Title)';
+    if (descEl)  descEl.textContent  = desc  || '(Meta Description)';
+    if (slugEl)  slugEl.textContent  = slug  || '';
+    // Highlight focus keyword — escape title first to prevent XSS via innerHTML
+    var kw = val('seo_focus_keyword');
+    if (kw && titleEl) {
+      var re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      var safeTitle = (title || '(SEO Title)')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      titleEl.innerHTML = safeTitle.replace(re, '<strong>$1</strong>');
+    }
+  }
+
+  // ── OG image preview ──────────────────────────────────────────────────────
+  function updateOGPreview() {
+    var url = val('seo_og_image');
+    var wrap = document.getElementById('og-img-preview-wrap');
+    var img  = document.getElementById('og-img-preview');
+    if (!wrap || !img) return;
+    if (url) {
+      img.src = url;
+      wrap.style.display = '';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  // ── Robots labels ─────────────────────────────────────────────────────────
+  function updateRobotsLabels() {
+    var idxEl = document.getElementById('seo_robots_index');
+    var flwEl = document.getElementById('seo_robots_follow');
+    var idxLbl = document.getElementById('seo-robots-index-label');
+    var flwLbl = document.getElementById('seo-robots-follow-label');
+    if (idxEl && idxLbl) idxLbl.textContent = idxEl.checked ? 'Index this page' : 'Do not index';
+    if (flwEl && flwLbl) flwLbl.textContent = flwEl.checked ? 'Follow links' : 'Do not follow';
+  }
+
+  // ── Wire events ───────────────────────────────────────────────────────────
+  function onInput() { computeScore(); updateOGPreview(); updateRobotsLabels(); }
+
+  var watchIds = ['seo_focus_keyword','seo_meta_title','seo_meta_description',
+                  'seo_og_title','seo_og_description','seo_og_image',
+                  'seo_canonical_url','seo_schema_type'];
+  var watchChk = ['seo_robots_index','seo_robots_follow'];
+
+  watchIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    // <select> fires 'change', other fields fire 'input'
+    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', onInput);
+  });
+  watchChk.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', onInput);
+  });
+
+  // Also watch name field for slug updates
+  var nameEl = document.querySelector('input[name="name"]');
+  if (nameEl) nameEl.addEventListener('input', onInput);
+
+  // Expose globally so programmatic field changes (e.g. 1688 import, translateAll)
+  // can trigger a recompute without firing native DOM events.
+  window.seoRecompute = onInput;
+
+  // ── Initial render ────────────────────────────────────────────────────────
+  onInput();
+
+})();
+</script>
+{{end}}

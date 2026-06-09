@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Custom Labels"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Label"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/custom-labels">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Label Text"}} <span class="text-danger">*</span></label>
+            <input type="text" name="text" class="form-control" placeholder="e.g. New, Hot, Sale" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Background Color"}}</label>
+            <input type="color" name="background_color" class="form-control" style="height:38px" value="#ff0000">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Text Color"}}</label>
+            <input type="color" name="text_color" class="form-control" style="height:38px" value="#ffffff">
+          </div>
+          <button type="submit" class="btn btn-primary">{{translate "Save Label"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "All Labels"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Preview"}}</th>
+                <th>{{translate "Text"}}</th>
+                <th class="text-right">{{translate "Options"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Labels}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>
+                  <span class="badge px-3 py-2" style="background:{{.BackgroundColor}};color:{{.TextColor}}">{{.Text}}</span>
+                </td>
+                <td>{{.Text}}</td>
+                <td class="text-right">
+                  <a href="/admin/custom-labels/{{.ID}}/edit" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+                  <form method="POST" action="/admin/custom-labels/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this label?')">
+                    <input type="hidden" name="_token" value="{{csrf_token}}">
+                    <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {{else}}
+              <tr><td colspan="4" class="text-center py-4">{{translate "No custom labels yet"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

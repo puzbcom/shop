@@ -1,0 +1,73 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; }
+  .page-header { margin-bottom:36px; }
+  .page-header h1 { font-size:32px; font-weight:800; margin-bottom:6px; }
+  .page-header p { font-size:14px; color:var(--gray); }
+  .blogs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+  .blog-card { border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:box-shadow .15s,transform .15s; display:flex; flex-direction:column; }
+  .blog-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.09); transform:translateY(-3px); }
+  .blog-thumb { height:200px; background:var(--light-gray); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:56px; }
+  .blog-thumb img { width:100%; height:100%; object-fit:cover; }
+  .blog-body { padding:20px; flex:1; display:flex; flex-direction:column; }
+  .blog-category { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--orange); margin-bottom:8px; }
+  .blog-title { font-size:17px; font-weight:700; line-height:1.35; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .blog-excerpt { font-size:13px; color:var(--gray); line-height:1.6; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; flex:1; }
+  .blog-footer { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--gray); }
+  .read-more { font-weight:700; color:var(--black); font-size:13px; }
+  .read-more:hover { color:var(--orange); }
+  .pagination { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:40px; }
+  .page-btn { border:2px solid var(--border); background:#fff; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); }
+  .page-btn.active { border-color:var(--black); background:var(--black); color:#fff; }
+  .page-btn.disabled { opacity:.4; pointer-events:none; }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); grid-column:1/-1; }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+    <a href="/blogs" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid var(--black);display:block">{{translate "Blog"}}</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:24px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Blog"}}</span>
+  </div>
+  <div class="page-header">
+    <h1>{{translate "Stories & Inspiration"}}</h1>
+    <p>{{translate "Tips, guides, and stories from our community of makers and shoppers."}}</p>
+  </div>
+  <div class="blogs-grid">
+    {{range .Blogs}}
+    <a href="/blog/{{.Slug}}" class="blog-card">
+      <div class="blog-thumb">
+        {{if .Banner}}<img src="{{uploaded_asset .Banner}}" alt="{{.Title}}" loading="lazy">
+        {{else}}📝{{end}}
+      </div>
+      <div class="blog-body">
+        <div class="blog-category">{{translate "Blog"}}</div>
+        <div class="blog-title">{{.Title}}</div>
+        {{if .ShortDescription}}<div class="blog-excerpt">{{.ShortDescription}}</div>{{end}}
+        <div class="blog-footer">
+          <span>{{if .CreatedAt}}{{date_format .CreatedAt "Jan 2, 2006"}}{{end}}</span>
+          <span class="read-more">{{translate "Read more →"}}</span>
+        </div>
+      </div>
+    </a>
+    {{else}}
+    <div class="empty-state">
+      <h3>{{translate "No posts yet"}}</h3>
+      <p>{{translate "Blog posts are coming soon — check back later."}}</p>
+    </div>
+    {{end}}
+  </div>
+  {{if gt .TotalPages 1}}
+  <div class="pagination">
+    {{if gt .Page 1}}<a href="?page={{sub .Page 1}}" class="page-btn">{{translate "← Prev"}}</a>{{else}}<span class="page-btn disabled">{{translate "← Prev"}}</span>{{end}}
+    {{$p := .Page}}{{range seq .TotalPages}}<a href="?page={{.}}" class="page-btn {{if eq . $p}}active{{end}}">{{.}}</a>{{end}}
+    {{if lt .Page .TotalPages}}<a href="?page={{add .Page 1}}" class="page-btn">{{translate "Next →"}}</a>{{else}}<span class="page-btn disabled">{{translate "Next →"}}</span>{{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}

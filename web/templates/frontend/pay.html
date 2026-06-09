@@ -1,0 +1,77 @@
+{{define "extra_css"}}
+  .pay-wrap { max-width:560px; margin:60px auto; padding:0 24px 80px; }
+  .pay-wrap h1 { font-size:28px; font-weight:800; margin-bottom:8px; }
+  .pay-sub { color:var(--gray); margin-bottom:28px; font-size:14px; }
+  .pay-card { border:1px solid var(--border); border-radius:14px; padding:28px; }
+  .pay-total { display:flex; justify-content:space-between; align-items:baseline; padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:24px; }
+  .pay-total-label { font-size:13px; color:var(--gray); }
+  .pay-total-amt { font-size:24px; font-weight:800; }
+  .pay-btn { display:block; width:100%; padding:14px 20px; border-radius:10px; border:none; font-size:15px; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; box-sizing:border-box; }
+  .pay-btn-stripe { background:#635bff; color:#fff; }
+  .pay-btn-stripe:hover { opacity:.9; color:#fff; }
+  .pay-btn-alipay { background:#1677ff; color:#fff; }
+  .pay-btn-alipay:hover { opacity:.9; color:#fff; }
+  .pay-error { color:#dc2626; font-size:13px; margin-top:12px; min-height:18px; text-align:center; }
+  .pay-back { display:block; text-align:center; margin-top:20px; font-size:13px; color:var(--gray); text-decoration:none; }
+  .pay-back:hover { color:var(--black); }
+{{end}}
+{{define "content"}}
+<div class="pay-wrap">
+  <h1>{{translate "Complete payment"}}</h1>
+  <div class="pay-sub">{{translate "Order"}} #{{.Order.ID}}</div>
+
+  <div class="pay-card">
+    <div class="pay-total">
+      <span class="pay-total-label">{{translate "Amount due"}}</span>
+      <span class="pay-total-amt">{{format_price .Order.GrandTotal}}</span>
+    </div>
+
+    {{if eq .Gateway "paypal"}}
+      <div id="paypal-button-container"></div>
+      <div class="pay-error" id="pay-error"></div>
+      <script src="https://www.paypal.com/sdk/js?client-id={{.ClientID}}&currency={{.Currency}}&intent=capture"></script>
+      <script>
+        (function(){
+          var orderID = "{{.Order.ID}}";
+          var errEl = document.getElementById('pay-error');
+          if (!window.paypal) { errEl.textContent = "PayPal SDK failed to load."; return; }
+          paypal.Buttons({
+            createOrder: function() {
+              return fetch('/pay/' + orderID + '/paypal/create', {
+                method: 'POST',
+                headers: {'X-CSRF-Token': '{{csrf_token}}', 'Accept':'application/json'}
+              }).then(function(r){ return r.json(); }).then(function(d){
+                if (d.error) throw new Error(d.error);
+                return d.id;
+              });
+            },
+            onApprove: function(data) {
+              return fetch('/pay/' + orderID + '/paypal/capture?paypal_order_id=' + encodeURIComponent(data.orderID), {
+                method: 'POST',
+                headers: {'X-CSRF-Token': '{{csrf_token}}', 'Accept':'application/json'}
+              }).then(function(r){ return r.json(); }).then(function(d){
+                if (d.status === 'ok' || d.status === 'already_paid') {
+                  window.location = '/order-confirmed';
+                } else {
+                  errEl.textContent = d.error || 'Capture failed.';
+                }
+              });
+            },
+            onError: function(err) { errEl.textContent = String(err); }
+          }).render('#paypal-button-container');
+        })();
+      </script>
+    {{else if eq .Gateway "stripe"}}
+      <a class="pay-btn pay-btn-stripe" href="/pay/{{.Order.ID}}/stripe/start">{{translate "Pay with card"}}</a>
+      <div class="pay-sub" style="text-align:center;margin-top:12px;margin-bottom:0;">{{translate "You'll be redirected to Stripe's secure checkout."}}</div>
+    {{else if eq .Gateway "alipay"}}
+      <a class="pay-btn pay-btn-alipay" href="/pay/{{.Order.ID}}/alipay/start">{{translate "Pay with Alipay"}}</a>
+      <div class="pay-sub" style="text-align:center;margin-top:12px;margin-bottom:0;">{{translate "You'll be redirected to Alipay to complete payment."}}</div>
+    {{else}}
+      <div class="pay-error">{{translate "Unknown payment method."}}</div>
+    {{end}}
+
+    <a class="pay-back" href="/purchase_history">{{translate "← Back to my orders"}}</a>
+  </div>
+</div>
+{{end}}

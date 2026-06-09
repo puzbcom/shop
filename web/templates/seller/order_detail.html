@@ -1,0 +1,86 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{translate "Order"}} #{{.Order.ID}}</h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/orders" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Order Items"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>{{translate "Product"}}</th>
+                <th>{{translate "Price"}}</th>
+                <th>{{translate "Qty"}}</th>
+                <th>{{translate "Total"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Order.OrderDetails}}
+              <tr>
+                <td>{{if .Product}}{{.Product.Name}}{{end}}</td>
+                <td>{{if .Price}}{{deref_float .Price | format_price}}{{end}}</td>
+                <td>{{deref_int .Quantity}}</td>
+                <td>{{if .Price}}{{mul (deref_float .Price) (itof (deref_int .Quantity)) | format_price}}{{end}}</td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Order Summary"}}</h5></div>
+      <div class="card-body">
+        <table class="table table-borderless mb-0">
+          <tr><td>{{translate "Grand Total"}}</td><td class="text-right fw-600">{{if .Order.GrandTotal}}{{deref_float .Order.GrandTotal | format_price}}{{end}}</td></tr>
+          <tr><td>{{translate "Payment Status"}}</td><td class="text-right"><span class="badge badge-{{if eq (deref_str .Order.PaymentStatus) "paid"}}success{{else}}warning{{end}}">{{deref_str .Order.PaymentStatus}}</span></td></tr>
+          <tr><td>{{translate "Delivery Status"}}</td><td class="text-right"><span class="badge badge-info">{{deref_str .Order.DeliveryStatus}}</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Update Status"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/seller/orders/{{.Order.ID}}/status">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <select name="delivery_status" class="form-control">
+              <option value="pending" {{if eq (deref_str .Order.DeliveryStatus) "pending"}}selected{{end}}>{{translate "Pending"}}</option>
+              <option value="processing" {{if eq (deref_str .Order.DeliveryStatus) "processing"}}selected{{end}}>{{translate "Processing"}}</option>
+              <option value="on the way" {{if eq (deref_str .Order.DeliveryStatus) "on the way"}}selected{{end}}>{{translate "On The Way"}}</option>
+              <option value="delivered" {{if eq (deref_str .Order.DeliveryStatus) "delivered"}}selected{{end}}>{{translate "Delivered"}}</option>
+              <option value="cancelled" {{if eq (deref_str .Order.DeliveryStatus) "cancelled"}}selected{{end}}>{{translate "Cancelled"}}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Update Status"}}</button>
+        </form>
+      </div>
+    </div>
+
+    {{if .Order.Buyer}}
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Customer"}}</h5></div>
+      <div class="card-body">
+        <p class="mb-1 fw-600">{{.Order.Buyer.Name}}</p>
+        {{if .Order.Buyer.Email}}<p class="mb-1 text-muted">{{deref_str .Order.Buyer.Email}}</p>{{end}}
+        {{if .Order.Buyer.Phone}}<p class="mb-0 text-muted">{{deref_str .Order.Buyer.Phone}}</p>{{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,163 @@
+{{define "content"}}
+{{$titleSrc := .Page.Title}}{{if .BasePage}}{{$titleSrc = .BasePage.Title}}{{end}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{if .Page.ID}}{{translate "Edit Page"}}: {{if $titleSrc}}{{deref_str $titleSrc}}{{end}}{{else}}{{translate "New Page"}}{{end}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/pages" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+      {{if and .Page.ID (or .Page.Slug (and .BasePage .BasePage.Slug))}}
+        {{$slug := .Page.Slug}}{{if .BasePage}}{{$slug = .BasePage.Slug}}{{end}}
+        <a href="/page/{{deref_str $slug}}" target="_blank" class="btn btn-soft-info"><i class="las la-external-link-alt"></i> {{translate "Preview"}}</a>
+      {{end}}
+    </div>
+  </div>
+</div>
+
+{{if and .Page.ID .Languages}}
+<div class="card rounded-0 shadow-none mb-3">
+  <div class="card-body py-3 d-flex align-items-center" style="gap:10px;flex-wrap:wrap">
+    <strong class="small mb-0">{{translate "Editing language"}}:</strong>
+    {{$active := .EditLang}}{{$baseURL := printf "/admin/pages/%d/edit" .Page.ID}}
+    {{range .Languages}}
+      {{$code := index . "code"}}{{$label := index . "label"}}
+      {{if or (eq $code $active) (and (eq $code "en") (eq $active ""))}}
+        <span class="badge badge-primary py-2 px-3">{{$label}}</span>
+      {{else}}
+        <a href="{{$baseURL}}?lang={{$code}}" class="badge badge-light py-2 px-3">{{$label}}</a>
+      {{end}}
+    {{end}}
+    {{if .EditLang}}
+      <small class="text-muted ml-2">{{translate "Saving in this language only overrides the base English content; leave blank to fall back to English."}}</small>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{if .Success}}<div class="alert alert-success">{{translate "Page saved successfully."}}</div>{{end}}
+
+<form method="POST" action="{{if .Page.ID}}/admin/pages/{{.Page.ID}}{{else}}/admin/pages{{end}}">
+  <input type="hidden" name="_token" value="{{csrf_token}}">
+  <input type="hidden" name="edit_lang" value="{{.EditLang}}">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card rounded-0 shadow-none mb-3">
+        <div class="card-header"><h6 class="mb-0">{{translate "Content"}}</h6></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>{{translate "Title"}}</label>
+            <input type="text" name="title" class="form-control" value="{{if .Page.Title}}{{deref_str .Page.Title}}{{end}}">
+          </div>
+
+          {{if eq .Page.Type "home_page"}}
+          <hr class="my-3">
+          <div class="alert alert-info">
+            <h6 class="mb-2">{{translate "Editing the homepage"}}</h6>
+            <p class="mb-2">{{translate "The homepage layout is driven from several places, not a single content field. Use the links below:"}}</p>
+            <ul class="mb-0">
+              <li><a href="/admin/business-settings" target="_blank">{{translate "Hero slider, logos, payment methods"}}</a></li>
+              <li><a href="/admin/categories" target="_blank">{{translate "Category tiles"}}</a></li>
+              <li><a href="/admin/products" target="_blank">{{translate "Featured products"}}</a> — {{translate "tick \"Featured\" inside any product's edit page"}}</li>
+              <li><a href="/admin/social-media" target="_blank">{{translate "Footer social icons"}}</a></li>
+            </ul>
+            <p class="mb-0 mt-2 small text-muted">{{translate "Best Sellers and New Arrivals are populated automatically from your products."}}</p>
+          </div>
+          <p class="small text-muted mb-0">{{translate "Only the title and SEO fields on this page are stored for /page/home."}}</p>
+          {{else if eq .Page.Type "contact_us_page"}}
+          {{$cs := .ContactSettings}}
+          <hr class="my-3">
+          <h6 class="mb-3 fw-700">{{translate "Contact Page Content"}}</h6>
+          <div class="form-group">
+            <label>{{translate "Page Heading"}}</label>
+            <input type="text" name="contact_heading" class="form-control"
+              value="{{index $cs "contact_heading"}}" placeholder="Get in touch">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Subtitle"}}</label>
+            <textarea name="contact_subtitle" class="form-control" rows="2"
+              placeholder="We'd love to hear from you...">{{index $cs "contact_subtitle"}}</textarea>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Support Email"}}</label>
+            <input type="text" name="support_email" class="form-control"
+              value="{{index $cs "support_email"}}" placeholder="support@example.com">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Support Phone"}}</label>
+            <input type="text" name="support_phone" class="form-control"
+              value="{{index $cs "support_phone"}}" placeholder="+1 (800) 000-0000">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Working Hours"}}</label>
+            <input type="text" name="contact_hours" class="form-control"
+              value="{{index $cs "contact_hours"}}" placeholder="Monday – Friday, 9 am – 6 pm">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Address"}}</label>
+            <input type="text" name="address" class="form-control"
+              value="{{index $cs "address"}}" placeholder="123 Main Street, City, Country">
+          </div>
+          {{else}}
+          <div class="form-group">
+            <label>{{translate "Content"}}</label>
+            <textarea name="content" id="page-content" class="form-control" rows="20">{{if .Page.Content}}{{deref_str .Page.Content}}{{end}}</textarea>
+          </div>
+          {{end}}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card rounded-0 shadow-none mb-3">
+        <div class="card-header"><h6 class="mb-0">{{translate "Settings"}}</h6></div>
+        <div class="card-body">
+          {{$slugVal := .Page.Slug}}{{if .BasePage}}{{$slugVal = .BasePage.Slug}}{{end}}
+          <div class="form-group">
+            <label>{{translate "Slug"}}</label>
+            <input type="text" name="slug" class="form-control" value="{{if $slugVal}}{{deref_str $slugVal}}{{end}}" {{if .EditLang}}readonly{{end}}>
+            <small class="text-muted">/page/<strong>{{if $slugVal}}{{deref_str $slugVal}}{{end}}</strong></small>
+            {{if .EditLang}}<small class="d-block text-muted">{{translate "Slug is shared across languages — edit it under English."}}</small>{{end}}
+          </div>
+        </div>
+      </div>
+      <div class="card rounded-0 shadow-none mb-3">
+        <div class="card-header"><h6 class="mb-0">{{translate "SEO"}}</h6></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>{{translate "Meta Title"}}</label>
+            <input type="text" name="meta_title" class="form-control" value="{{if .Page.MetaTitle}}{{deref_str .Page.MetaTitle}}{{end}}">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Meta Description"}}</label>
+            <textarea name="meta_description" class="form-control" rows="3">{{if .Page.MetaDescription}}{{deref_str .Page.MetaDescription}}{{end}}</textarea>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Keywords"}}</label>
+            <input type="text" name="keywords" class="form-control" value="{{if .Page.Keywords}}{{deref_str .Page.Keywords}}{{end}}">
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">{{translate "Save Page"}}</button>
+    </div>
+  </div>
+</form>
+{{end}}
+
+{{define "scripts"}}
+<!-- Self-hosted TinyMCE community edition (MIT/LGPL) served via jsDelivr.
+     No API key required; runs entirely from our own browser fetch. -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@7.6.1/tinymce.min.js"></script>
+<script>
+tinymce.init({
+  selector: '#page-content',
+  base_url: 'https://cdn.jsdelivr.net/npm/tinymce@7.6.1',
+  suffix: '.min',
+  license_key: 'gpl',
+  height: 500,
+  menubar: false,
+  plugins: 'lists link image code table',
+  toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | table | code',
+  content_style: 'body { font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.7; }',
+  branding: false,
+  promotion: false
+});
+</script>
+{{end}}

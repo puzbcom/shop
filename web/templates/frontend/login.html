@@ -1,0 +1,49 @@
+{{define "extra_css"}}
+  .auth-wrap { min-height:calc(100vh - 200px); display:flex; align-items:center; justify-content:center; padding:40px 24px; }
+  .auth-card { width:100%; max-width:420px; background:#fff; border:1px solid var(--border); border-radius:18px; padding:40px 36px; }
+  .auth-logo { font-size:28px; font-weight:900; color:var(--orange); margin-bottom:6px; }
+  .auth-tagline { font-size:14px; color:var(--gray); margin-bottom:32px; }
+  .auth-card h1 { font-size:24px; font-weight:800; margin-bottom:24px; }
+  .form-group { margin-bottom:18px; }
+  .form-group label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .form-group input { width:100%; border:2px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; outline:none; transition:border .15s; box-sizing:border-box; }
+  .form-group input:focus { border-color:var(--black); }
+  .btn-submit { width:100%; background:var(--black); color:#fff; border:none; border-radius:99px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; margin-top:6px; }
+  .btn-submit:hover { background:#333; }
+  .auth-divider { text-align:center; font-size:13px; color:var(--gray); margin:20px 0; }
+  .auth-link { color:var(--orange); font-weight:700; text-decoration:none; }
+  .auth-link:hover { text-decoration:underline; }
+  .alert-error { background:#fff0f0; border:1px solid #fca5a5; border-radius:10px; padding:12px 16px; font-size:13px; color:#b91c1c; margin-bottom:20px; }
+  .alert-warn { background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 16px; font-size:13px; color:#92400e; margin-bottom:20px; }
+{{end}}
+{{define "content"}}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">{{translate "PUZB"}}</div>
+    <div class="auth-tagline">{{translate "Sign in to your account"}}</div>
+    <h1>{{translate "Welcome back"}}</h1>
+
+    {{if .Banned}}<div class="alert-error">{{translate "Your account has been suspended. Please contact support."}}</div>{{end}}
+    {{if .Error}}<div class="alert-error">{{translate "Your session has expired. Please sign in again."}}</div>{{end}}
+    {{if .FormError}}<div class="alert-error">{{.FormError}}</div>{{end}}
+
+    <form method="POST" action="/login">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+      <div class="form-group">
+        <label for="email">{{translate "Email address"}}</label>
+        <input type="email" id="email" name="email" value="{{if .Email}}{{.Email}}{{end}}" placeholder="{{translate "you@example.com"}}" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">{{translate "Password"}}</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-submit">{{translate "Sign in"}}</button>
+    </form>
+
+    <div class="auth-divider">{{translate "— or —"}}</div>
+    <div style="text-align:center;font-size:14px">
+      Don't have an account? <a href="/register" class="auth-link">{{translate "Register"}}</a>
+    </div>
+  </div>
+</div>
+{{end}}

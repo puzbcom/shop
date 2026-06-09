@@ -1,0 +1,56 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Attributes"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Attribute"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/attributes">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Name"}} <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Size, Color" required>
+          </div>
+          <button type="submit" class="btn btn-primary">{{translate "Save Attribute"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    {{range .Attributes}}
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header d-flex align-items-center">
+        <h5 class="mb-0 h6 flex-grow-1">{{deref_str .Name}}</h5>
+        <a href="/admin/attributes/{{.ID}}/edit" class="btn btn-soft-info btn-icon btn-circle btn-sm mr-2" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+        <form method="POST" action="/admin/attributes/{{.ID}}/delete" onsubmit="return confirm('Delete attribute and all its values?')" class="d-inline">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+        </form>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          {{range .Values}}
+          <span class="badge badge-light border mr-1 mb-1 px-3 py-2">{{.Value}}</span>
+          {{else}}<span class="text-muted">{{translate "No values yet"}}</span>{{end}}
+        </div>
+        <form method="POST" action="/admin/attributes/{{.ID}}/values" class="d-flex gap-2">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <input type="text" name="value" class="form-control form-control-sm" placeholder="{{translate "Add value"}}" required>
+          <button type="submit" class="btn btn-sm btn-primary ml-2">{{translate "Add"}}</button>
+        </form>
+      </div>
+    </div>
+    {{else}}
+    <div class="card rounded-0 shadow-none">
+      <div class="card-body text-center py-4 text-muted">{{translate "No attributes yet"}}</div>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

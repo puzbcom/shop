@@ -1,0 +1,290 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{if .Blog}}{{translate "Edit Blog"}}{{else}}{{translate "New Blog"}}{{end}}</h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/blogs" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+{{if .Blog}}
+<form method="POST" action="/admin/blogs/{{.Blog.ID}}" enctype="multipart/form-data" id="blogForm">
+{{else}}
+<form method="POST" action="/admin/blogs" enctype="multipart/form-data" id="blogForm">
+{{end}}
+<input type="hidden" name="_token" value="{{csrf_token}}">
+
+<div class="row">
+  <div class="col-lg-8">
+
+    <!-- Source language selector + translate button -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-body py-2">
+        <div class="d-flex align-items-center flex-wrap" style="gap:8px">
+          <label class="mb-0 mr-2 font-weight-semibold">{{translate "Source Language"}}:</label>
+          <select id="sourceLangSelect" name="source_lang" class="form-control form-control-sm" style="width:auto">
+            {{range .Langs}}
+            <option value="{{.Code}}"{{if eq .Code "en"}} selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+          <button type="button" id="btnAutoTranslate" class="btn btn-sm btn-info">
+            <i class="las la-language"></i> {{translate "Auto-translate to all languages"}}
+          </button>
+          <span id="translateStatus" class="text-muted small"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Language tabs -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header p-0">
+        <ul class="nav nav-tabs card-header-tabs" id="langTabs" role="tablist">
+          {{range $i, $lang := .Langs}}
+          <li class="nav-item">
+            <a class="nav-link{{if eq $i 0}} active{{end}}" id="tab-{{$lang.Code}}" data-toggle="tab"
+               href="#pane-{{$lang.Code}}" role="tab">{{$lang.Name}}</a>
+          </li>
+          {{end}}
+        </ul>
+      </div>
+      <div class="tab-content" id="langTabContent">
+        {{range $i, $lang := .Langs}}
+        {{$tr := index $.TransMap $lang.Code}}
+        <div class="tab-pane fade{{if eq $i 0}} show active{{end}} p-3" id="pane-{{$lang.Code}}" role="tabpanel"
+             {{if $lang.RTL}}dir="rtl"{{end}}>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Title"}}{{if eq $i 0}} <span class="text-danger">*</span>{{end}}</label>
+            <div class="col-md-9">
+              <input type="text" name="title_{{$lang.Code}}" id="title_{{$lang.Code}}"
+                class="form-control lang-title"
+                data-lang="{{$lang.Code}}"
+                value="{{if $.Blog}}{{if $tr.Title}}{{$tr.Title}}{{else}}{{$.Blog.Title}}{{end}}{{end}}">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Short Description"}}</label>
+            <div class="col-md-9">
+              <textarea name="short_description_{{$lang.Code}}" id="short_description_{{$lang.Code}}"
+                class="form-control" rows="3">{{if $.Blog}}{{if $tr.ShortDescription}}{{deref_str $tr.ShortDescription}}{{else}}{{deref_str $.Blog.ShortDescription}}{{end}}{{end}}</textarea>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Content"}}</label>
+            <div class="col-md-9">
+              <textarea name="description_{{$lang.Code}}" id="description_{{$lang.Code}}"
+                class="form-control" rows="12">{{if $.Blog}}{{if $tr.Description}}{{deref_str $tr.Description}}{{else}}{{deref_str $.Blog.Description}}{{end}}{{end}}</textarea>
+            </div>
+          </div>
+
+          <hr>
+          <h6 class="mb-3">{{translate "SEO"}}</h6>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Meta Title"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="meta_title_{{$lang.Code}}" id="meta_title_{{$lang.Code}}"
+                class="form-control"
+                value="{{if $.Blog}}{{if $tr.MetaTitle}}{{deref_str $tr.MetaTitle}}{{else}}{{deref_str $.Blog.MetaTitle}}{{end}}{{end}}">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Meta Description"}}</label>
+            <div class="col-md-9">
+              <textarea name="meta_description_{{$lang.Code}}" id="meta_description_{{$lang.Code}}"
+                class="form-control" rows="3">{{if $.Blog}}{{if $tr.MetaDescription}}{{deref_str $tr.MetaDescription}}{{else}}{{deref_str $.Blog.MetaDescription}}{{end}}{{end}}</textarea>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Meta Keywords"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="meta_keywords_{{$lang.Code}}" id="meta_keywords_{{$lang.Code}}"
+                class="form-control"
+                value="{{if $.Blog}}{{if $tr.MetaKeywords}}{{deref_str $tr.MetaKeywords}}{{else}}{{deref_str $.Blog.MetaKeywords}}{{end}}{{end}}">
+            </div>
+          </div>
+
+        </div>
+        {{end}}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-lg-4">
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Settings"}}</h5></div>
+      <div class="card-body">
+
+        <div class="form-group">
+          <label>{{translate "Slug"}}</label>
+          <input type="text" name="slug" id="slug" class="form-control"
+            value="{{if .Blog}}{{.Blog.Slug}}{{end}}" placeholder="{{translate "Auto-generated from title"}}">
+        </div>
+
+        <div class="form-group">
+          <label>{{translate "Category"}}</label>
+          <select name="category_id" class="form-control">
+            <option value="0">{{translate "Uncategorized"}}</option>
+            {{range .Categories}}
+            <option value="{{.ID}}" {{if $.Blog}}{{if eq $.Blog.CategoryID .ID}}selected{{end}}{{end}}>{{.CategoryName}}</option>
+            {{end}}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>{{translate "Status"}}</label>
+          <select name="status" class="form-control">
+            <option value="1" {{if .Blog}}{{if eq .Blog.Status 1}}selected{{end}}{{end}}>{{translate "Published"}}</option>
+            <option value="0" {{if .Blog}}{{if eq .Blog.Status 0}}selected{{end}}{{end}}>{{translate "Draft"}}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="d-block">{{translate "Tags"}}</label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="news" value="1" id="chk_news"
+              {{if .Blog}}{{if eq .Blog.News 1}}checked{{end}}{{end}}>
+            <label class="form-check-label" for="chk_news">{{translate "News"}}</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="event" value="1" id="chk_event"
+              {{if .Blog}}{{if eq .Blog.Event 1}}checked{{end}}{{end}}>
+            <label class="form-check-label" for="chk_event">{{translate "Event"}}</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="going_on" value="1" id="chk_going"
+              {{if .Blog}}{{if eq .Blog.GoingOn 1}}checked{{end}}{{end}}>
+            <label class="form-check-label" for="chk_going">{{translate "Going On"}}</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          {{if .Blog}}{{translate "Save Changes"}}{{else}}{{translate "Create Blog"}}{{end}}
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</form>
+
+{{if .Blog}}
+<div class="row mt-3">
+  <div class="col-lg-8"></div>
+  <div class="col-lg-4">
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Banner Image"}}</h5></div>
+      <div class="card-body">
+        {{if .Blog.Banner}}
+        <img src="{{uploaded_asset .Blog.Banner}}" class="img-fluid mb-2 rounded" alt="banner">
+        {{end}}
+        <form method="POST" action="/admin/blogs/{{.Blog.ID}}/upload/banner" enctype="multipart/form-data">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="input-group">
+            <input type="file" name="image" class="form-control form-control-sm" accept="image/*" required>
+            <div class="input-group-append">
+              <button type="submit" class="btn btn-sm btn-primary">{{translate "Upload"}}</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Meta Image"}}</h5></div>
+      <div class="card-body">
+        {{if .Blog.MetaImg}}
+        <img src="{{uploaded_asset .Blog.MetaImg}}" class="img-fluid mb-2 rounded" alt="meta">
+        {{end}}
+        <form method="POST" action="/admin/blogs/{{.Blog.ID}}/upload/meta-img" enctype="multipart/form-data">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="input-group">
+            <input type="file" name="image" class="form-control form-control-sm" accept="image/*" required>
+            <div class="input-group-append">
+              <button type="submit" class="btn btn-sm btn-primary">{{translate "Upload"}}</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{{end}}
+
+<script>
+function autoSlug(v) {
+  var slugEl = document.getElementById('slug');
+  if (slugEl.dataset.manual) return;
+  slugEl.value = v.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+}
+document.getElementById('slug').addEventListener('input', function() { this.dataset.manual = '1'; });
+
+function rewireAutoSlug() {
+  var lang = document.getElementById('sourceLangSelect').value;
+  document.querySelectorAll('.lang-title').forEach(function(el) { el.oninput = null; });
+  var t = document.getElementById('title_' + lang);
+  if (t) { t.oninput = function() { autoSlug(this.value); }; }
+}
+rewireAutoSlug();
+
+// Switch source lang tab when selector changes
+document.getElementById('sourceLangSelect').addEventListener('change', function() {
+  var code = this.value;
+  var tab = document.getElementById('tab-' + code);
+  if (tab) { tab.click(); }
+  rewireAutoSlug();
+});
+
+document.getElementById('btnAutoTranslate').addEventListener('click', function() {
+  var sourceLang = document.getElementById('sourceLangSelect').value;
+  var statusEl = document.getElementById('translateStatus');
+  var fields = {
+    title: document.getElementById('title_' + sourceLang).value,
+    short_description: document.getElementById('short_description_' + sourceLang).value,
+    description: document.getElementById('description_' + sourceLang).value,
+    meta_title: document.getElementById('meta_title_' + sourceLang).value,
+    meta_description: document.getElementById('meta_description_' + sourceLang).value,
+    meta_keywords: document.getElementById('meta_keywords_' + sourceLang).value,
+  };
+  var hasContent = Object.values(fields).some(function(v) { return v.trim() !== ''; });
+  if (!hasContent) { statusEl.textContent = 'No content to translate.'; return; }
+
+  statusEl.textContent = 'Translating...';
+  this.disabled = true;
+  var btn = this;
+
+  var token = document.querySelector('input[name="_token"]').value;
+  fetch('/admin/translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+    body: JSON.stringify({ source_lang: sourceLang, fields: fields })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    Object.keys(data).forEach(function(lang) {
+      var tr = data[lang];
+      Object.keys(tr).forEach(function(field) {
+        var el = document.getElementById(field + '_' + lang);
+        if (el && tr[field]) { el.value = tr[field]; }
+      });
+    });
+    statusEl.textContent = 'Done!';
+    setTimeout(function() { statusEl.textContent = ''; }, 3000);
+  })
+  .catch(function(e) { statusEl.textContent = 'Error: ' + e.message; })
+  .finally(function() { btn.disabled = false; });
+});
+</script>
+{{end}}

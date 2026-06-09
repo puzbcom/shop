@@ -1,0 +1,92 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .account-nav a .nav-icon { font-size:16px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+  .stat-card { border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; }
+  .stat-num { font-size:32px; font-weight:800; margin-bottom:4px; }
+  .stat-label { font-size:12px; color:var(--gray); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  .section-title { font-size:17px; font-weight:800; margin-bottom:16px; }
+  .order-row { display:grid; grid-template-columns:auto 1fr auto auto; gap:16px; align-items:center; padding:14px 0; border-bottom:1px solid var(--border); }
+  .order-row:last-child { border-bottom:none; }
+  .order-id { font-family:monospace; font-size:13px; color:var(--gray); }
+  .order-date { font-size:12px; color:var(--gray); }
+  .order-total { font-size:14px; font-weight:700; }
+  .badge { display:inline-block; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-delivered { background:#d1fae5; color:#065f46; }
+  .badge-processing { background:#dbeafe; color:#1e40af; }
+  .badge-cancelled { background:#fee2e2; color:#991b1b; }
+  .empty-box { text-align:center; padding:40px; color:var(--gray); }
+  .welcome-card { background:linear-gradient(135deg,#f97316,#ea580c); color:#fff; border-radius:14px; padding:24px 28px; margin-bottom:24px; display:flex; align-items:center; gap:20px; }
+  .welcome-avatar { width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; flex-shrink:0; overflow:hidden; }
+  .welcome-avatar img { width:100%; height:100%; object-fit:cover; }
+  .welcome-name { font-size:20px; font-weight:800; }
+  .welcome-sub { font-size:13px; opacity:.85; }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "dashboard"}}
+  <div>
+    <div class="welcome-card">
+      <div class="welcome-avatar">
+        {{if .User.Avatar}}<img src="{{uploaded_asset .User.Avatar}}" alt="">{{else}}{{first_char .User.Name}}{{end}}
+      </div>
+      <div>
+        <div class="welcome-name">{{translate "Welcome back,"}} {{.User.Name}}!</div>
+        <div class="welcome-sub">{{translate "Here's what's happening with your account."}}</div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--orange)">{{.OrderCount}}</div>
+        <div class="stat-label">{{translate "Total orders"}}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#f59e0b">{{.PendingCount}}</div>
+        <div class="stat-label">{{translate "Pending"}}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#10b981">{{.WishCount}}</div>
+        <div class="stat-label">{{translate "Wishlist items"}}</div>
+      </div>
+    </div>
+
+    <div class="section-title">{{translate "Recent orders"}}</div>
+    {{if .RecentOrders}}
+    <div>
+      {{range .RecentOrders}}
+      <div class="order-row">
+        <div>
+          <div class="order-id">#{{.ID}}</div>
+          <div class="order-date">{{date_format .CreatedAt "Jan 2, 2006"}}</div>
+        </div>
+        <div style="font-size:13px;color:var(--gray)">{{len .Orders}} {{translate "seller(s)"}}</div>
+        <div class="order-total">{{format_price .GrandTotal}}</div>
+        <div>
+          {{range .Orders}}
+            {{if .DeliveryStatus}}
+            <span class="badge badge-{{deref_str .DeliveryStatus}}">{{deref_str .DeliveryStatus}}</span>
+            {{end}}
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </div>
+    <div style="margin-top:16px"><a href="/purchase_history" style="font-size:13px;font-weight:700;color:var(--orange)">{{translate "View all orders →"}}</a></div>
+    {{else}}
+    <div class="empty-box">
+      <div style="font-size:40px;margin-bottom:10px">📦</div>
+      <div style="font-weight:700;margin-bottom:4px">{{translate "No orders yet"}}</div>
+      <div style="font-size:13px">{{translate "Start shopping and your orders will appear here."}}</div>
+      <a href="/products" style="display:inline-block;margin-top:14px;background:var(--black);color:#fff;border-radius:99px;padding:10px 22px;font-size:13px;font-weight:700;text-decoration:none">{{translate "Shop now"}}</a>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

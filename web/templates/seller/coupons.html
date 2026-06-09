@@ -1,0 +1,46 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Coupons"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/coupons/create" class="btn btn-primary"><i class="las la-plus"></i> {{translate "Add Coupon"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>{{translate "Code"}}</th>
+            <th>{{translate "Discount"}}</th>
+            <th>{{translate "Type"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Coupons}}
+          <tr>
+            <td><span class="badge badge-primary px-3 py-2">{{.Code}}</span></td>
+            <td>{{.Discount}}{{if eq .DiscountType "percent"}}%{{else}} {{translate "flat"}}{{end}}</td>
+            <td>{{.DiscountType}}</td>
+            <td>{{if eq .Status 1}}<span class="badge badge-success">{{translate "Active"}}</span>{{else}}<span class="badge badge-muted">{{translate "Inactive"}}</span>{{end}}</td>
+            <td class="text-right">
+              <form method="POST" action="/seller/coupons/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this coupon?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="5" class="text-center py-4">{{translate "No coupons yet"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

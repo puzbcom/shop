@@ -1,0 +1,32 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{if .Role}}{{translate "Edit Role"}}{{else}}{{translate "Add New Role"}}{{end}}</h1>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <form method="POST" action="{{if .Role}}/admin/roles/{{.Role.ID}}{{else}}/admin/roles{{end}}">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Role Name"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="name" class="form-control" required value="{{if .Role}}{{.Role.Name}}{{end}}" placeholder="Admin, Operation, Finance, Channel">
+          <small class="text-muted">{{translate "Enter a unique role name"}}</small>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save"}}</button>
+          <a href="/admin/roles" class="btn btn-secondary">{{translate "Cancel"}}</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

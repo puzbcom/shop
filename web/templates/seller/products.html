@@ -1,0 +1,70 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{translate "My Products"}}</h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/products/create" class="btn btn-primary">
+        <i class="las la-plus"></i> {{translate "Add New Product"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Name"}}</th>
+            <th>{{translate "Category"}}</th>
+            <th>{{translate "Price"}}</th>
+            <th>{{translate "Stock"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Products}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                {{if .ThumbnailImg}}<img src="{{uploaded_asset .ThumbnailImg}}" class="img-fit rounded mr-2" style="width:40px;height:40px" alt="{{.Name}}">{{end}}
+                <span>{{.Name}}</span>
+              </div>
+            </td>
+            <td>{{if .Category}}{{.Category.Name}}{{end}}</td>
+            <td>{{format_price .UnitPrice}}</td>
+            <td>{{.CurrentStock}}</td>
+            <td>
+              {{if eq .Published 1}}<span class="badge badge-success">{{translate "Published"}}</span>
+              {{else}}<span class="badge badge-muted">{{translate "Draft"}}</span>{{end}}
+            </td>
+            <td class="text-right">
+              <a href="/seller/products/{{.ID}}/edit" class="btn btn-soft-primary btn-icon btn-circle btn-sm"><i class="las la-edit"></i></a>
+              <form method="POST" action="/seller/products/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this product?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="text-center py-4">{{translate "No products found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

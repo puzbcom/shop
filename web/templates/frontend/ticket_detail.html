@@ -1,0 +1,220 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+
+  .tk-breadcrumb { display:flex; align-items:center; gap:6px; font-size:12px; color:#999; margin-bottom:20px; }
+  .tk-breadcrumb a { color:#999; text-decoration:none; font-weight:600; }
+  .tk-breadcrumb a:hover { color:var(--black); }
+  .tk-breadcrumb svg { width:14px; height:14px; stroke:#ccc; stroke-width:2; fill:none; flex-shrink:0; }
+
+  /* ticket header */
+  .tk-detail-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+  .tk-detail-title { font-size:20px; font-weight:800; margin-bottom:6px; line-height:1.3; }
+  .tk-detail-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .tk-code { font-size:12px; color:#999; font-weight:600; }
+  .tk-date { font-size:12px; color:#999; }
+
+  /* badges */
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 11px; border-radius:99px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .badge-pending  { background:#fef3c7; color:#92400e; }
+  .badge-open     { background:#dbeafe; color:#1e40af; }
+  .badge-answered { background:#dcfce7; color:#166534; }
+  .badge-closed   { background:#f3f4f6; color:#4b5563; }
+  .badge-high     { background:#fee2e2; color:#991b1b; }
+  .badge-medium   { background:#fef3c7; color:#92400e; }
+  .badge-low      { background:#eff6ff; color:#1d4ed8; }
+
+  /* layout */
+  .tk-detail-layout { display:grid; grid-template-columns:1fr 240px; gap:20px; align-items:start; }
+
+  /* thread */
+  .tk-thread { display:flex; flex-direction:column; gap:0; margin-bottom:20px; }
+  .tk-msg { display:flex; gap:14px; align-items:flex-start; padding:20px 0; border-bottom:1px solid var(--border); }
+  .tk-msg:first-child { padding-top:0; }
+  .tk-msg:last-child { border-bottom:none; }
+  .tk-msg.is-support { flex-direction:row-reverse; }
+
+  .tk-avatar { width:40px; height:40px; border-radius:50%; background:var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:#555; flex-shrink:0; text-transform:uppercase; }
+  .tk-msg.is-support .tk-avatar { background:var(--black); color:#fff; }
+
+  .tk-bubble { flex:1; min-width:0; }
+  .tk-bubble-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .tk-msg.is-support .tk-bubble-header { flex-direction:row-reverse; }
+  .tk-sender { font-size:13px; font-weight:700; }
+  .tk-timestamp { font-size:11px; color:#bbb; }
+  .tk-support-label { font-size:10px; font-weight:700; background:var(--black); color:#fff; border-radius:4px; padding:2px 6px; text-transform:uppercase; letter-spacing:.05em; }
+
+  .tk-bubble-body { border:1px solid var(--border); border-radius:14px; padding:14px 18px; background:#fafafa; font-size:14px; line-height:1.7; white-space:pre-wrap; word-break:break-word; color:var(--black); }
+  .tk-msg.is-support .tk-bubble-body { background:#eef2ff; border-color:#c7d2fe; }
+
+  /* reply box */
+  .tk-reply-card { border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#fff; }
+  .tk-reply-header { padding:14px 18px; border-bottom:1px solid var(--border); font-size:13px; font-weight:800; background:#fafafa; }
+  .tk-reply-body { padding:16px 18px; }
+  .tk-reply-body textarea { width:100%; border:2px solid var(--border); border-radius:10px; padding:12px 14px; font-size:14px; outline:none; transition:border-color .15s; box-sizing:border-box; font-family:inherit; resize:vertical; min-height:120px; line-height:1.6; }
+  .tk-reply-body textarea:focus { border-color:var(--black); }
+  .tk-reply-footer { display:flex; align-items:center; justify-content:space-between; padding:12px 18px 16px; }
+  .btn-reply { background:var(--black); color:#fff; border:none; border-radius:99px; padding:10px 24px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background .15s; }
+  .btn-reply:hover { background:#333; }
+  .btn-reply svg { width:14px; height:14px; stroke:#fff; stroke-width:2.5; fill:none; }
+  .reply-hint { font-size:11px; color:#bbb; }
+
+  /* closed notice */
+  .tk-closed-notice { background:#f9fafb; border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:13px; color:#666; text-align:center; }
+  .tk-closed-notice strong { color:var(--black); }
+
+  /* sidebar */
+  .tk-info-card { border:1px solid var(--border); border-radius:14px; padding:18px; background:#fff; font-size:13px; }
+  .tk-info-card h3 { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:#aaa; margin-bottom:14px; }
+  .tk-info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f3f4f6; gap:8px; }
+  .tk-info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .tk-info-label { color:#777; }
+  .tk-info-value { font-weight:700; text-align:right; }
+
+  @media (max-width:900px) {
+    .account-wrap { grid-template-columns:1fr; }
+    .account-nav { position:static; }
+    .tk-detail-layout { grid-template-columns:1fr; }
+  }
+  @media (max-width:600px) {
+    .account-wrap { padding:16px 12px 48px; }
+    .tk-msg { gap:10px; }
+    .tk-avatar { width:34px; height:34px; font-size:13px; }
+    .tk-bubble-body { padding:10px 14px; font-size:13px; }
+  }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "tickets"}}
+  <div>
+    <div class="tk-breadcrumb">
+      <a href="/tickets">{{translate "Support Tickets"}}</a>
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>#{{.Ticket.Code}}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="tk-detail-header">
+      <div>
+        <div class="tk-detail-title">{{.Ticket.Subject}}</div>
+        <div class="tk-detail-meta">
+          <span class="tk-code">#{{.Ticket.Code}}</span>
+          <span class="tk-date">{{translate "· Opened"}} {{date_format .Ticket.CreatedAt "Jan 02, 2006"}}</span>
+          {{if eq .Ticket.Status "pending"}}<span class="badge badge-pending">{{translate "Pending"}}</span>
+          {{else if eq .Ticket.Status "open"}}<span class="badge badge-open">{{translate "Open"}}</span>
+          {{else if eq .Ticket.Status "answered"}}<span class="badge badge-answered">{{translate "Answered"}}</span>
+          {{else if eq .Ticket.Status "closed"}}<span class="badge badge-closed">{{translate "Closed"}}</span>{{end}}
+          {{if eq .Ticket.Priority "high"}}<span class="badge badge-high">{{translate "High priority"}}</span>
+          {{else if eq .Ticket.Priority "low"}}<span class="badge badge-low">{{translate "Low priority"}}</span>{{end}}
+        </div>
+      </div>
+    </div>
+
+    <div class="tk-detail-layout">
+      <!-- Left: thread + reply -->
+      <div>
+        <!-- Thread -->
+        <div class="tk-thread">
+          {{if .Ticket.Details}}
+          <div class="tk-msg">
+            <div class="tk-avatar">{{first_char .User.Name}}</div>
+            <div class="tk-bubble">
+              <div class="tk-bubble-header">
+                <span class="tk-sender">{{translate "You"}}</span>
+                <span class="tk-timestamp">{{date_format .Ticket.CreatedAt "Jan 02, 2006 · 15:04"}}</span>
+              </div>
+              <div class="tk-bubble-body">{{deref_str .Ticket.Details}}</div>
+            </div>
+          </div>
+          {{end}}
+
+          {{range .Ticket.Replies}}
+          {{$isSupport := false}}
+          {{if .User}}{{if eq .User.UserType "admin"}}{{$isSupport = true}}{{end}}{{end}}
+          <div class="tk-msg {{if $isSupport}}is-support{{end}}">
+            <div class="tk-avatar">{{if .User}}{{first_char .User.Name}}{{else}}?{{end}}</div>
+            <div class="tk-bubble">
+              <div class="tk-bubble-header">
+                {{if $isSupport}}<span class="tk-support-label">{{translate "Support"}}</span>{{end}}
+                <span class="tk-sender">{{if .User}}{{if $isSupport}}{{translate "Support Team"}}{{else}}{{translate "You"}}{{end}}{{else}}{{translate "Unknown"}}{{end}}</span>
+                <span class="tk-timestamp">{{date_format .CreatedAt "Jan 02, 2006 · 15:04"}}</span>
+              </div>
+              <div class="tk-bubble-body">{{.Reply}}</div>
+            </div>
+          </div>
+          {{end}}
+        </div>
+
+        <!-- Reply form or closed notice -->
+        {{if eq .Ticket.Status "closed"}}
+        <div class="tk-closed-notice">
+          This ticket is <strong>{{translate "closed"}}</strong>. Open a new ticket if you need further assistance.
+          <div style="margin-top:10px">
+            <a href="/tickets/create" style="color:var(--black);font-weight:700;font-size:13px;">{{translate "+ Open a new ticket"}}</a>
+          </div>
+        </div>
+        {{else}}
+        <div class="tk-reply-card">
+          <div class="tk-reply-header">{{translate "Add a Reply"}}</div>
+          <form method="POST" action="/tickets/{{.Ticket.ID}}/reply">
+            <input type="hidden" name="_token" value="{{csrf_token}}">
+            <div class="tk-reply-body">
+              <textarea name="reply" placeholder="{{translate "Type your reply here…"}}" required></textarea>
+            </div>
+            <div class="tk-reply-footer">
+              <span class="reply-hint">{{translate "We typically reply within 1 business day"}}</span>
+              <button type="submit" class="btn-reply">
+                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send Reply
+              </button>
+            </div>
+          </form>
+        </div>
+        {{end}}
+      </div>
+
+      <!-- Right: info sidebar -->
+      <div>
+        <div class="tk-info-card">
+          <h3>{{translate "Ticket Info"}}</h3>
+          <div class="tk-info-row"><span class="tk-info-label">{{translate "Code"}}</span><span class="tk-info-value">#{{.Ticket.Code}}</span></div>
+          <div class="tk-info-row">
+            <span class="tk-info-label">{{translate "Status"}}</span>
+            <span class="tk-info-value">
+              {{if eq .Ticket.Status "pending"}}<span class="badge badge-pending">{{translate "Pending"}}</span>
+              {{else if eq .Ticket.Status "open"}}<span class="badge badge-open">{{translate "Open"}}</span>
+              {{else if eq .Ticket.Status "answered"}}<span class="badge badge-answered">{{translate "Answered"}}</span>
+              {{else if eq .Ticket.Status "closed"}}<span class="badge badge-closed">{{translate "Closed"}}</span>
+              {{else}}<span>{{.Ticket.Status}}</span>{{end}}
+            </span>
+          </div>
+          <div class="tk-info-row">
+            <span class="tk-info-label">{{translate "Priority"}}</span>
+            <span class="tk-info-value">
+              {{if eq .Ticket.Priority "high"}}<span class="badge badge-high">{{translate "High"}}</span>
+              {{else if eq .Ticket.Priority "low"}}<span class="badge badge-low">{{translate "Low"}}</span>
+              {{else}}<span class="badge badge-medium">{{translate "Medium"}}</span>{{end}}
+            </span>
+          </div>
+          <div class="tk-info-row">
+            <span class="tk-info-label">{{translate "Category"}}</span>
+            <span class="tk-info-value">
+              {{if eq .Ticket.Type "order"}}📦 Order
+              {{else if eq .Ticket.Type "product"}}🛍️ Product
+              {{else if eq .Ticket.Type "payment"}}💳 Payment
+              {{else}}💬 General{{end}}
+            </span>
+          </div>
+          <div class="tk-info-row"><span class="tk-info-label">{{translate "Replies"}}</span><span class="tk-info-value">{{len .Ticket.Replies}}</span></div>
+          <div class="tk-info-row"><span class="tk-info-label">{{translate "Opened"}}</span><span class="tk-info-value" style="font-size:12px;font-weight:600;color:#777">{{date_format .Ticket.CreatedAt "Jan 2, 2006"}}</span></div>
+          <div class="tk-info-row"><span class="tk-info-label">{{translate "Updated"}}</span><span class="tk-info-value" style="font-size:12px;font-weight:600;color:#777">{{date_format .Ticket.UpdatedAt "Jan 2, 2006"}}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,72 @@
+{{define "partials/delivery_sidebar"}}
+<div class="aiz-sidebar bg-dark d-flex flex-column" style="width:240px;min-height:calc(100vh - 60px)">
+    <div class="flex-grow-1 overflow-auto py-3">
+        <ul class="aiz-side-nav-list">
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/dashboard" class="aiz-side-nav-link">
+                    <i class="las la-th-large aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Dashboard"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/assigned-orders" class="aiz-side-nav-link">
+                    <i class="las la-clipboard-list aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Assigned Orders"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/pickup-requests" class="aiz-side-nav-link">
+                    <i class="las la-box-open aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Pickup Requests"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/on-the-way" class="aiz-side-nav-link">
+                    <i class="las la-motorcycle aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "On The Way"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/delivered" class="aiz-side-nav-link">
+                    <i class="las la-check-circle aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Delivered"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/cancelled" class="aiz-side-nav-link">
+                    <i class="las la-times-circle aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Cancelled"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/collections" class="aiz-side-nav-link">
+                    <i class="las la-hand-holding-usd aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "My Collections"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/earnings" class="aiz-side-nav-link">
+                    <i class="las la-wallet aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "My Earnings"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/delivery/profile" class="aiz-side-nav-link">
+                    <i class="las la-user aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Profile"}}</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,148 @@
+{{define "super_admin_theme_switcher"}}
+{{$u := current_user}}
+{{if and $u (eq $u.UserType "super_admin")}}
+<div id="sa-ts-wrap" style="position:fixed;bottom:24px;right:24px;z-index:99999;font-family:system-ui,-apple-system,sans-serif">
+  <!-- Toggle button -->
+  <button id="sa-ts-btn"
+    title="{{translate "Switch Theme (Super Admin)"}}"
+    style="width:46px;height:46px;border-radius:50%;background:#6366f1;border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.55);display:flex;align-items:center;justify-content:center;transition:transform .15s">
+    🎨
+  </button>
+
+  <!-- Panel -->
+  <div id="sa-ts-panel"
+    style="display:none;position:absolute;bottom:54px;right:0;background:#fff;border-radius:14px;
+           box-shadow:0 8px 32px rgba(0,0,0,.18);width:236px;padding:14px 14px 12px;
+           border:1px solid #e5e7eb">
+
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.06em">{{translate "Theme Switcher"}}</span>
+      <button onclick="document.getElementById('sa-ts-panel').style.display='none'"
+        style="background:none;border:none;cursor:pointer;font-size:18px;line-height:1;color:#9ca3af;padding:0 2px">{{translate "&times;"}}</button>
+    </div>
+
+    <!-- Status message -->
+    <div id="sa-ts-msg" style="display:none;font-size:11px;border-radius:6px;padding:6px 9px;margin-bottom:9px"></div>
+
+    <!-- Live indicator -->
+    <div style="font-size:11px;color:#6b7280;margin-bottom:9px">
+      Live: <code style="background:#f3f4f6;border-radius:4px;padding:1px 5px;font-size:11px">{{active_theme}}</code>
+      &nbsp;·&nbsp; Stored: <code style="background:#f3f4f6;border-radius:4px;padding:1px 5px;font-size:11px" id="sa-ts-stored">{{get_setting "homepage_select" "etsy"}}</code>
+    </div>
+
+    <!-- Theme swatches grid -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px" id="sa-ts-grid">
+      <!-- injected by JS below -->
+    </div>
+
+    <!-- Pending restart notice (shown after save) -->
+    <div id="sa-ts-restart" style="display:none;margin-top:9px;font-size:10px;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 8px">
+      ⚠ Restart server to apply the new theme.
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var CSRF = '{{csrf_token}}';
+  var liveTheme = '{{active_theme}}';
+  var storedTheme = document.getElementById('sa-ts-stored').textContent.trim();
+
+  var themes = [
+    {key:'etsy',       label:'Etsy',       color:'#f1641e'},
+    {key:'amazon',     label:'Amazon',     color:'#FF9900'},
+    {key:'ebay',       label:'eBay',       color:'#E53238'},
+    {key:'ozon',       label:'Ozon',       color:'#005BFF'},
+    {key:'aliexpress', label:'Ali',        color:'#FF4747'},
+    {key:'apple',      label:'Apple',      color:'#0071E3'},
+    {key:'mi',         label:'Mi',         color:'#FF6900'},
+    {key:'jd',         label:'JD',         color:'#C0392B'},
+    {key:'alibaba',    label:'Alibaba',    color:'#FF6A00'},
+    {key:'walmart',    label:'Walmart',    color:'#0071CE'},
+    {key:'vevor',      label:'Vevor',      color:'#F97316'},
+  ];
+
+  var grid = document.getElementById('sa-ts-grid');
+  var msg  = document.getElementById('sa-ts-msg');
+  var rst  = document.getElementById('sa-ts-restart');
+
+  function setMsg(text, type) {
+    msg.textContent = text;
+    msg.style.display = 'block';
+    msg.style.background = type === 'ok' ? '#ecfdf5' : '#fef2f2';
+    msg.style.color       = type === 'ok' ? '#065f46' : '#991b1b';
+  }
+
+  function renderGrid(selected) {
+    grid.innerHTML = '';
+    themes.forEach(function(t) {
+      var btn = document.createElement('button');
+      var isLive    = t.key === liveTheme;
+      var isStored  = t.key === selected;
+      btn.title = t.label;
+      btn.style.cssText = [
+        'border:2px solid ' + (isStored ? '#6366f1' : 'transparent') + ';',
+        'border-radius:8px;padding:0;cursor:pointer;overflow:hidden;background:none;',
+        'transition:border-color .15s;'
+      ].join('');
+      btn.innerHTML =
+        '<div style="height:32px;background:' + t.color + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
+          '<span style="color:#fff;font-size:8px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.5)">' + t.label + '</span>' +
+          (isLive ? '<span style="position:absolute;top:1px;right:2px;font-size:8px">✓</span>' : '') +
+        '</div>';
+
+      btn.addEventListener('click', function(){
+        fetch('/super-admin/theme', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: '_token=' + encodeURIComponent(CSRF) + '&theme=' + encodeURIComponent(t.key)
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data.ok) {
+            storedTheme = t.key;
+            document.getElementById('sa-ts-stored').textContent = t.key;
+            renderGrid(t.key);
+            setMsg('✓ Saved: ' + t.label, 'ok');
+            rst.style.display = (t.key !== liveTheme) ? 'block' : 'none';
+          } else {
+            setMsg('✗ ' + (data.error || 'Error'), 'err');
+          }
+        })
+        .catch(function(){ setMsg('✗ Network error', 'err'); });
+      });
+
+      grid.appendChild(btn);
+    });
+  }
+
+  renderGrid(storedTheme);
+
+  // Show/hide panel
+  var btn = document.getElementById('sa-ts-btn');
+  var panel = document.getElementById('sa-ts-panel');
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = panel.style.display !== 'none';
+    panel.style.display = open ? 'none' : 'block';
+    btn.style.transform  = open ? '' : 'rotate(15deg)';
+  });
+  document.addEventListener('click', function(e){
+    if (!document.getElementById('sa-ts-wrap').contains(e.target)) {
+      panel.style.display = 'none';
+      btn.style.transform = '';
+    }
+  });
+
+  // Show pending restart banner if stored != live on load
+  if (storedTheme !== liveTheme) {
+    rst.style.display = 'block';
+  }
+})();
+</script>
+{{end}}
+{{end}}

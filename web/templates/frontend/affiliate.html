@@ -1,0 +1,142 @@
+{{define "content"}}
+<style>
+  .aff-wrap { max-width:860px; margin:40px auto; padding:0 16px 64px; }
+  .aff-stat { background:#fff; border-radius:12px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,.07); text-align:center; }
+  .aff-stat .val { font-size:28px; font-weight:800; color:#f1641e; }
+  .aff-stat .lbl { font-size:12px; color:#888; margin-top:4px; }
+  .aff-link-box { background:#f8f4ef; border:2px dashed #e0d6cc; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:12px; }
+  .aff-link-box input { flex:1; border:none; background:transparent; font-size:14px; color:#333; outline:none; }
+  .copy-btn { background:#f1641e; color:#fff; border:none; border-radius:6px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .copy-btn:hover { background:#c45e1d; }
+  .aff-table th { font-size:11px; text-transform:uppercase; color:#999; font-weight:700; }
+</style>
+
+<div class="aff-wrap">
+  <h2 style="font-size:22px;font-weight:800;margin-bottom:4px">{{translate "Affiliate Program"}}</h2>
+  <p style="color:#888;margin-bottom:28px">{{translate "Earn"}} {{.Commission}}% {{translate "commission on every signup and purchase you refer."}}</p>
+
+  {{if eq .Enabled "0"}}
+  <div class="alert alert-warning">{{translate "The affiliate program is currently disabled."}}</div>
+  {{else}}
+
+  {{if .RefCode}}
+
+  <!-- Stats -->
+  <div class="row mb-4">
+    <div class="col-4">
+      <div class="aff-stat">
+        <div class="val">{{format_price .TotalEarnings}}</div>
+        <div class="lbl">{{translate "Total Earned"}}</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="aff-stat">
+        <div class="val">{{format_price .PendingWithdraw}}</div>
+        <div class="lbl">{{translate "Pending Withdraw"}}</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="aff-stat">
+        <div class="val" id="availVal">—</div>
+        <div class="lbl">{{translate "Available"}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referral Link -->
+  <div class="card mb-4" style="border:none;box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:12px">
+    <div class="card-body">
+      <h6 style="font-weight:700;margin-bottom:12px">{{translate "Your Referral Link"}}</h6>
+      <div class="aff-link-box">
+        <input type="text" id="refLink" readonly>
+        <button class="copy-btn" onclick="copyLink()">{{translate "Copy"}}</button>
+      </div>
+      <small class="text-muted mt-2 d-block">{{translate "Share this link. When someone registers through it, you earn a commission."}}</small>
+    </div>
+  </div>
+
+  <!-- Withdraw -->
+  <div class="card mb-4" style="border:none;box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:12px">
+    <div class="card-body">
+      <h6 style="font-weight:700;margin-bottom:12px">{{translate "Request Withdrawal"}} <small class="text-muted font-weight-normal">({{translate "min"}} {{format_price .MinPayout}})</small></h6>
+      {{if eq (query "success") "1"}}<div class="alert alert-success">{{translate "Withdrawal request submitted."}}</div>{{end}}
+      {{if eq (query "error") "min_payout"}}<div class="alert alert-danger">{{translate "Amount below minimum payout."}}</div>{{end}}
+      {{if eq (query "error") "insufficient"}}<div class="alert alert-danger">{{translate "Insufficient balance."}}</div>{{end}}
+      <form method="POST" action="/affiliate/withdraw">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="input-group" style="max-width:300px">
+          <input type="number" name="amount" class="form-control" step="0.01" min="{{.MinPayout}}" placeholder="{{translate "Amount"}}">
+          <div class="input-group-append">
+            <button type="submit" class="btn btn-primary">{{translate "Request"}}</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Activity Log -->
+  <div class="card" style="border:none;box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:12px">
+    <div class="card-header" style="background:#fff;border-bottom:1px solid #f0f0f0;border-radius:12px 12px 0 0">
+      <h6 class="mb-0" style="font-weight:700">{{translate "Recent Activity"}}</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0 aff-table">
+        <thead>
+          <tr>
+            <th class="pl-4">{{translate "Type"}}</th>
+            <th>{{translate "Earnings"}}</th>
+            <th>{{translate "Date"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Logs}}
+          <tr>
+            <td class="pl-4">
+              {{if eq .Type "signup"}}<span class="badge badge-info">{{translate "Signup"}}</span>
+              {{else}}<span class="badge badge-success">{{translate "Purchase"}}</span>{{end}}
+            </td>
+            <td>{{format_price .Amount}}</td>
+            <td>{{date_format .CreatedAt "Jan 2, 2006"}}</td>
+          </tr>
+          {{else}}
+          <tr><td colspan="3" class="text-center py-3 text-muted">{{translate "No activity yet."}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+  var refCode = "{{.RefCode}}";
+  var baseUrl = window.location.origin;
+  document.getElementById('refLink').value = baseUrl + '/?ref=' + refCode;
+
+  var totalEarned = {{.TotalEarnings}};
+  var pending = {{.PendingWithdraw}};
+  document.getElementById('availVal').textContent = (totalEarned - pending).toFixed(2);
+
+  function copyLink() {
+    var el = document.getElementById('refLink');
+    el.select();
+    document.execCommand('copy');
+    event.target.textContent = '{{translate "Copied!"}}';
+    setTimeout(function() { event.target.textContent = '{{translate "Copy"}}'; }, 2000);
+  }
+  </script>
+
+  {{else}}
+  <!-- Not yet joined -->
+  <div class="card text-center" style="border:none;box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:12px;padding:48px">
+    <div style="font-size:48px;margin-bottom:16px">🤝</div>
+    <h4 style="font-weight:800;margin-bottom:8px">{{translate "Join the Affiliate Program"}}</h4>
+    <p class="text-muted mb-4">{{translate "Get your unique referral link and earn"}} {{.Commission}}% {{translate "on every qualifying referral."}}</p>
+    <form method="POST" action="/affiliate/join">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+      <button type="submit" class="btn btn-primary btn-lg px-5">{{translate "Get My Referral Link"}}</button>
+    </form>
+  </div>
+  {{end}}
+
+  {{end}}
+</div>
+{{end}}

@@ -1,0 +1,145 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Coupons"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Coupon"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/coupons">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Coupon Code"}} <span class="text-danger">*</span></label>
+            <input type="text" name="code" class="form-control" placeholder="e.g. WELCOME10" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Discount Type"}}</label>
+            <select name="discount_type" class="form-control">
+              <option value="percent">{{translate "Percentage"}}</option>
+              <option value="amount">{{translate "Flat Amount"}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Discount"}} <span class="text-danger">*</span></label>
+            <input type="number" name="discount" class="form-control" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Details"}}</label>
+            <textarea name="details" class="form-control" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Save Coupon"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "All Coupons"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>{{translate "Code"}}</th>
+                <th>{{translate "Discount"}}</th>
+                <th>{{translate "Details"}}</th>
+                <th>{{translate "Status"}}</th>
+                <th class="text-right">{{translate "Options"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Coupons}}
+              <tr>
+                <td><span class="badge badge-primary px-3 py-2">{{.Code}}</span></td>
+                <td>{{.Discount}}{{if eq .DiscountType "percent"}}%{{else}} {{translate "flat"}}{{end}}</td>
+                <td class="small text-muted">{{.Details}}</td>
+                <td>{{if eq .Status 1}}<span class="badge badge-success">{{translate "Active"}}</span>{{else}}<span class="badge badge-secondary">{{translate "Inactive"}}</span>{{end}}</td>
+                <td class="text-right">
+                  <button type="button" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"
+                    data-details="{{.Details}}"
+                    onclick="openCouponEdit({{.ID}}, '{{.Code}}', '{{.DiscountType}}', {{.Discount}}, this.dataset.details, {{.Status}})">
+                    <i class="las la-edit"></i>
+                  </button>
+                  <form method="POST" action="/admin/coupons/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this coupon?')">
+                    <input type="hidden" name="_token" value="{{csrf_token}}">
+                    <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"><i class="las la-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {{else}}
+              <tr><td colspan="5" class="text-center py-4">{{translate "No coupons yet"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal fade" id="couponEditModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="couponEditForm">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="modal-header">
+          <h5 class="modal-title">{{translate "Edit Coupon"}}</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>{{translate "Coupon Code"}} <span class="text-danger">*</span></label>
+            <input type="text" name="code" id="cp_code" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Discount Type"}}</label>
+            <select name="discount_type" id="cp_type" class="form-control">
+              <option value="percent">{{translate "Percentage"}}</option>
+              <option value="amount">{{translate "Flat Amount"}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Discount"}} <span class="text-danger">*</span></label>
+            <input type="number" name="discount" id="cp_discount" class="form-control" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Details"}}</label>
+            <textarea name="details" id="cp_details" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group mb-0">
+            <label>{{translate "Status"}}</label>
+            <select name="status" id="cp_status" class="form-control">
+              <option value="1">{{translate "Active"}}</option>
+              <option value="0">{{translate "Inactive"}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-primary">{{translate "Save"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+function openCouponEdit(id, code, type, discount, details, status) {
+  document.getElementById('couponEditForm').action = '/admin/coupons/' + id + '/update';
+  document.getElementById('cp_code').value = code;
+  document.getElementById('cp_type').value = type;
+  document.getElementById('cp_discount').value = discount;
+  document.getElementById('cp_details').value = details;
+  document.getElementById('cp_status').value = status;
+  $('#couponEditModal').modal('show');
+}
+</script>
+{{end}}

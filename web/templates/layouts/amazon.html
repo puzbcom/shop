@@ -1,0 +1,270 @@
+{{define "layouts/amazon"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{block "title" .}}{{get_setting "website_name" "Shop"}}{{end}}</title>
+<meta property="og:site_name" content="{{get_setting "website_name" "Shop"}}">
+<meta property="og:type" content="website">
+{{block "seo_head" .}}<meta name="description" content="{{get_setting "meta_description" ""}}">{{end}}
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #FF9900;
+    --orange-dark: #e68a00;
+    --black: #0F1111;
+    --gray: #565959;
+    --light-gray: #F3F3F3;
+    --border: #DDD;
+    --white: #fff;
+    --star: #F0AD4E;
+  }
+
+  body { font-family: Arial,sans-serif; font-size: 14px; color: var(--black); background: #EAEDED; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; }
+
+  /* ── PROMO BAR ── */
+  .promo-bar { background: #232F3E; color: #d4f1e4; text-align: center; padding: 8px 16px; font-size: 12px; letter-spacing: .02em; }
+  .promo-bar strong { color: #fff; }
+
+  /* ── HEADER ── */
+  header { background: #131921; border-bottom: 3px solid #FF9900; position: sticky; top: 0; z-index: 200; }
+  .header-inner { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 10px 24px; }
+
+  .logo { display: flex; align-items: center; gap: 4px; font-size: 26px; font-weight: 800; color: var(--orange); letter-spacing: -1px; flex-shrink: 0; }
+  .logo-icon { display: flex; align-items: center; }
+  .logo-icon svg { width: 30px; height: 30px; }
+
+  .search-bar { display: flex; border: 2px solid #FF9900; border-radius: 4px; overflow: hidden; background: #fff; min-width: 0; }
+  .search-cat { border: none; border-right: 1px solid var(--border); background: var(--light-gray); padding: 0 10px 0 14px; font-size: 12px; color: var(--gray); cursor: pointer; outline: none; -webkit-appearance: none; white-space: nowrap; min-width: 0; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .search-input { flex: 1; border: none; padding: 10px 14px; font-size: 14px; outline: none; color: var(--black); min-width: 0; }
+  .search-btn { background: var(--orange); border: none; padding: 0 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
+  .search-btn:hover { background: var(--orange-dark); }
+  .search-btn svg { width: 18px; height: 18px; }
+
+  .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .btn-ghost { background: none; border: 2px solid rgba(255,255,255,.7); border-radius: 99px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; color: #fff; transition: background .15s; }
+  .btn-ghost:hover { background: rgba(255,255,255,.15); }
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+  .icon-btn:hover { background: rgba(255,255,255,.12); }
+  .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .cart-badge { position: absolute; top: 2px; right: 2px; background: var(--orange); color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+  /* ── MOBILE HEADER ── */
+  .mob-menu-btn { display: none; background: none; border: none; padding: 8px; cursor: pointer; }
+  .mob-menu-btn svg { width: 24px; height: 24px; stroke: #fff; stroke-width: 2; fill: none; stroke-linecap: round; }
+  .mob-search { display: none; }
+
+  @media (max-width: 768px) {
+    .header-inner { grid-template-columns: auto 1fr auto; gap: 8px; padding: 8px 12px; }
+    .search-bar { display: none; }
+    .mob-search { display: flex; border: 2px solid #FF9900; border-radius: 4px; overflow: hidden; background: #fff; margin: 0 12px 8px; }
+    .mob-search input { flex: 1; border: none; padding: 9px 14px; font-size: 14px; outline: none; }
+    .mob-search button { background: var(--orange); border: none; padding: 0 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mob-search button svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 2.5; fill: none; }
+    .mob-menu-btn { display: flex; }
+    .search-cat { display: none; }
+    .btn-ghost { display: none; }
+    .logo { font-size: 20px; }
+    .logo img { height: 32px !important; }
+  }
+
+  /* ── MOBILE FOOTER ── */
+  @media (max-width: 768px) {
+    footer > div > div:first-child { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+  }
+  @media (max-width: 480px) {
+    footer > div > div:first-child { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── CONTENT ── */
+  {{block "extra_css" .}}{{end}}
+</style>
+</head>
+<body>
+
+{{$promoText := get_setting "promo_bar_text" "Free shipping on orders over $35 · Shop the sale →"}}
+{{$promoLink := get_setting "promo_bar_link"}}
+{{if $promoText}}
+<div class="promo-bar">{{if $promoLink}}<a href="{{$promoLink}}" style="color:inherit;text-decoration:none">{{end}}{{$promoText}}{{if $promoLink}}</a>{{end}}</div>
+{{end}}
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <img src="{{uploaded_asset (get_setting "header_logo" "/static/img/cyshoplogo.webp")}}"
+           alt="{{get_setting "website_name"}}" style="height:40px;width:auto;display:block;">
+    </a>
+
+    <form action="/search" method="GET" class="search-bar">
+      <select name="category" class="search-cat" aria-label="Category">
+        <option value="">All categories</option>
+        {{range .Categories}}
+        <option value="{{.ID}}">{{.Name}}</option>
+        {{end}}
+      </select>
+      <input class="search-input" type="text" name="q" placeholder="Search for anything">
+      <button class="search-btn" type="submit" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="8" stroke="#fff" stroke-width="2.5"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="header-actions">
+      <!-- Mobile search icon -->
+      <button class="mob-menu-btn" onclick="document.getElementById('mob-search-bar').style.display=document.getElementById('mob-search-bar').style.display==='none'?'flex':'none'" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
+      </button>
+      {{$activeLang := current_lang}}
+      {{$langs := get_languages}}
+      {{if gt (len $langs) 1}}
+      <div style="position:relative;display:inline-block" class="lang-switcher">
+        <button class="btn-ghost" style="padding:7px 12px;display:flex;align-items:center;gap:6px" aria-label="Language">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span style="font-size:12px">{{$activeLang}}</span>
+        </button>
+        <div class="lang-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:130px;z-index:999;overflow:hidden">
+          {{range $langs}}
+          <a href="/set-language?lang={{.Code}}" style="display:block;padding:9px 14px;font-size:13px;color:var(--black);{{if eq .Code $activeLang}}font-weight:700;background:var(--light-gray);{{end}}">{{.Name}}</a>
+          {{end}}
+        </div>
+      </div>
+      <script>
+        (function(){
+          var sw = document.currentScript.previousElementSibling;
+          var dd = sw.querySelector('.lang-dropdown');
+          dd.style.display = 'block';
+          document.addEventListener('click', function(e){ if(!sw.contains(e.target)) dd.classList.remove('open'); });
+          sw.querySelector('button').addEventListener('click', function(e){ e.stopPropagation(); dd.classList.toggle('open'); });
+          dd.style.display = '';
+        })();
+      </script>
+      <style>.lang-dropdown{display:none!important}.lang-dropdown.open{display:block!important}</style>
+      {{end}}
+      {{if is_authenticated}}
+      <div style="position:relative;display:inline-block" id="acct-menu-wrap">
+        <button class="btn-ghost" id="acct-menu-btn" style="display:flex;align-items:center;gap:5px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Account
+        </button>
+        <div id="acct-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;z-index:999;overflow:hidden;padding:6px 0;">
+          <a href="/dashboard" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--black);text-decoration:none;transition:background .12s">🏠 Dashboard</a>
+          <a href="/purchase_history" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--black);text-decoration:none;transition:background .12s">📦 My Orders</a>
+          <a href="/wishlists" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--black);text-decoration:none;transition:background .12s">❤️ Wishlists</a>
+          <a href="/tickets" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--black);text-decoration:none;transition:background .12s">🎫 Support Tickets</a>
+          <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--black);text-decoration:none;transition:background .12s">👤 Profile</a>
+          <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+          <a href="/logout" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:#c0392b;text-decoration:none;transition:background .12s">🚪 Sign out</a>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var wrap = document.getElementById('acct-menu-wrap');
+        var dd   = document.getElementById('acct-dropdown');
+        document.getElementById('acct-menu-btn').addEventListener('click', function(e){
+          e.stopPropagation();
+          dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+        });
+        document.addEventListener('click', function(){ dd.style.display = 'none'; });
+        wrap.addEventListener('mouseenter', function(){ dd.style.display = 'block'; });
+        wrap.addEventListener('mouseleave', function(){ dd.style.display = 'none'; });
+      })();
+      </script>
+      {{else}}
+        <a href="/login" class="btn-ghost">Sign in</a>
+      {{end}}
+      <a href="/wishlists" class="icon-btn" aria-label="Favourites">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </a>
+      <a href="/cart" class="icon-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        {{$cc := cart_count}}{{if gt $cc 0}}<span class="cart-badge">{{$cc}}</span>{{end}}
+      </a>
+    </div>
+  </div>
+  <!-- Mobile search bar (hidden by default, toggled by search icon) -->
+  <form id="mob-search-bar" action="/search" method="GET" class="mob-search" style="display:none">
+    <input type="text" name="q" placeholder="Search for anything" style="flex:1;border:none;padding:9px 14px;font-size:14px;outline:none">
+    <button type="submit" style="background:var(--orange);border:none;padding:0 14px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </form>
+</header>
+
+{{block "content" .}}{{end}}
+
+<footer style="background:#131921;color:rgba(255,255,255,.65);margin-top:64px">
+  <div style="max-width:1440px;margin:0 auto;padding:48px 24px 32px">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:32px;margin-bottom:40px">
+      <div>
+        <h5 style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Shop</h5>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <li><a href="/products">All Products</a></li>
+          <li><a href="/categories">Categories</a></li>
+          <li><a href="/brands">Brands</a></li>
+          <li><a href="/shops">Sellers</a></li>
+          <li><a href="/blogs">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Sell</h5>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <li><a href="/page/start-selling">Start Selling</a></li>
+          <li><a href="/page/seller-handbook">Seller Handbook</a></li>
+          <li><a href="/page/forums">Forums</a></li>
+          <li><a href="/affiliate">Affiliates</a></li>
+          <li><a href="/page/coupons">Coupons</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">About</h5>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <li><a href="/page/about">About Us</a></li>
+          <li><a href="/page/newsroom">Newsroom</a></li>
+          <li><a href="/page/investors">Investors</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/page/careers">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Help</h5>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/tickets">Support Tickets</a></li>
+          <li><a href="/page/shipping-returns">Shipping &amp; Returns</a></li>
+          <li><a href="/page/buyer-protection">Buyer Protection</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+          <li><a href="/page/privacy-policy">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Download the App</h5>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <li><a href="#" style="text-decoration:none">📱 iOS App</a></li>
+          <li><a href="#" style="text-decoration:none">🤖 Android App</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <span style="color:var(--orange);font-size:18px;font-weight:800;letter-spacing:-0.5px">{{get_setting "website_name"}}</span>
+        <div style="display:flex;gap:16px">
+          <a href="#" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:background .2s;text-decoration:none;color:inherit" title="X">𝕏</a>
+          <a href="#" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:background .2s;text-decoration:none;color:inherit" title="Facebook">f</a>
+          <a href="#" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:background .2s;text-decoration:none;color:inherit" title="LinkedIn">in</a>
+          <a href="#" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:background .2s;text-decoration:none;color:inherit" title="Pinterest">📌</a>
+        </div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);text-align:center">© 2025 {{get_setting "website_name"}}. All rights reserved.</div>
+    </div>
+  </div>
+</footer>
+
+{{template "super_admin_theme_switcher" .}}
+</body>
+</html>
+{{end}}

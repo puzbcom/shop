@@ -1,0 +1,161 @@
+{{define "content"}}
+<style>
+  .reviews-table { table-layout: fixed; }
+  .reviews-table td {
+    font-size: 12px;
+    padding: 8px 6px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reviews-table th { font-size: 12px; padding: 10px 6px !important; }
+  .reviews-table td:nth-child(2) { white-space: normal; } /* Product name can wrap */
+  .reviews-table td:nth-child(5) { white-space: normal; } /* Comment can wrap */
+</style>
+
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Product Reviews"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <form method="GET" action="/admin/reviews" class="form-inline">
+      <div class="mr-2">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="{{translate "Search by product name or review content"}}" value="{{.Search}}" style="width:250px">
+      </div>
+      <div class="mr-2">
+        <select name="status" class="form-control form-control-sm">
+          <option value="">{{translate "All Status"}}</option>
+          <option value="approved" {{if eq .Status "approved"}}selected{{end}}>{{translate "Approved"}}</option>
+          <option value="pending" {{if eq .Status "pending"}}selected{{end}}>{{translate "Pending"}}</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary">{{translate "Filter"}}</button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0 reviews-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:130px">{{translate "Product"}}</th>
+            <th style="width:80px">{{translate "Reviewer"}}</th>
+            <th style="width:45px">{{translate "Rating"}}</th>
+            <th style="width:250px">{{translate "Comment"}}</th>
+            <th style="width:60px">{{translate "Status"}}</th>
+            <th style="width:80px" class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Reviews}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td class="product-col">
+              {{if .Product}}
+              <a href="/admin/products/{{.Product.ID}}/edit" class="text-truncate" title="{{.Product.Name}}"><strong>{{.Product.Name}}</strong></a>
+              <br><small style="color:#999">ID: {{.Product.ID}}</small>
+              {{else}}
+              <span class="badge badge-warning">{{translate "Product Deleted"}}</span>
+              {{end}}
+            </td>
+            <td>
+              {{if .User}}{{.User.Name}}{{else}}{{deref_str .CustomReviewerName}}{{end}}
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                {{range $i := iterate .Rating}}
+                <i class="las la-star" style="color:#ffc107"></i>
+                {{end}}
+                <span class="ml-2 fw-600">{{.Rating}}.0</span>
+              </div>
+            </td>
+            <td>
+              <div class="text-truncate" style="max-width:300px" title="{{.Comment}}">{{.Comment}}</div>
+            </td>
+            <td>
+              {{if eq .Status 1}}
+              <span class="badge badge-success">{{translate "Approved"}}</span>
+              {{else}}
+              <span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{end}}
+            </td>
+            <td class="text-right">
+              {{if eq .Status 0}}
+              <form method="POST" action="/admin/reviews/{{.ID}}/approve" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-success btn-icon btn-circle btn-sm" title="{{translate "Approve"}}"><i class="las la-check"></i></button>
+              </form>
+              {{else}}
+              <form method="POST" action="/admin/reviews/{{.ID}}/reject" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-warning btn-icon btn-circle btn-sm" title="{{translate "Reject"}}"><i class="las la-times"></i></button>
+              </form>
+              {{end}}
+              <form method="POST" action="/admin/reviews/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this review?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="text-center py-4">{{translate "No reviews found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Re-link Product Modals for deleted products -->
+{{range $idx, $review := .Reviews}}
+{{if not $review.Product}}
+<div class="modal fade" id="relinkModal{{$review.ID}}" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{translate "Re-link Review to Product"}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="/admin/orphan-reviews/{{$review.ID}}/relink">
+        <div class="modal-body">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group">
+            <label>{{translate "Review Content"}}:</label>
+            <p class="text-muted" style="max-height:150px; overflow-y:auto; border:1px solid #ddd; padding:8px; border-radius:4px;">{{$review.Comment}}</p>
+          </div>
+
+          <div class="form-group">
+            <label for="product_id_{{$review.ID}}">{{translate "Select Product"}} *</label>
+            <select name="product_id" id="product_id_{{$review.ID}}" class="form-control" required>
+              <option value="">-- {{translate "Choose a product"}} --</option>
+              {{range .Products}}
+              <option value="{{.ID}}">{{.Name}}</option>
+              {{end}}
+            </select>
+            <small class="form-text text-muted">{{translate "Choose the correct product based on the review content"}}</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-primary">{{translate "Re-link Review"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+{{end}}
+{{end}}

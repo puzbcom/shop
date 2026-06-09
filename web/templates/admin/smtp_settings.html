@@ -1,0 +1,126 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "SMTP Settings"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  {{translate "Settings saved successfully."}}
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{{end}}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Outgoing Mail (SMTP)"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/smtp-settings">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "SMTP Host"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="smtp_host" class="form-control" placeholder="smtp.gmail.com"
+                value="{{index .Settings "smtp_host"}}">
+              <small class="text-muted">e.g. smtp.gmail.com · smtp.sendgrid.net · mail.example.com</small>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "SMTP Port"}}</label>
+            <div class="col-md-9">
+              <input type="number" name="smtp_port" class="form-control" placeholder="587"
+                value="{{index .Settings "smtp_port"}}">
+              <small class="text-muted">25 · 465 (SSL) · 587 (TLS / STARTTLS)</small>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Encryption"}}</label>
+            <div class="col-md-9">
+              <select name="smtp_encryption" class="form-control">
+                <option value="tls"  {{if eq (index .Settings "smtp_encryption") "tls"}}selected{{end}}>TLS / STARTTLS (port 587)</option>
+                <option value="ssl"  {{if eq (index .Settings "smtp_encryption") "ssl"}}selected{{end}}>SSL (port 465)</option>
+                <option value="none" {{if eq (index .Settings "smtp_encryption") "none"}}selected{{end}}>None (port 25)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Username"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="smtp_username" class="form-control" autocomplete="off"
+                value="{{index .Settings "smtp_username"}}" placeholder="your@email.com">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Password"}}</label>
+            <div class="col-md-9">
+              <input type="password" name="smtp_password" class="form-control" autocomplete="new-password"
+                value="{{index .Settings "smtp_password"}}">
+              <small class="text-muted">For Gmail, use an App Password (not your account password).</small>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "From Name"}}</label>
+            <div class="col-md-9">
+              <input type="text" name="smtp_from_name" class="form-control" placeholder="My Store"
+                value="{{index .Settings "smtp_from_name"}}">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "From Email"}}</label>
+            <div class="col-md-9">
+              <input type="email" name="smtp_from_email" class="form-control" placeholder="noreply@example.com"
+                value="{{index .Settings "smtp_from_email"}}">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col-md-9 ml-auto d-flex align-items-center" style="gap:10px">
+              <button type="submit" class="btn btn-primary">{{translate "Save Settings"}}</button>
+              <a href="/admin/smtp-test" class="btn btn-outline-secondary" target="_blank">
+                <i class="las la-paper-plane mr-1"></i>{{translate "Send Test Email"}}
+              </a>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none border-left-primary">
+      <div class="card-body">
+        <h6 class="font-weight-bold mb-2"><i class="las la-info-circle mr-1"></i>{{translate "Quick Setup"}}</h6>
+        <p class="small text-muted mb-2"><strong>Gmail</strong></p>
+        <ul class="small text-muted pl-3 mb-3">
+          <li>Host: smtp.gmail.com</li>
+          <li>Port: 587 · Encryption: TLS</li>
+          <li>Enable 2FA → generate App Password</li>
+        </ul>
+        <p class="small text-muted mb-2"><strong>SendGrid</strong></p>
+        <ul class="small text-muted pl-3 mb-3">
+          <li>Host: smtp.sendgrid.net</li>
+          <li>Port: 587 · Encryption: TLS</li>
+          <li>Username: apikey · Password: your API key</li>
+        </ul>
+        <p class="small text-muted mb-2"><strong>Outlook / Office 365</strong></p>
+        <ul class="small text-muted pl-3 mb-0">
+          <li>Host: smtp.office365.com</li>
+          <li>Port: 587 · Encryption: TLS</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

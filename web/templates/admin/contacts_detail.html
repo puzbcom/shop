@@ -1,0 +1,160 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{translate "Contact Message"}} <span class="text-muted">#{{.Contact.ID}}</span></h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/contacts" class="btn btn-light btn-sm">
+        <i class="las la-arrow-left mr-1"></i>{{translate "Back to Messages"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Left: message content -->
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 h6">{{translate "Message"}}</h5>
+        <small class="text-muted">{{date_format .Contact.CreatedAt "Jan 02, 2006 · 15:04"}}</small>
+      </div>
+      <div class="card-body">
+        <!-- Sender info -->
+        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+          <div style="width:48px;height:48px;border-radius:50%;background:#6c757d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;margin-right:14px;">
+            {{first_char .Contact.Name}}
+          </div>
+          <div>
+            <div class="font-weight-700" style="font-size:15px;">{{.Contact.Name}}</div>
+            <div>
+              <a href="mailto:{{.Contact.Email}}" class="text-primary" style="font-size:13px;">{{.Contact.Email}}</a>
+              {{if .Contact.Phone}}<span class="text-muted ml-2" style="font-size:13px;">· {{deref_str .Contact.Phone}}</span>{{end}}
+            </div>
+          </div>
+        </div>
+
+        <!-- Message body -->
+        <div style="font-size:14px;line-height:1.8;color:#333;white-space:pre-wrap;word-break:break-word;">{{.Contact.Content}}</div>
+      </div>
+    </div>
+
+    <!-- Reply section (read-only if reply exists) -->
+    {{if .Contact.Reply}}
+    <div class="card rounded-0 shadow-none mb-3" style="border-left:3px solid #28a745;">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 h6"><i class="las la-reply mr-1 text-success"></i>{{translate "Reply Sent"}}</h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-0" style="font-size:14px;line-height:1.8;white-space:pre-wrap;">{{deref_str .Contact.Reply}}</p>
+      </div>
+    </div>
+    {{end}}
+
+    <!-- Reply form -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header">
+        <h5 class="mb-0 h6"><i class="las la-paper-plane mr-1"></i>{{translate "Send Reply"}}</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="/admin/contacts/{{.Contact.ID}}/reply">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <textarea name="reply" rows="5" class="form-control" placeholder="{{translate "Type your reply to the customer..."}}">{{if .Contact.Reply}}{{deref_str .Contact.Reply}}{{end}}</textarea>
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <small class="text-muted">
+              <i class="las la-info-circle mr-1"></i>
+              {{translate "This reply is for internal notes. Use the email link to contact the customer directly."}}
+            </small>
+            <button type="submit" class="btn btn-primary btn-sm ml-2 flex-shrink-0">
+              <i class="las la-save mr-1"></i>{{translate "Save Reply"}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: metadata + actions -->
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Details"}}</h5></div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tr>
+            <td class="text-muted pl-3" style="width:40%">{{translate "Message ID"}}</td>
+            <td class="pr-3"><strong>#{{.Contact.ID}}</strong></td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Name"}}</td>
+            <td class="pr-3">{{.Contact.Name}}</td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Email"}}</td>
+            <td class="pr-3" style="word-break:break-all;font-size:12px;">
+              <a href="mailto:{{.Contact.Email}}">{{.Contact.Email}}</a>
+            </td>
+          </tr>
+          {{if .Contact.Phone}}
+          <tr>
+            <td class="text-muted pl-3">{{translate "Phone"}}</td>
+            <td class="pr-3">{{deref_str .Contact.Phone}}</td>
+          </tr>
+          {{end}}
+          <tr>
+            <td class="text-muted pl-3">{{translate "Received"}}</td>
+            <td class="pr-3" style="font-size:12px;">{{date_format .Contact.CreatedAt "Jan 02, 2006 15:04"}}</td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Replied"}}</td>
+            <td class="pr-3">
+              {{if .Contact.Reply}}
+              <span class="badge badge-success">{{translate "Yes"}}</span>
+              {{else}}
+              <span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{end}}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Actions"}}</h5></div>
+      <div class="card-body">
+        <a href="mailto:{{.Contact.Email}}" class="btn btn-primary btn-block mb-2">
+          <i class="las la-envelope mr-1"></i>{{translate "Reply via Email"}}
+        </a>
+        <form method="POST" action="/admin/contacts/{{.Contact.ID}}/delete"
+              onsubmit="return confirm('{{translate "Delete this message permanently?"}}')">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="btn btn-outline-danger btn-block">
+            <i class="las la-trash mr-1"></i>{{translate "Delete Message"}}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick navigation -->
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Navigation"}}</h5></div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          {{if .PrevID}}
+          <a href="/admin/contacts/{{.PrevID}}" class="btn btn-light btn-sm">
+            <i class="las la-angle-left"></i> {{translate "Prev"}}
+          </a>
+          {{else}}<span></span>{{end}}
+          {{if .NextID}}
+          <a href="/admin/contacts/{{.NextID}}" class="btn btn-light btn-sm">
+            {{translate "Next"}} <i class="las la-angle-right"></i>
+          </a>
+          {{else}}<span></span>{{end}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

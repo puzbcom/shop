@@ -1,0 +1,92 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Sellers"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <form method="GET" action="/admin/sellers" class="form-inline">
+      <div class="mr-2">
+        <select name="status" class="form-control form-control-sm">
+          <option value="">{{translate "All"}}</option>
+          <option value="verified" {{if eq .Status "verified"}}selected{{end}}>{{translate "Verified"}}</option>
+          <option value="pending" {{if eq .Status "pending"}}selected{{end}}>{{translate "Pending"}}</option>
+          <option value="banned" {{if eq .Status "banned"}}selected{{end}}>{{translate "Banned"}}</option>
+        </select>
+      </div>
+      <div class="mr-2">
+        <input type="text" name="search" value="{{.Search}}" class="form-control form-control-sm" placeholder="{{translate "Search by name or email"}}">
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary">{{translate "Filter"}}</button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Name"}}</th>
+            <th>{{translate "Email"}}</th>
+            <th>{{translate "Shop"}}</th>
+            <th>{{translate "Verified"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Sellers}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
+            <td>{{deref_str .Email}}</td>
+            <td>{{if .Shop}}{{deref_str .Shop.Name}}{{else}}—{{end}}</td>
+            <td>
+              {{if and .Shop (eq .Shop.VerificationStatus 1)}}
+              <span class="badge badge-success">{{translate "Verified"}}</span>
+              {{else}}<span class="badge badge-warning">{{translate "Pending"}}</span>{{end}}
+            </td>
+            <td>
+              {{if eq .Banned 1}}<span class="badge badge-danger">{{translate "Banned"}}</span>
+              {{else}}<span class="badge badge-success">{{translate "Active"}}</span>{{end}}
+            </td>
+            <td class="text-right">
+              <a href="/admin/sellers/{{.ID}}" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "View"}}"><i class="las la-eye"></i></a>
+              {{if and .Shop (eq .Shop.VerificationStatus 0)}}
+              <form method="POST" action="/admin/sellers/{{.ID}}/verify" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-success btn-icon btn-circle btn-sm" title="{{translate "Verify"}}"><i class="las la-check"></i></button>
+              </form>
+              {{end}}
+              <form method="POST" action="/admin/sellers/{{.ID}}/login-as" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Login as Seller"}}"><i class="las la-sign-in-alt"></i></button>
+              </form>
+              <form method="POST" action="/admin/sellers/{{.ID}}/ban" class="d-inline" onsubmit="return confirm('Toggle ban status?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Ban / Unban"}}"><i class="las la-ban"></i></button>
+              </form>
+              <form method="POST" action="/admin/sellers/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this seller, their shop and all their products? This cannot be undone.')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="text-center py-4">{{translate "No sellers found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

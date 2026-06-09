@@ -1,0 +1,97 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">
+        {{translate "Applied Sellers"}}
+        <span class="badge badge-warning ml-2" style="font-size:14px;vertical-align:middle">{{.Total}}</span>
+      </h1>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <form method="GET" action="/admin/sellers/applied" class="form-inline">
+      <div class="mr-2">
+        <input type="text" name="search" value="{{.Search}}" class="form-control form-control-sm" placeholder="{{translate "Search by name or email"}}">
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary">{{translate "Search"}}</button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Name"}}</th>
+            <th>{{translate "Email"}}</th>
+            <th>{{translate "Shop"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th>{{translate "Registered"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Sellers}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
+            <td>{{deref_str .Email}}</td>
+            <td>{{if .Shop}}{{deref_str .Shop.Name}}{{else}}<span class="text-muted">—</span>{{end}}</td>
+            <td>
+              {{if eq .Banned 1}}
+              <span class="badge badge-danger">{{translate "Banned"}}</span>
+              {{else}}
+              <span class="badge badge-secondary">{{translate "Pending"}}</span>
+              {{end}}
+            </td>
+            <td>{{date_format .CreatedAt "2006-01-02"}}</td>
+            <td class="text-right">
+              <a href="/admin/sellers/{{.ID}}" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "View"}}">
+                <i class="las la-eye"></i>
+              </a>
+              {{if and .Shop (eq .Shop.VerificationStatus 0)}}
+              <form method="POST" action="/admin/sellers/{{.ID}}/verify" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-success btn-icon btn-circle btn-sm" title="{{translate "Approve"}}">
+                  <i class="las la-check"></i>
+                </button>
+              </form>
+              {{end}}
+              <form method="POST" action="/admin/sellers/{{.ID}}/login-as" class="d-inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Login as Seller"}}">
+                  <i class="las la-sign-in-alt"></i>
+                </button>
+              </form>
+              <form method="POST" action="/admin/sellers/{{.ID}}/ban" class="d-inline" onsubmit="return confirm('Toggle ban status?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Ban / Unban"}}">
+                  <i class="las la-ban"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="las la-check-circle fs-40 d-block mb-2" style="font-size:40px"></i>
+              {{translate "No pending seller applications"}}
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}{{if $.Search}}&search={{$.Search}}{{end}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

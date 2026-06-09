@@ -1,0 +1,152 @@
+{{define "frontend/home"}}
+{{block "meta_title" .}}{{get_setting "website_name"}} | {{get_setting "site_motto"}}{{end}}
+
+<!-- Sliders -->
+{{if .Sliders}}
+<section class="mb-4">
+    <div class="aiz-carousel" data-items="1" data-loop="true" data-autoplay="true" data-autoplay-timeout="5000">
+        {{range .Sliders}}
+        <div class="carousel-box">
+            <div class="position-relative overflow-hidden" style="min-height:300px">
+                <img class="img-fit" src="{{uploaded_asset .Photo}}" alt="{{.Text1}}">
+                {{if or .Text1 .Text2 .Text3}}
+                <div class="position-absolute top-0 left-0 w-100 h-100 d-flex align-items-center">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-7 col-lg-6">
+                                {{if .Text1}}<h2 class="fw-900 display-5 text-dark">{{.Text1}}</h2>{{end}}
+                                {{if .Text2}}<p class="lead text-dark opacity-80">{{.Text2}}</p>{{end}}
+                                {{if .Text3}}<a href="{{safe_url .Text3}}" class="btn btn-primary mt-3">{{translate "Shop Now"}}</a>{{end}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}
+
+<!-- Flash Deal Banner -->
+{{if .ActiveFlashDeal}}
+{{$deal := .ActiveFlashDeal}}
+<section class="mb-4">
+    <div class="container">
+        <div class="card border-0 shadow-sm overflow-hidden" style="background:{{$deal.BackgroundColor}}">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap">
+                <div>
+                    <h4 class="fw-700 mb-1" style="color:{{$deal.TextColor}}">{{if $deal.Title}}{{deref_str $deal.Title}}{{end}}</h4>
+                    <div class="countdown" data-countdown="{{$deal.EndDate}}"></div>
+                </div>
+                <a href="/flash-deals/{{$deal.ID}}" class="btn btn-primary mt-2 mt-md-0">{{translate "View All"}}</a>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}
+
+<!-- Featured Categories -->
+{{if .FeaturedCategories}}
+<section class="mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3">
+            <h2 class="h5 fw-700 mb-0 mr-auto">{{translate "Featured Categories"}}</h2>
+            <a href="/categories" class="text-primary fs-13">{{translate "See All"}}</a>
+        </div>
+        <div class="aiz-carousel" data-items="2" data-xl-items="6" data-lg-items="5" data-md-items="4" data-sm-items="3" data-arrow="true">
+            {{range .FeaturedCategories}}
+            <div class="carousel-box px-2">
+                <a href="/category/{{.Slug}}" class="d-block text-center text-reset">
+                    <div class="bg-white rounded shadow-sm p-3 mb-2">
+                        {{if .Banner}}<img src="{{uploaded_asset .Banner}}" class="img-fluid" style="height:100px;object-fit:cover;border-radius:4px" alt="{{.Name}}">
+                        {{else}}<img src="{{uploaded_asset .Icon}}" class="img-fluid" style="height:60px;object-fit:contain" alt="{{.Name}}">{{end}}
+                    </div>
+                    <span class="fs-13 fw-600">{{.Name}}</span>
+                </a>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+
+<!-- Best Selling Products -->
+{{if .BestSellers}}
+<section class="mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3">
+            <h2 class="h5 fw-700 mb-0 mr-auto">{{translate "Best Sellers"}}</h2>
+            <a href="/products?sort=best_selling" class="text-primary fs-13">{{translate "See All"}}</a>
+        </div>
+        <div class="aiz-carousel" data-items="2" data-xl-items="5" data-lg-items="4" data-md-items="3" data-sm-items="2" data-arrow="true">
+            {{range .BestSellers}}
+            <div class="carousel-box px-2">
+                {{template "partials/product_card" .}}
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+
+<!-- New Arrivals -->
+{{if .NewArrivals}}
+<section class="mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3">
+            <h2 class="h5 fw-700 mb-0 mr-auto">{{translate "New Arrivals"}}</h2>
+            <a href="/products?sort=newest" class="text-primary fs-13">{{translate "See All"}}</a>
+        </div>
+        <div class="aiz-carousel" data-items="2" data-xl-items="5" data-lg-items="4" data-md-items="3" data-sm-items="2" data-arrow="true">
+            {{range .NewArrivals}}
+            <div class="carousel-box px-2">
+                {{template "partials/product_card" .}}
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+
+<!-- Today's Deal -->
+{{if .TodaysDeals}}
+<section class="mb-5 bg-primary py-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3">
+            <h2 class="h5 fw-700 mb-0 mr-auto text-white">{{translate "Today's Deal"}}</h2>
+            <a href="/products?deal=todays" class="text-white fs-13 opacity-75">{{translate "See All"}}</a>
+        </div>
+        <div class="aiz-carousel" data-items="2" data-xl-items="5" data-lg-items="4" data-md-items="3" data-sm-items="2" data-arrow="true">
+            {{range .TodaysDeals}}
+            <div class="carousel-box px-2">
+                {{template "partials/product_card" .}}
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+
+<!-- Top Brands -->
+{{if .TopBrands}}
+<section class="mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3">
+            <h2 class="h5 fw-700 mb-0 mr-auto">{{translate "Top Brands"}}</h2>
+            <a href="/brands" class="text-primary fs-13">{{translate "See All"}}</a>
+        </div>
+        <div class="aiz-carousel" data-items="3" data-xl-items="7" data-lg-items="6" data-md-items="5" data-sm-items="4" data-arrow="true">
+            {{range .TopBrands}}
+            <div class="carousel-box px-2">
+                <a href="/brand/{{.Slug}}" class="d-block bg-white rounded shadow-sm p-3 text-center">
+                    <img src="{{uploaded_asset .Logo}}" class="img-fluid" style="height:50px;object-fit:contain" alt="{{.Name}}">
+                </a>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+{{end}}

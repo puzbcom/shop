@@ -1,0 +1,360 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Order"}} #{{.Order.ID}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/orders" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- ── Left: order items + fulfillment ──────────────────────────────────── -->
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Order Items & Fulfillment"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>{{translate "Product"}}</th>
+                <th>{{translate "Price"}}</th>
+                <th>{{translate "Qty"}}</th>
+                <th>{{translate "Total"}}</th>
+                <th>{{translate "Fulfillment"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Order.OrderDetails}}
+              {{$sf := index $.SFMap .ID}}
+              <tr>
+                <td>
+                  {{if .Product}}{{.Product.Name}}{{end}}
+                  {{if .Variation}}<br><span class="badge badge-info badge-sm">{{deref_str .Variation}}</span>{{end}}
+                  {{if and .Product .Product.Source1688URL}}
+                    <br><span class="badge badge-warning badge-sm">1688</span>
+                  {{end}}
+                </td>
+                <td>{{if .Price}}{{deref_float .Price | format_price}}{{end}}</td>
+                <td>{{deref_int .Quantity}}</td>
+                <td>{{if .Price}}{{mul (deref_float .Price) (itof (deref_int .Quantity)) | format_price}}{{end}}</td>
+                <td style="min-width:220px">
+                  {{if $sf}}
+                    <!-- existing supplier order — use data-* attrs to avoid JS injection -->
+                    <div class="d-flex align-items-center flex-wrap" style="gap:4px">
+                      <span class="badge badge-{{sfStatusBadge $sf.Status}}">{{$sf.Status}}</span>
+                      <button type="button" class="btn btn-xs btn-outline-primary js-fulfill-edit"
+                        data-detail-id="{{.ID}}"
+                        data-product-id="{{if .Product}}{{.Product.ID}}{{else}}0{{end}}"
+                        data-sid="{{$sf.ID}}"
+                        data-ali-order-id="{{$sf.AliOrderID}}"
+                        data-qty="{{$sf.Qty}}"
+                        data-unit-cost="{{$sf.UnitCostCNY}}"
+                        data-carrier="{{$sf.TrackingCompany}}"
+                        data-tracking="{{$sf.TrackingNumber}}"
+                        data-notes="{{deref_str $sf.Notes}}">
+                        <i class="las la-edit"></i>
+                      </button>
+                      {{if and $sf.TrackingNumber $sf.TrackingCompany}}
+                      <button type="button" class="btn btn-xs btn-outline-info js-sync-tracking"
+                        data-sid="{{$sf.ID}}">
+                        <i class="las la-sync-alt"></i> Sync
+                      </button>
+                      {{end}}
+                    </div>
+                    {{if $sf.AliOrderID}}<div class="text-muted small mt-1">1688: {{$sf.AliOrderID}}</div>{{end}}
+                    {{if $sf.TrackingNumber}}<div class="text-muted small">{{$sf.TrackingCompany}} {{$sf.TrackingNumber}}</div>{{end}}
+                    {{if $sf.SyncedAt}}<div class="text-muted small">Synced: {{date_format (deref_time $sf.SyncedAt) "Jan 2 15:04"}}</div>{{end}}
+                    <!-- logistics events accordion -->
+                    {{$evts := index $.SFEvents $sf.ID}}
+                    {{if $evts}}
+                    <div class="mt-1">
+                      <a data-toggle="collapse" href="#log-{{$sf.ID}}" class="small text-primary">
+                        Show {{len $evts}} events
+                      </a>
+                      <div class="collapse" id="log-{{$sf.ID}}">
+                        <ul class="list-unstyled small mt-1 mb-0" style="max-height:200px;overflow-y:auto">
+                          {{range $evts}}
+                          <li class="border-bottom pb-1 mb-1">
+                            <div class="text-muted">{{.FTime}}</div>
+                            <div>{{.Context}}</div>
+                          </li>
+                          {{end}}
+                        </ul>
+                      </div>
+                    </div>
+                    {{end}}
+                  {{else}}
+                    <!-- no supplier order yet -->
+                    {{if and .Product (deref_str .Product.Source1688URL)}}
+                      <a href="{{deref_str .Product.Source1688URL}}" target="_blank" class="btn btn-xs btn-warning mb-1">
+                        <i class="las la-external-link-alt"></i> Order on 1688
+                      </a><br>
+                    {{end}}
+                    <button type="button" class="btn btn-xs btn-outline-secondary js-fulfill-edit"
+                      data-detail-id="{{.ID}}"
+                      data-product-id="{{if .Product}}{{.Product.ID}}{{else}}0{{end}}"
+                      data-sid="0"
+                      data-ali-order-id=""
+                      data-qty="{{deref_int .Quantity}}"
+                      data-unit-cost="0"
+                      data-carrier=""
+                      data-tracking=""
+                      data-notes="">
+                      <i class="las la-plus"></i> {{translate "Add Fulfillment"}}
+                    </button>
+                  {{end}}
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: status update + summary + customer ──────────────────────── -->
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Update Status"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/orders/{{.Order.ID}}/status">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Delivery Status"}}</label>
+            <select name="delivery_status" class="form-control">
+              <option value="pending" {{if eq (deref_str .Order.DeliveryStatus) "pending"}}selected{{end}}>{{translate "Pending"}}</option>
+              <option value="processing" {{if eq (deref_str .Order.DeliveryStatus) "processing"}}selected{{end}}>{{translate "Processing"}}</option>
+              <option value="on the way" {{if eq (deref_str .Order.DeliveryStatus) "on the way"}}selected{{end}}>{{translate "On The Way"}}</option>
+              <option value="delivered" {{if eq (deref_str .Order.DeliveryStatus) "delivered"}}selected{{end}}>{{translate "Delivered"}}</option>
+              <option value="cancelled" {{if eq (deref_str .Order.DeliveryStatus) "cancelled"}}selected{{end}}>{{translate "Cancelled"}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{translate "Payment Status"}}</label>
+            <select name="payment_status" class="form-control">
+              <option value="unpaid" {{if eq (deref_str .Order.PaymentStatus) "unpaid"}}selected{{end}}>{{translate "Unpaid"}}</option>
+              <option value="paid" {{if eq (deref_str .Order.PaymentStatus) "paid"}}selected{{end}}>{{translate "Paid"}}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Update"}}</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Summary"}}</h5></div>
+      <div class="card-body">
+        <table class="table table-borderless mb-0">
+          <tr><td>{{translate "Grand Total"}}</td><td class="text-right fw-600">{{if .Order.GrandTotal}}{{deref_float .Order.GrandTotal | format_price}}{{end}}</td></tr>
+          <tr><td>{{translate "Payment Type"}}</td><td class="text-right">{{deref_str .Order.PaymentType}}</td></tr>
+          <tr><td>{{translate "Date"}}</td><td class="text-right">{{date_format .Order.CreatedAt "Jan 2, 2006"}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    {{if .Order.Buyer}}
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Customer"}}</h5></div>
+      <div class="card-body">
+        <p class="mb-1 fw-600">{{.Order.Buyer.Name}}</p>
+        {{if .Order.Buyer.Email}}<p class="mb-0 text-muted">{{deref_str .Order.Buyer.Email}}</p>{{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+</div>
+
+<!-- ── Fulfillment modal ─────────────────────────────────────────────────── -->
+<div class="modal fade" id="fulfillModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{translate "Fulfillment Details"}}</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="fm_sid">
+        <input type="hidden" id="fm_detail_id">
+        <input type="hidden" id="fm_product_id">
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>1688 Order ID <small class="text-muted">(enter after placing order on 1688)</small></label>
+              <input type="text" id="fm_ali_order_id" class="form-control" placeholder="e.g. 3308564123456789">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>Qty</label>
+              <input type="number" id="fm_qty" class="form-control" min="1" value="1">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>Unit Cost (CNY)</label>
+              <input type="number" id="fm_unit_cost" class="form-control" step="0.01" min="0" value="0">
+            </div>
+          </div>
+        </div>
+
+        <hr>
+        <h6 class="text-muted mb-3">{{translate "Logistics / Tracking"}}</h6>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Carrier</label>
+              <select id="fm_carrier" class="form-control">
+                <option value="">— Select carrier —</option>
+                {{range .Carriers}}
+                <option value="{{.Code}}">{{.Name}}</option>
+                {{end}}
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Tracking Number</label>
+              <input type="text" id="fm_tracking" class="form-control" placeholder="e.g. SF1234567890">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="fm_notes" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div id="fm_error" class="alert alert-danger d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveFulfillment()">
+          <i class="las la-save mr-1"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _csrf = '{{csrf_token}}';
+var _orderId = {{.Order.ID}};
+
+// Open modal from data attributes on the button — avoids JS string injection.
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.js-fulfill-edit');
+  if (btn) {
+    var d = btn.dataset;
+    document.getElementById('fm_detail_id').value  = d.detailId  || 0;
+    document.getElementById('fm_product_id').value = d.productId || 0;
+    document.getElementById('fm_sid').value         = d.sid       || 0;
+    document.getElementById('fm_ali_order_id').value= d.aliOrderId|| '';
+    document.getElementById('fm_qty').value         = d.qty       || 1;
+    document.getElementById('fm_unit_cost').value   = d.unitCost  || 0;
+    document.getElementById('fm_tracking').value    = d.tracking  || '';
+    document.getElementById('fm_notes').value       = d.notes     || '';
+    document.getElementById('fm_error').classList.add('d-none');
+    // Set carrier select
+    var sel = document.getElementById('fm_carrier');
+    for (var i = 0; i < sel.options.length; i++) {
+      sel.options[i].selected = (sel.options[i].value === (d.carrier || 'yunexpress'));
+    }
+    $('#fulfillModal').modal('show');
+  }
+
+  var syncBtn = e.target.closest('.js-sync-tracking');
+  if (syncBtn) {
+    var sid = syncBtn.dataset.sid;
+    syncBtn.disabled = true;
+    var orig = syncBtn.innerHTML;
+    syncBtn.innerHTML = '<i class="las la-spinner la-spin"></i>';
+
+    var restore = function() { syncBtn.disabled = false; syncBtn.innerHTML = orig; };
+    fetch('/admin/supplier-orders/' + sid + '/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': _csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: '_token=' + encodeURIComponent(_csrf)
+    })
+    .then(function(r) {
+      // Read as text first so a non-JSON response (gateway error page, login
+      // redirect, etc.) yields a useful message instead of a JSON-parse crash.
+      return r.text().then(function(body) {
+        var ct = r.headers.get('content-type') || '';
+        if (ct.indexOf('application/json') !== -1) {
+          var data = {};
+          try { data = JSON.parse(body); } catch (e) {}
+          return { ok: r.ok, json: true, data: data, status: r.status };
+        }
+        return { ok: r.ok, json: false, body: body, status: r.status, redirected: r.redirected, url: r.url };
+      });
+    })
+    .then(function(res) {
+      if (res.json) {
+        if (!res.ok) { alert(res.data.error || ('Sync failed (HTTP ' + res.status + ')')); restore(); return; }
+        location.reload();
+        return;
+      }
+      // Non-JSON response: tell the user what actually happened.
+      if (res.redirected && /\/login/.test(res.url)) {
+        alert('Your session has expired. Please log in again.');
+        window.location = '/login';
+        return;
+      }
+      var snippet = (res.body || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+      alert('Sync failed: server returned a non-JSON response (HTTP ' + res.status + ').\n' + snippet);
+      restore();
+    })
+    .catch(function(e) {
+      alert('Request failed: ' + e.message);
+      restore();
+    });
+  }
+});
+
+function saveFulfillment() {
+  var sid = document.getElementById('fm_sid').value;
+  var payload = new URLSearchParams({
+    _token:            _csrf,
+    order_id:          _orderId,
+    order_detail_id:   document.getElementById('fm_detail_id').value,
+    product_id:        document.getElementById('fm_product_id').value,
+    ali_order_id:      document.getElementById('fm_ali_order_id').value,
+    qty:               document.getElementById('fm_qty').value,
+    unit_cost_cny:     document.getElementById('fm_unit_cost').value,
+    tracking_company:  document.getElementById('fm_carrier').value,
+    tracking_number:   document.getElementById('fm_tracking').value,
+    notes:             document.getElementById('fm_notes').value,
+  });
+
+  if (sid && sid !== '0') {
+    payload.append('id', sid);
+  }
+
+  var errDiv = document.getElementById('fm_error');
+  errDiv.classList.add('d-none');
+
+  fetch('/admin/supplier-orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': _csrf },
+    body: payload.toString()
+  })
+  .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
+  .then(function(res) {
+    if (!res.ok) {
+      errDiv.textContent = res.data.error || 'Save failed';
+      errDiv.classList.remove('d-none');
+      return;
+    }
+    location.reload();
+  })
+  .catch(function(e) {
+    errDiv.textContent = 'Request failed: ' + e.message;
+    errDiv.classList.remove('d-none');
+  });
+}
+</script>
+{{end}}

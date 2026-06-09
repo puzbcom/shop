@@ -1,0 +1,13 @@
+{{define "account_nav"}}
+<nav class="account-nav">
+  <a href="/dashboard" class="{{if eq . "dashboard"}}active{{end}}"><span class="nav-icon">🏠</span> {{translate "Dashboard"}}</a>
+  <a href="/purchase_history" class="{{if eq . "purchase_history"}}active{{end}}"><span class="nav-icon">📦</span> {{translate "My orders"}}</a>
+  <a href="/auction-wins" class="{{if eq . "auction_wins"}}active{{end}}"><span class="nav-icon">🔨</span> {{translate "Auction Wins"}}</a>
+  <a href="/wishlists" class="{{if eq . "wishlists"}}active{{end}}"><span class="nav-icon">❤️</span> {{translate "Wishlists"}}</a>
+  <a href="/wallet" class="{{if eq . "wallet"}}active{{end}}"><span class="nav-icon">💰</span> {{translate "Wallet"}}</a>
+  <a href="/addresses" class="{{if eq . "addresses"}}active{{end}}"><span class="nav-icon">📍</span> {{translate "Addresses"}}</a>
+  <a href="/profile" class="{{if eq . "profile"}}active{{end}}"><span class="nav-icon">👤</span> {{translate "Profile"}}</a>
+  <a href="/tickets" class="{{if eq . "tickets"}}active{{end}}"><span class="nav-icon">🎫</span> {{translate "Support Tickets"}}</a>
+  <a href="/logout"><span class="nav-icon">🚪</span> {{translate "Sign out"}}</a>
+</nav>
+{{end}}

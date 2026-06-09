@@ -1,0 +1,152 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .page-title { font-size:22px; font-weight:800; margin-bottom:6px; }
+  .back-link { font-size:13px; color:var(--gray); text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+  .back-link:hover { color:var(--black); }
+  .section-card { border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:16px; }
+  .section-title { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); margin-bottom:14px; }
+  .badge { display:inline-block; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .badge-pending   { background:#fef3c7; color:#92400e; }
+  .badge-processing { background:#dbeafe; color:#1e40af; }
+  .badge-on-the-way { background:#ede9fe; color:#5b21b6; }
+  .badge-delivered  { background:#d1fae5; color:#065f46; }
+  .badge-cancelled  { background:#fee2e2; color:#991b1b; }
+  .badge-paid       { background:#d1fae5; color:#065f46; }
+  .badge-unpaid     { background:#fef3c7; color:#92400e; }
+  .item-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .item-row:last-child { border-bottom:none; }
+  .item-thumb { width:60px; height:60px; border-radius:10px; background:var(--light-gray); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .item-thumb img { width:100%; height:100%; object-fit:cover; }
+  .item-name { font-size:14px; font-weight:700; margin-bottom:3px; }
+  .item-meta { font-size:12px; color:var(--gray); }
+  .item-price { margin-left:auto; text-align:right; white-space:nowrap; }
+  .item-price .unit { font-size:12px; color:var(--gray); }
+  .item-price .total { font-size:14px; font-weight:800; }
+  .summary-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:14px; }
+  .summary-row.grand { font-weight:800; font-size:16px; border-top:2px solid var(--black); margin-top:6px; padding-top:12px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px; }
+  .info-label { color:var(--gray); font-size:12px; margin-bottom:2px; }
+  .info-value { font-weight:600; }
+  .btn-download { display:inline-flex; align-items:center; gap:7px; background:#0ea5e9; color:#fff; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:700; text-decoration:none; margin-top:8px; }
+  .btn-download:hover { background:#0284c7; color:#fff; }
+  .digital-badge { background:#e0f2fe; color:#0369a1; border-radius:99px; padding:2px 8px; font-size:11px; font-weight:700; }
+  .sub-order-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:6px; }
+  .sub-order-ref { font-size:13px; font-weight:700; }
+  @media(max-width:700px){
+    .account-wrap { grid-template-columns:1fr; }
+    .account-nav { display:none; }
+    .info-grid { grid-template-columns:1fr; }
+  }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "purchase_history"}}
+  <div>
+    <a href="/purchase_history" class="back-link">{{translate "← Back to orders"}}</a>
+    <div class="page-title">{{translate "Order #"}}{{.Order.ID}}</div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:24px;">{{translate "Placed on"}} {{date_format .Order.CreatedAt "January 2, 2006"}}</div>
+
+    {{range .Order.Orders}}
+    <!-- Sub-order -->
+    <div class="section-card">
+      <div class="sub-order-header">
+        <span class="sub-order-ref">{{translate "Sub-order #"}}{{.ID}}</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          {{if .DeliveryStatus}}
+          {{$ds := deref_str .DeliveryStatus}}
+          <span class="badge badge-{{$ds}}">{{$ds}}</span>
+          {{end}}
+          {{if .PaymentStatus}}
+          {{$ps := deref_str .PaymentStatus}}
+          <span class="badge badge-{{$ps}}">{{$ps}}</span>
+          {{end}}
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div>
+        {{$subOrderID := .ID}}
+        {{range .OrderDetails}}
+        <div class="item-row">
+          <div class="item-thumb">
+            {{if and .Product .Product.ThumbnailImg}}
+            <img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">
+            {{else}}&#x1F6CD;{{end}}
+          </div>
+          <div style="min-width:0;flex:1;">
+            <div class="item-name">
+              {{if .Product}}{{.Product.Name}}{{else}}(Product removed){{end}}
+              {{if and .Product (eq .Product.Digital 1)}}<span class="digital-badge">{{translate "Digital"}}</span>{{end}}
+            </div>
+            {{if .Variation}}<div class="item-meta">{{deref_str .Variation}}</div>{{end}}
+            <div class="item-meta">{{translate "Qty:"}} {{deref_int .Quantity}}</div>
+            {{if and .Product (eq .Product.Digital 1)}}
+              {{if eq .PaymentStatus "paid"}}
+              <a href="/download/{{$subOrderID}}/{{.ID}}" class="btn-download">{{translate "⬇ Download"}}</a>
+              {{else}}
+              <div class="item-meta" style="color:#dc2626;margin-top:4px;">{{translate "⏳ Download available after payment"}}</div>
+              {{end}}
+            {{end}}
+          </div>
+          <div class="item-price">
+            {{if .Price}}
+            <div class="unit">{{deref_float .Price | format_price}} {{translate "each"}}</div>
+            <div class="total">{{mul (deref_float .Price) (itof (deref_int .Quantity)) | format_price}}</div>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
+
+      <!-- Sub-order tracking / shipping info -->
+      {{if or .TrackingCode .PaymentType}}
+      <div class="info-grid" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        {{if .PaymentType}}
+        <div>
+          <div class="info-label">{{translate "Payment"}}</div>
+          <div class="info-value">{{deref_str .PaymentType}}</div>
+        </div>
+        {{end}}
+        {{if .TrackingCode}}
+        <div>
+          <div class="info-label">{{translate "Tracking"}}</div>
+          <div class="info-value">{{deref_str .TrackingCode}}</div>
+        </div>
+        {{end}}
+      </div>
+      {{end}}
+    </div>
+    {{end}}
+
+    <!-- Order summary -->
+    <div class="section-card">
+      <div class="section-title">{{translate "Order Summary"}}</div>
+      <div class="summary-row">
+        <span>{{translate "Subtotal"}}</span>
+        <span>{{format_price .Order.GrandTotal}}</span>
+      </div>
+      <div class="summary-row grand">
+        <span>{{translate "Total"}}</span>
+        <span>{{format_price .Order.GrandTotal}}</span>
+      </div>
+    </div>
+
+    <!-- Shipping address -->
+    {{if .Order.ShippingAddress}}
+    {{$addr := deref_str .Order.ShippingAddress}}
+    {{if $addr}}
+    <div class="section-card">
+      <div class="section-title">{{translate "Shipping Address"}}</div>
+      <div style="font-size:14px;line-height:1.7;">{{$addr}}</div>
+    </div>
+    {{end}}
+    {{end}}
+
+  </div>
+</div>
+{{end}}

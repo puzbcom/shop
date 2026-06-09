@@ -1,0 +1,539 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Categories"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <button type="button" class="btn btn-primary btn-sm" onclick="openAdd()"><i class="las la-plus mr-1"></i>{{translate "Add Category"}}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Table -->
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th width="40">#</th>
+            <th width="60">{{translate "Icon"}}</th>
+            <th>{{translate "Name"}}</th>
+            <th>{{translate "Level"}}</th>
+            <th>{{translate "Order"}}</th>
+            <th>{{translate "Products"}}</th>
+            <th>{{translate "Tags"}}</th>
+            <th>{{translate "Commission"}}</th>
+            <th>{{translate "SEO"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Categories}}
+          {{$seoScore := index $.SEOScores .ID}}
+          {{$seoMeta  := index $.SEOMetas  .ID}}
+          <tr>
+            <td class="align-middle">{{.ID}}</td>
+            <td class="align-middle">
+              {{if .Icon}}
+              <img src="{{uploaded_asset .Icon}}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;" alt="">
+              {{else}}
+              <span class="text-muted" style="font-size:20px;"><i class="las la-tag"></i></span>
+              {{end}}
+            </td>
+            <td class="align-middle">
+              {{if gt .Level 0}}<span class="text-muted mr-1">—</span>{{end}}
+              <strong>{{.Name}}</strong>
+              {{if .Slug}}<br><small class="text-muted">/{{deref_str .Slug}}</small>{{end}}
+            </td>
+            <td class="align-middle">
+              {{if eq .Level 0}}<span class="badge badge-primary">{{translate "Top"}}</span>
+              {{else}}<span class="badge badge-secondary">{{translate "Sub"}}</span>{{end}}
+            </td>
+            <td class="align-middle">{{.OrderLevel}}</td>
+            <td class="align-middle">{{len .Products}}</td>
+            <td class="align-middle" style="white-space:nowrap;">
+              {{if eq .Featured 1}}<span class="badge badge-warning mr-1">Featured</span>{{end}}
+              {{if eq .HotCategory "1"}}<span class="badge badge-danger mr-1">Hot</span>{{end}}
+              {{if eq .Top 1}}<span class="badge badge-info mr-1">Top</span>{{end}}
+              {{if eq .Digital 1}}<span class="badge badge-dark">Digital</span>{{end}}
+            </td>
+            <td class="align-middle">{{.CommisionRate}}%</td>
+            <td class="align-middle">
+              {{if gt $seoScore 0}}
+                {{if ge $seoScore 80}}<span class="badge badge-success">{{$seoScore}}</span>
+                {{else if ge $seoScore 50}}<span class="badge badge-warning">{{$seoScore}}</span>
+                {{else}}<span class="badge badge-danger">{{$seoScore}}</span>{{end}}
+              {{else}}<span class="badge badge-secondary">—</span>{{end}}
+            </td>
+            <td class="text-right align-middle" style="white-space:nowrap;">
+              <button type="button" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"
+                data-id="{{.ID}}"
+                data-name="{{.Name}}"
+                data-slug="{{deref_str .Slug}}"
+                data-parent="{{if .ParentID}}{{deref_uint .ParentID}}{{else}}0{{end}}"
+                data-order="{{.OrderLevel}}"
+                data-commission="{{.CommisionRate}}"
+                data-discount="{{.Discount}}"
+                data-refund="{{if .RefundRequestTime}}{{deref_uint .RefundRequestTime}}{{else}}0{{end}}"
+                data-featured="{{.Featured}}"
+                data-hot="{{.HotCategory}}"
+                data-top="{{.Top}}"
+                data-digital="{{.Digital}}"
+                data-icon="{{uploaded_asset .Icon}}"
+                data-banner="{{uploaded_asset .Banner}}"
+                data-cover="{{uploaded_asset .CoverImage}}"
+                data-focus-kw="{{$seoMeta.FocusKeyword}}"
+                data-meta-title="{{deref_str .MetaTitle}}"
+                data-meta-desc="{{deref_str .MetaDescription}}"
+                data-meta-kw="{{deref_str .MetaKeywords}}"
+                onclick="openEdit(this)">
+                <i class="las la-edit"></i>
+              </button>
+              <form method="POST" action="/admin/categories/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete {{.Name}}? This cannot be undone.')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="10" class="text-center py-4 text-muted">{{translate "No categories yet"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add / Edit Modal ─────────────────────────────────────────── -->
+<div class="modal fade" id="catModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="catModalTitle">{{translate "Add Category"}}</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <form id="catForm" method="POST" action="/admin/categories">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="modal-body">
+
+          <div class="row">
+            <!-- Left: core fields -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Name"}} <span class="text-danger">*</span></label>
+                <input type="text" name="name" id="catName" class="form-control" required oninput="autoSlug(this.value)">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Slug"}}</label>
+                <input type="text" name="slug" id="catSlug" class="form-control form-control-sm">
+              </div>
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Parent Category"}}</label>
+                <select name="parent_id" id="catParent" class="form-control">
+                  <option value="">{{translate "None (Top Level)"}}</option>
+                  {{range .Categories}}{{if eq .Level 0}}
+                  <option value="{{.ID}}">{{.Name}}</option>
+                  {{end}}{{end}}
+                </select>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold small">{{translate "Order Level"}}</label>
+                    <input type="number" name="order_level" id="catOrderLevel" class="form-control form-control-sm" value="0" min="0">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold small">{{translate "Commission"}} (%)</label>
+                    <input type="number" name="commision_rate" id="catCommission" class="form-control form-control-sm" value="0" min="0" step="0.01">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold small">{{translate "Discount"}} (%)</label>
+                    <input type="number" name="discount" id="catDiscount" class="form-control form-control-sm" value="0" min="0" step="0.01">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-group">
+                    <label class="font-weight-bold small">{{translate "Refund Window"}} (days)</label>
+                    <input type="number" name="refund_request_time" id="catRefund" class="form-control form-control-sm" value="0" min="0">
+                  </div>
+                </div>
+              </div>
+              <!-- Toggles -->
+              <div class="form-group">
+                <label class="font-weight-bold small d-block mb-2">{{translate "Tags"}}</label>
+                <div class="d-flex flex-wrap" style="gap:12px;">
+                  <label class="aiz-switch aiz-switch-success mb-0">
+                    <input type="hidden" name="featured" value="0">
+                    <input type="checkbox" name="featured" id="catFeatured" value="1">
+                    <span></span><small>{{translate "Featured"}}</small>
+                  </label>
+                  <label class="aiz-switch aiz-switch-success mb-0">
+                    <input type="hidden" name="hot_category" value="0">
+                    <input type="checkbox" name="hot_category" id="catHot" value="1">
+                    <span></span><small>{{translate "Hot"}}</small>
+                  </label>
+                  <label class="aiz-switch aiz-switch-success mb-0">
+                    <input type="hidden" name="top" value="0">
+                    <input type="checkbox" name="top" id="catTop" value="1">
+                    <span></span><small>{{translate "Top"}}</small>
+                  </label>
+                  <label class="aiz-switch aiz-switch-success mb-0">
+                    <input type="hidden" name="digital" value="0">
+                    <input type="checkbox" name="digital" id="catDigital" value="1">
+                    <span></span><small>{{translate "Digital"}}</small>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: images + SEO -->
+            <div class="col-md-6">
+              <!-- Icon -->
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Icon"}}</label>
+                <div class="d-flex align-items-center" style="gap:10px;">
+                  <div id="iconWrap" style="width:60px;height:60px;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#f8f9fa;">
+                    <img id="iconPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+                    <i id="iconPlaceholder" class="las la-image" style="font-size:24px;color:#aaa;"></i>
+                  </div>
+                  <div>
+                    <input type="hidden" name="icon" id="catIcon" value="">
+                    <button type="button" class="btn btn-outline-primary btn-sm d-block mb-1" onclick="openCatPicker('catIcon','iconPreview','iconPlaceholder')"><i class="las la-image mr-1"></i>{{translate "Pick"}}</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm d-block" onclick="clearCatImg('catIcon','iconPreview','iconPlaceholder')"><i class="las la-times"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Banner -->
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Banner"}}</label>
+                <div style="border:1px solid #dee2e6;border-radius:8px;overflow:hidden;background:#f8f9fa;height:80px;position:relative;">
+                  <img id="bannerPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+                  <div id="bannerPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="las la-image" style="font-size:28px;color:#aaa;"></i></div>
+                </div>
+                <input type="hidden" name="banner" id="catBanner" value="">
+                <div class="mt-1 d-flex" style="gap:6px;">
+                  <button type="button" class="btn btn-outline-primary btn-sm btn-xs" onclick="openCatPicker('catBanner','bannerPreview','bannerPlaceholder')"><i class="las la-image mr-1"></i>{{translate "Pick Banner"}}</button>
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-xs" onclick="clearCatImg('catBanner','bannerPreview','bannerPlaceholder')"><i class="las la-times"></i></button>
+                </div>
+              </div>
+
+              <!-- Cover Image -->
+              <div class="form-group">
+                <label class="font-weight-bold small">{{translate "Cover Image"}}</label>
+                <div style="border:1px solid #dee2e6;border-radius:8px;overflow:hidden;background:#f8f9fa;height:80px;position:relative;">
+                  <img id="coverPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+                  <div id="coverPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="las la-image" style="font-size:28px;color:#aaa;"></i></div>
+                </div>
+                <input type="hidden" name="cover_image" id="catCover" value="">
+                <div class="mt-1 d-flex" style="gap:6px;">
+                  <button type="button" class="btn btn-outline-primary btn-sm btn-xs" onclick="openCatPicker('catCover','coverPreview','coverPlaceholder')"><i class="las la-image mr-1"></i>{{translate "Pick Cover"}}</button>
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-xs" onclick="clearCatImg('catCover','coverPreview','coverPlaceholder')"><i class="las la-times"></i></button>
+                </div>
+              </div>
+
+              <!-- SEO -->
+              <hr class="my-2">
+              <div class="form-group">
+                <label class="small font-weight-bold">Focus Keyword</label>
+                <input type="text" name="seo_focus_keyword" id="catFocusKw" class="form-control form-control-sm">
+              </div>
+              <div class="form-group">
+                <label class="small font-weight-bold">SEO Title</label>
+                <input type="text" name="meta_title" id="catMetaTitle" class="form-control form-control-sm" placeholder="50–60 chars">
+                <small id="catMetaTitleLen" class="text-muted" style="font-size:11px;">0 chars</small>
+              </div>
+              <div class="form-group">
+                <label class="small font-weight-bold">Meta Description</label>
+                <textarea name="meta_description" id="catMetaDesc" class="form-control form-control-sm" rows="2" placeholder="120–160 chars"></textarea>
+                <small id="catMetaDescLen" class="text-muted" style="font-size:11px;">0 chars</small>
+              </div>
+              <div class="form-group mb-0">
+                <label class="small font-weight-bold">Meta Keywords</label>
+                <input type="text" name="meta_keywords" id="catMetaKw" class="form-control form-control-sm" placeholder="keyword1, keyword2">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-primary" id="catSaveBtn">{{translate "Save Category"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Media Picker Modal ────────────────────────────────────────── -->
+<div class="modal fade" id="catMediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h5 class="modal-title">Media Center</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body p-0">
+        <ul class="nav nav-tabs px-3 pt-2">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#cat-tab-browse">Browse Library</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#cat-tab-upload">Upload New</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active p-3" id="cat-tab-browse">
+            <div class="d-flex mb-3">
+              <input type="text" id="cat-media-search" class="form-control form-control-sm mr-2" placeholder="Search..." style="max-width:260px;">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="catMediaLoad(1)">Search</button>
+            </div>
+            <div id="cat-media-grid" class="d-flex flex-wrap" style="gap:8px;min-height:200px;max-height:380px;overflow-y:auto;"></div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="cat-media-prev" onclick="catMediaPage(-1)">&#8249; Prev</button>
+              <span id="cat-media-info" class="small text-muted"></span>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="cat-media-next" onclick="catMediaPage(1)">Next &#8250;</button>
+            </div>
+          </div>
+          <div class="tab-pane p-3" id="cat-tab-upload">
+            <div id="cat-drop-zone" style="border:2px dashed #ccc;border-radius:8px;padding:40px;text-align:center;cursor:pointer;">
+              <i class="las la-cloud-upload-alt" style="font-size:40px;color:#aaa;"></i>
+              <p class="mt-2 mb-1 text-muted">Drag &amp; drop or click to select</p>
+              <input type="file" id="cat-file-input" accept="image/*" multiple style="display:none;">
+            </div>
+            <div id="cat-upload-progress" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{end}}
+
+{{define "scripts"}}
+<script>
+// ── Slug auto-generation ──────────────────────────────────────────
+function autoSlug(name) {
+  var s = document.getElementById('catSlug');
+  if (!s) return;
+  s.value = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+// ── Modal: open add ───────────────────────────────────────────────
+function openAdd() {
+  document.getElementById('catModalTitle').textContent = '{{translate "Add Category"}}';
+  document.getElementById('catSaveBtn').textContent    = '{{translate "Save Category"}}';
+  document.getElementById('catForm').action = '/admin/categories';
+  resetCatForm();
+  $('#catModal').modal('show');
+}
+
+// ── Modal: open edit ──────────────────────────────────────────────
+function openEdit(btn) {
+  var d = btn.dataset;
+  document.getElementById('catModalTitle').textContent = '{{translate "Edit Category"}}';
+  document.getElementById('catSaveBtn').textContent    = '{{translate "Save Changes"}}';
+  document.getElementById('catForm').action = '/admin/categories/' + d.id;
+
+  document.getElementById('catName').value       = d.name       || '';
+  document.getElementById('catSlug').value       = d.slug       || '';
+  document.getElementById('catOrderLevel').value = d.order      || 0;
+  document.getElementById('catCommission').value = d.commission || 0;
+  document.getElementById('catDiscount').value   = d.discount   || 0;
+  document.getElementById('catRefund').value     = d.refund     || 0;
+
+  // parent select
+  var sel = document.getElementById('catParent');
+  var pid = parseInt(d.parent || 0);
+  for (var i = 0; i < sel.options.length; i++) {
+    sel.options[i].selected = (parseInt(sel.options[i].value || 0) === pid);
+  }
+
+  // checkboxes
+  document.getElementById('catFeatured').checked = (d.featured === '1');
+  document.getElementById('catHot').checked      = (d.hot === '1');
+  document.getElementById('catTop').checked      = (d.top === '1');
+  document.getElementById('catDigital').checked  = (d.digital === '1');
+
+  // images
+  setPreview('catIcon',   'iconPreview',   'iconPlaceholder',   d.icon   || '');
+  setPreview('catBanner', 'bannerPreview', 'bannerPlaceholder', d.banner || '');
+  setPreview('catCover',  'coverPreview',  'coverPlaceholder',  d.cover  || '');
+
+  // SEO
+  document.getElementById('catFocusKw').value  = d.focusKw   || '';
+  document.getElementById('catMetaTitle').value = d.metaTitle || '';
+  document.getElementById('catMetaDesc').value  = d.metaDesc  || '';
+  document.getElementById('catMetaKw').value    = d.metaKw    || '';
+  updateSeoLens();
+
+  $('#catModal').modal('show');
+}
+
+function resetCatForm() {
+  ['catName','catSlug','catFocusKw','catMetaTitle','catMetaDesc','catMetaKw'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['catOrderLevel','catCommission','catDiscount','catRefund'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = 0;
+  });
+  ['catFeatured','catHot','catTop','catDigital'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+  clearCatImg('catIcon',   'iconPreview',   'iconPlaceholder');
+  clearCatImg('catBanner', 'bannerPreview', 'bannerPlaceholder');
+  clearCatImg('catCover',  'coverPreview',  'coverPlaceholder');
+  document.getElementById('catParent').selectedIndex = 0;
+  updateSeoLens();
+}
+
+// ── Image preview helpers ─────────────────────────────────────────
+function setPreview(inputId, previewId, placeholderId, pathOrUrl) {
+  var inp   = document.getElementById(inputId);
+  var prev  = document.getElementById(previewId);
+  var place = document.getElementById(placeholderId);
+  inp.value = pathOrUrl || '';
+  if (pathOrUrl) {
+    // build a browser-usable URL from whatever format pathOrUrl is in
+    var url;
+    if (pathOrUrl.startsWith('http') || pathOrUrl.startsWith('/')) {
+      url = pathOrUrl;                          // already absolute or root-relative
+    } else if (pathOrUrl.startsWith('uploads/')) {
+      url = '/' + pathOrUrl;                    // "uploads/all/x.webp" → "/uploads/all/x.webp"
+    } else {
+      url = '/uploads/' + pathOrUrl;            // bare filename fallback
+    }
+    prev.src = url;
+    prev.style.display = 'block';
+    if (place) place.style.display = 'none';
+  } else {
+    prev.src = '';
+    prev.style.display = 'none';
+    if (place) place.style.display = '';
+  }
+}
+
+function clearCatImg(inputId, previewId, placeholderId) {
+  setPreview(inputId, previewId, placeholderId, '');
+}
+
+// ── Media picker ──────────────────────────────────────────────────
+var _catPickerInput = '';
+var _catPickerPrev  = '';
+var _catPickerPlace = '';
+var _catMediaPage   = 1;
+
+function openCatPicker(inputId, previewId, placeholderId) {
+  _catPickerInput = inputId;
+  _catPickerPrev  = previewId;
+  _catPickerPlace = placeholderId;
+  $('#catMediaModal').modal('show');
+  catMediaLoad(1);
+}
+
+function catMediaLoad(page) {
+  _catMediaPage = page;
+  var search = document.getElementById('cat-media-search').value;
+  $('#cat-media-grid').html('<div class="w-100 text-center py-4"><div class="spinner-border text-primary" style="width:2rem;height:2rem;"></div></div>');
+  $.getJSON('/admin/media/files', {page: page, search: search}, function(data) {
+    catRenderGrid(data);
+  });
+}
+
+function catMediaPage(delta) {
+  catMediaLoad(_catMediaPage + delta);
+}
+
+function catRenderGrid(data) {
+  var grid = $('#cat-media-grid').empty();
+  if (!data.files || !data.files.length) {
+    grid.html('<p class="text-muted w-100 text-center py-4">No images found.</p>');
+    return;
+  }
+  $.each(data.files, function(_, f) {
+    var el = $('<div>').css({position:'relative',cursor:'pointer',border:'2px solid transparent',borderRadius:'6px',overflow:'hidden',width:'90px',height:'90px',flexShrink:0})
+      .on('click', function() { catSelectMedia(f); });
+    $('<img>').attr('src', f.url).css({width:'100%',height:'100%','object-fit':'cover'}).appendTo(el);
+    grid.append(el);
+  });
+  var total = data.total || 0;
+  var pages = data.pages || 1;
+  $('#cat-media-info').text('Page ' + _catMediaPage + ' of ' + pages + ' (' + total + ' files)');
+  $('#cat-media-prev').prop('disabled', _catMediaPage <= 1);
+  $('#cat-media-next').prop('disabled', _catMediaPage >= pages);
+}
+
+function catSelectMedia(f) {
+  setPreview(_catPickerInput, _catPickerPrev, _catPickerPlace, f.path);
+  $('#catMediaModal').modal('hide');
+}
+
+// ── Upload tab ────────────────────────────────────────────────────
+$(function() {
+  var dz   = $('#cat-drop-zone');
+  var fi   = $('#cat-file-input');
+  var csrf = $('input[name="_token"]').first().val();
+
+  // The file input lives inside the drop-zone, so its own (bubbling) click must be
+  // ignored here — otherwise triggering it re-enters this handler and recurses
+  // until the stack overflows (file dialog never opens).
+  dz.on('click', function(e){ if (e.target === fi[0]) return; fi[0].click(); });
+  dz.on('dragover', function(e){ e.preventDefault(); dz.css('border-color','#007bff'); });
+  dz.on('dragleave drop', function(){ dz.css('border-color','#ccc'); });
+  dz.on('drop', function(e){
+    e.preventDefault();
+    var files = e.originalEvent.dataTransfer.files;
+    if (files.length) uploadCatFiles(files);
+  });
+  fi.on('change', function(){ if (fi[0].files.length) uploadCatFiles(fi[0].files); });
+
+  function uploadCatFiles(files) {
+    var prog = $('#cat-upload-progress').empty();
+    $.each(files, function(_, file) {
+      var row = $('<div class="mb-1 small text-muted">').text('Uploading ' + file.name + '…').appendTo(prog);
+      var fd  = new FormData();
+      fd.append('file', file);
+      fd.append('_token', csrf);
+      $.ajax({url:'/admin/media/upload', type:'POST', data:fd, processData:false, contentType:false,
+        success: function(r) {
+          if (r && r.path) {
+            row.text(file.name + ' ✓').css('color','#22c55e');
+            // Apply the freshly uploaded image to the field and close the picker,
+            // so the upload has a visible effect (matches the product form).
+            catSelectMedia(r);
+          } else {
+            row.text(file.name + ' ✗').css('color','#ef4444');
+          }
+        },
+        error: function() { row.text(file.name + ' ✗ upload failed').css('color','#ef4444'); }
+      });
+    });
+  }
+});
+
+// ── SEO length counters ───────────────────────────────────────────
+function updateSeoLens() {
+  function check(id, lenId, min, max) {
+    var el = document.getElementById(id);
+    var ll = document.getElementById(lenId);
+    if (!el || !ll) return;
+    var n = el.value.length;
+    ll.textContent = n + ' chars' + (n >= min && n <= max ? ' ✓' : n > 0 ? ' (ideal ' + min + '–' + max + ')' : '');
+    ll.style.color = (n >= min && n <= max) ? '#22c55e' : (n > 0 ? '#f59e0b' : '#9ca3af');
+  }
+  check('catMetaTitle', 'catMetaTitleLen', 50, 60);
+  check('catMetaDesc',  'catMetaDescLen',  120, 160);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('catMetaTitle').addEventListener('input', updateSeoLens);
+  document.getElementById('catMetaDesc').addEventListener('input', updateSeoLens);
+});
+</script>
+{{end}}

@@ -1,0 +1,224 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+
+  .tk-breadcrumb { display:flex; align-items:center; gap:6px; font-size:12px; color:#999; margin-bottom:24px; }
+  .tk-breadcrumb a { color:#999; text-decoration:none; font-weight:600; }
+  .tk-breadcrumb a:hover { color:var(--black); }
+  .tk-breadcrumb svg { width:14px; height:14px; stroke:#ccc; stroke-width:2; fill:none; flex-shrink:0; }
+
+  .tk-form-header { margin-bottom:28px; }
+  .tk-form-header h1 { font-size:22px; font-weight:800; margin-bottom:6px; }
+  .tk-form-header p { font-size:13px; color:#777; margin:0; }
+
+  .tk-form-card { border:1px solid var(--border); border-radius:16px; overflow:hidden; background:#fff; }
+  .tk-form-body { padding:28px; }
+
+  .form-section { margin-bottom:28px; }
+  .form-section:last-child { margin-bottom:0; }
+  .section-label { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:#aaa; margin-bottom:14px; }
+
+  .form-group { margin-bottom:18px; }
+  .form-group:last-child { margin-bottom:0; }
+  .form-group label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--black); }
+  .form-group label .req { color:var(--orange); margin-left:2px; }
+  .form-group input, .form-group textarea { width:100%; border:2px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; outline:none; transition:border-color .15s; box-sizing:border-box; font-family:inherit; color:var(--black); background:#fff; }
+  .form-group input:focus, .form-group textarea:focus { border-color:var(--black); }
+  .form-group textarea { resize:vertical; min-height:140px; line-height:1.6; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  /* category cards */
+  .category-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .cat-option { position:relative; }
+  .cat-option input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
+  .cat-card { border:2px solid var(--border); border-radius:12px; padding:14px 12px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s; }
+  .cat-card:hover { border-color:#aaa; }
+  .cat-option input:checked + .cat-card { border-color:var(--black); background:#fafafa; }
+  .cat-icon { font-size:24px; display:block; margin-bottom:6px; }
+  .cat-name { font-size:12px; font-weight:700; color:var(--black); }
+
+  /* priority */
+  .priority-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .pri-option { position:relative; }
+  .pri-option input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
+  .pri-card { border:2px solid var(--border); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:border-color .15s; }
+  .pri-card:hover { border-color:#aaa; }
+  .pri-option input:checked + .pri-card { border-color:var(--black); background:#fafafa; }
+  .pri-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .pri-dot.low { background:#3b82f6; }
+  .pri-dot.medium { background:#f59e0b; }
+  .pri-dot.high { background:#ef4444; }
+  .pri-label { font-size:13px; font-weight:700; }
+  .pri-desc { font-size:11px; color:#999; }
+
+  /* char count */
+  .char-count { font-size:11px; color:#bbb; text-align:right; margin-top:4px; }
+
+  /* alert */
+  .alert-error { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; font-size:13px; color:#b91c1c; margin-bottom:20px; display:flex; align-items:flex-start; gap:10px; }
+  .alert-error svg { width:16px; height:16px; stroke:#b91c1c; stroke-width:2; fill:none; flex-shrink:0; margin-top:1px; }
+
+  /* footer */
+  .tk-form-footer { display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-top:1px solid var(--border); background:#fafafa; }
+  .btn-submit { background:var(--black); color:#fff; border:none; border-radius:99px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background .15s; }
+  .btn-submit:hover { background:#333; }
+  .btn-submit svg { width:16px; height:16px; stroke:#fff; stroke-width:2.5; fill:none; }
+  .btn-cancel { color:#777; font-size:13px; font-weight:600; text-decoration:none; }
+  .btn-cancel:hover { color:var(--black); }
+
+  /* tips box */
+  .tips-box { border:1px solid var(--border); border-radius:14px; padding:20px; background:#fff; margin-top:0; }
+  .tips-box h3 { font-size:13px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .tips-box ul { list-style:none; display:flex; flex-direction:column; gap:8px; }
+  .tips-box li { font-size:12px; color:#666; display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+  .tip-bullet { width:18px; height:18px; border-radius:50%; background:var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0; margin-top:1px; }
+
+  @media (max-width:900px) {
+    .account-wrap { grid-template-columns:1fr; }
+    .account-nav { position:static; }
+    .category-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:600px) {
+    .account-wrap { padding:16px 12px 48px; }
+    .form-grid { grid-template-columns:1fr; }
+    .category-grid { grid-template-columns:repeat(2,1fr); }
+    .priority-grid { grid-template-columns:repeat(3,1fr); }
+    .tk-form-body { padding:20px 16px; }
+    .tk-form-footer { padding:16px; flex-direction:column-reverse; gap:12px; align-items:stretch; text-align:center; }
+    .btn-submit { justify-content:center; }
+  }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "tickets"}}
+  <div>
+    <div class="tk-breadcrumb">
+      <a href="/tickets">{{translate "Support Tickets"}}</a>
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>{{translate "New Ticket"}}</span>
+    </div>
+
+    <div class="tk-form-header">
+      <h1>{{translate "Open a Support Ticket"}}</h1>
+      <p>{{translate "Describe your issue and our team will get back to you as soon as possible."}}</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 220px; gap:20px; align-items:start;">
+      <div>
+        {{if .Error}}
+        <div class="alert-error">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{.Error}}
+        </div>
+        {{end}}
+
+        <div class="tk-form-card">
+          <form method="POST" action="/tickets" id="ticketForm">
+            <input type="hidden" name="_token" value="{{csrf_token}}">
+            <div class="tk-form-body">
+
+              <!-- Subject -->
+              <div class="form-section">
+                <div class="section-label">{{translate "Ticket Details"}}</div>
+                <div class="form-group">
+                  <label for="subject">{{translate "Subject"}} <span class="req">*</span></label>
+                  <input type="text" id="subject" name="subject" placeholder="{{translate "Brief summary of your issue"}}" required maxlength="255">
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="form-section">
+                <div class="section-label">{{translate "Category"}}</div>
+                <div class="category-grid">
+                  <label class="cat-option">
+                    <input type="radio" name="type" value="general" checked>
+                    <div class="cat-card"><span class="cat-icon">💬</span><span class="cat-name">{{translate "General"}}</span></div>
+                  </label>
+                  <label class="cat-option">
+                    <input type="radio" name="type" value="order">
+                    <div class="cat-card"><span class="cat-icon">📦</span><span class="cat-name">{{translate "Order Issue"}}</span></div>
+                  </label>
+                  <label class="cat-option">
+                    <input type="radio" name="type" value="product">
+                    <div class="cat-card"><span class="cat-icon">🛍️</span><span class="cat-name">{{translate "Product"}}</span></div>
+                  </label>
+                  <label class="cat-option">
+                    <input type="radio" name="type" value="payment">
+                    <div class="cat-card"><span class="cat-icon">💳</span><span class="cat-name">{{translate "Payment"}}</span></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Priority -->
+              <div class="form-section">
+                <div class="section-label">{{translate "Priority"}}</div>
+                <div class="priority-grid">
+                  <label class="pri-option">
+                    <input type="radio" name="priority" value="low">
+                    <div class="pri-card">
+                      <span class="pri-dot low"></span>
+                      <div><div class="pri-label">{{translate "Low"}}</div><div class="pri-desc">{{translate "No urgency"}}</div></div>
+                    </div>
+                  </label>
+                  <label class="pri-option">
+                    <input type="radio" name="priority" value="medium" checked>
+                    <div class="pri-card">
+                      <span class="pri-dot medium"></span>
+                      <div><div class="pri-label">{{translate "Medium"}}</div><div class="pri-desc">{{translate "Normal"}}</div></div>
+                    </div>
+                  </label>
+                  <label class="pri-option">
+                    <input type="radio" name="priority" value="high">
+                    <div class="pri-card">
+                      <span class="pri-dot high"></span>
+                      <div><div class="pri-label">{{translate "High"}}</div><div class="pri-desc">{{translate "Urgent"}}</div></div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Details -->
+              <div class="form-section">
+                <div class="section-label">{{translate "Description"}}</div>
+                <div class="form-group">
+                  <label for="details">{{translate "Details"}} <span class="req">*</span></label>
+                  <textarea id="details" name="details" placeholder="{{translate "Please describe your issue in detail. Include order numbers, product names, or any relevant information."}}" required oninput="updateCount(this)"></textarea>
+                  <div class="char-count" id="charCount">{{translate "0 characters"}}</div>
+                </div>
+              </div>
+
+            </div>
+            <div class="tk-form-footer">
+              <a href="/tickets" class="btn-cancel">{{translate "← Cancel"}}</a>
+              <button type="submit" class="btn-submit">
+                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Submit Ticket
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tips sidebar -->
+      <div class="tips-box">
+        <h3>{{translate "💡 Tips for faster support"}}</h3>
+        <ul>
+          <li><span class="tip-bullet">1</span>{{translate "Include your order number if the issue is order-related."}}</li>
+          <li><span class="tip-bullet">2</span>{{translate "Attach screenshots or photos if relevant."}}</li>
+          <li><span class="tip-bullet">3</span>{{translate "Be as specific as possible about the problem."}}</li>
+          <li><span class="tip-bullet">4</span>{{translate "We typically respond within 1 business day."}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function updateCount(el) {
+  document.getElementById('charCount').textContent = el.value.length + ' characters';
+}
+</script>
+{{end}}

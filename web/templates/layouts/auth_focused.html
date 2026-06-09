@@ -1,0 +1,45 @@
+{{define "layouts/auth_focused"}}
+<!DOCTYPE html>
+{{if is_rtl}}<html dir="rtl" lang="{{current_lang}}">{{else}}<html lang="{{current_lang}}">{{end}}
+<head>
+    <meta name="csrf-token" content="{{csrf_token}}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="{{uploaded_asset (get_setting "site_icon")}}">
+    <title>{{block "meta_title" .}}{{get_setting "website_name"}}{{end}}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap">
+    <link rel="stylesheet" href="/static/assets/css/vendors.css">
+    {{if is_rtl}}<link rel="stylesheet" href="/static/assets/css/bootstrap-rtl.min.css">{{end}}
+    <link rel="stylesheet" href="/static/assets/css/aiz-core.css">
+    <link rel="stylesheet" href="/static/assets/css/custom-style.css">
+    <style>
+        :root{--primary:{{get_setting "base_color" "#d43533"}};--secondary-base:{{get_setting "secondary_base_color" "#ffc519"}};}
+        body{font-family:{{safe_html (get_setting "system_font_family" "'Public Sans', sans-serif")}},sans-serif;background:#f5f5f5;}
+    </style>
+    {{block "styles" .}}{{end}}
+</head>
+<body class="aiz-auth">
+    <div class="aiz-auth-focused d-flex align-items-center min-h-100vh">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="text-center mb-6">
+                        <a href="/"><img src="{{uploaded_asset (get_setting "header_logo")}}" alt="{{get_setting "website_name"}}" height="45"></a>
+                    </div>
+                    <div class="card rounded-lg shadow-sm">
+                        <div class="card-body p-5">
+                            {{$s := flash_success}}{{if $s}}<div class="alert alert-success">{{$s}}</div>{{end}}
+                            {{$e := flash_error}}{{if $e}}<div class="alert alert-danger">{{$e}}</div>{{end}}
+                            {{block "content" .}}{{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/assets/js/vendors.js"></script>
+    <script src="/static/assets/js/aiz-core.js"></script>
+    {{block "scripts" .}}{{end}}
+</body>
+</html>
+{{end}}

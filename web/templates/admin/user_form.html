@@ -1,0 +1,74 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">
+        {{if .Edit}}
+          {{translate "Edit User"}}: {{.Edit.Name}}
+        {{else}}
+          {{translate "Create New User"}}
+        {{end}}
+      </h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/users" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+{{if .Error}}<div class="alert alert-danger">{{.Error}}</div>{{end}}
+{{if .Success}}<div class="alert alert-success">{{.Success}}</div>{{end}}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-body">
+        <form method="POST" action="{{if .Edit}}/admin/users/{{.Edit.ID}}{{else}}/admin/users{{end}}">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group">
+            <label>{{translate "Name"}} <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" value="{{if .Edit}}{{.Edit.Name}}{{end}}" required>
+          </div>
+
+          <div class="form-group">
+            <label>{{translate "Email"}} <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control" value="{{if .Edit}}{{deref_str .Edit.Email}}{{end}}" required>
+          </div>
+
+          {{if not .Edit}}
+          <div class="form-group">
+            <label>{{translate "Password"}} <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+          {{else}}
+          <div class="form-group">
+            <label>{{translate "Password"}} <small class="text-muted">({{translate "Leave blank to keep current password"}})</small></label>
+            <input type="password" name="password" class="form-control">
+          </div>
+          {{end}}
+
+          <div class="form-group">
+            <label>{{translate "User Type"}} <span class="text-danger">*</span></label>
+            {{$ut := "customer"}}{{if .Edit}}{{$ut = .Edit.UserType}}{{end}}
+            <select name="user_type" class="form-control" required>
+              <option value="customer" {{if eq $ut "customer"}}selected{{end}}>{{translate "Customer"}}</option>
+              <option value="seller" {{if eq $ut "seller"}}selected{{end}}>{{translate "Seller"}}</option>
+              <option value="delivery_boy" {{if eq $ut "delivery_boy"}}selected{{end}}>{{translate "Delivery Boy"}}</option>
+              <option value="operation" {{if eq $ut "operation"}}selected{{end}}>{{translate "Operation"}}</option>
+              <option value="finance" {{if eq $ut "finance"}}selected{{end}}>{{translate "Finance"}}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">
+              {{if .Edit}}{{translate "Update User"}}{{else}}{{translate "Create User"}}{{end}}
+            </button>
+            <a href="/admin/users" class="btn btn-secondary">{{translate "Cancel"}}</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,93 @@
+{{define "partials/seller_sidebar"}}
+<div class="aiz-sidebar bg-dark d-flex flex-column" style="width:240px;min-height:calc(100vh - 60px)">
+    <div class="flex-grow-1 overflow-auto py-3">
+        <ul class="aiz-side-nav-list">
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/dashboard" class="aiz-side-nav-link">
+                    <i class="las la-th-large aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Dashboard"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="#seller-products" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-box aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Products"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="seller-products">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/seller/products" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Products"}}</span></a></li>
+                        <li class="aiz-side-nav-item"><a href="/seller/products/create" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "Add New Product"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="#seller-orders" class="aiz-side-nav-link" data-toggle="collapse">
+                    <i class="las la-shopping-bag aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Orders"}}</span>
+                    <i class="las la-angle-right aiz-side-nav-toggle-icon ml-auto"></i>
+                </a>
+                <div class="collapse" id="seller-orders">
+                    <ul class="aiz-side-nav-list level-2">
+                        <li class="aiz-side-nav-item"><a href="/seller/orders" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{translate "All Orders"}}</span></a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/coupons" class="aiz-side-nav-link">
+                    <i class="las la-tag aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Coupons"}}</span>
+                </a>
+            </li>
+
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/conversations" class="aiz-side-nav-link">
+                    <i class="las la-comments aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Conversations"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/reviews" class="aiz-side-nav-link">
+                    <i class="las la-star aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Reviews"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/tickets" class="aiz-side-nav-link">
+                    <i class="las la-headset aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Support Tickets"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/withdraw-requests" class="aiz-side-nav-link">
+                    <i class="las la-wallet aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Withdraw Requests"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/shop/settings" class="aiz-side-nav-link">
+                    <i class="las la-store aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Shop Settings"}}</span>
+                </a>
+            </li>
+
+            <li class="aiz-side-nav-item">
+                <a href="/seller/profile" class="aiz-side-nav-link">
+                    <i class="las la-user aiz-side-nav-icon"></i>
+                    <span class="aiz-side-nav-text">{{translate "Profile"}}</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</div>
+{{end}}

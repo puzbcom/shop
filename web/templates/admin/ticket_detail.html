@@ -1,0 +1,199 @@
+{{define "content"}}
+<style>
+  .ticket-thread { display:flex; flex-direction:column; gap:16px; }
+  .thread-msg { display:flex; gap:14px; align-items:flex-start; }
+  .thread-msg.admin-msg { flex-direction:row-reverse; }
+  .msg-avatar { width:40px; height:40px; border-radius:50%; background:#6c757d; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; }
+  .admin-msg .msg-avatar { background:#007bff; }
+  .msg-bubble { max-width:70%; background:#f8f9fa; border:1px solid #dee2e6; border-radius:12px; padding:12px 16px; }
+  .admin-msg .msg-bubble { background:#e8f4fd; border-color:#b8daff; }
+  .msg-meta { font-size:11px; color:#6c757d; margin-bottom:4px; }
+  .admin-msg .msg-meta { text-align:right; }
+  .msg-text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+</style>
+
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">
+        {{translate "Ticket"}} #{{.Ticket.Code}}
+        {{if eq .Ticket.Status "pending"}}<span class="badge badge-warning ml-2">{{translate "Pending"}}</span>
+        {{else if eq .Ticket.Status "open"}}<span class="badge badge-info ml-2">{{translate "Open"}}</span>
+        {{else if eq .Ticket.Status "answered"}}<span class="badge badge-success ml-2">{{translate "Answered"}}</span>
+        {{else if eq .Ticket.Status "closed"}}<span class="badge badge-secondary ml-2">{{translate "Closed"}}</span>{{end}}
+      </h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/tickets" class="btn btn-light btn-sm"><i class="las la-arrow-left"></i> {{translate "Back to Tickets"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Thread -->
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header">
+        <h5 class="mb-0 h6">{{.Ticket.Subject}}</h5>
+      </div>
+      <div class="card-body">
+        <div class="ticket-thread">
+
+          <!-- Original ticket message -->
+          {{if .Ticket.Details}}
+          <div class="thread-msg">
+            <div class="msg-avatar">
+              {{if .Ticket.User}}{{first_char .Ticket.User.Name}}{{else}}?{{end}}
+            </div>
+            <div class="msg-bubble">
+              <div class="msg-meta">
+                <strong>{{if .Ticket.User}}{{.Ticket.User.Name}}{{else}}Unknown{{end}}</strong>
+                &middot; {{date_format .Ticket.CreatedAt "Jan 02, 2006 15:04"}}
+              </div>
+              <div class="msg-text">{{deref_str .Ticket.Details}}</div>
+            </div>
+          </div>
+          {{end}}
+
+          <!-- Replies -->
+          {{range .Ticket.Replies}}
+          <div class="thread-msg {{if .User}}{{if eq .User.UserType "admin"}}admin-msg{{end}}{{end}}">
+            <div class="msg-avatar">
+              {{if .User}}{{first_char .User.Name}}{{else}}?{{end}}
+            </div>
+            <div class="msg-bubble">
+              <div class="msg-meta">
+                <strong>{{if .User}}{{.User.Name}}{{else}}Unknown{{end}}</strong>
+                {{if .User}}{{if eq .User.UserType "admin"}}<span class="badge badge-primary badge-sm">Admin</span>{{end}}{{end}}
+                &middot; {{date_format .CreatedAt "Jan 02, 2006 15:04"}}
+              </div>
+              <div class="msg-text">{{.Reply}}</div>
+            </div>
+          </div>
+          {{end}}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply form -->
+    {{if ne .Ticket.Status "closed"}}
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Reply"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/tickets/{{.Ticket.ID}}/reply">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <textarea name="reply" rows="5" class="form-control" placeholder="{{translate "Type your reply here..."}}" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="las la-paper-plane mr-1"></i>{{translate "Send Reply"}}</button>
+        </form>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+  <!-- Sidebar info -->
+  <div class="col-lg-4">
+    <!-- User info -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Customer Info"}}</h5></div>
+      <div class="card-body">
+        {{if .Ticket.User}}
+        <div class="d-flex align-items-center mb-3">
+          <div class="msg-avatar mr-3" style="width:48px;height:48px;font-size:20px;border-radius:50%;background:#6c757d;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">
+            {{first_char .Ticket.User.Name}}
+          </div>
+          <div>
+            <div class="font-weight-600">{{.Ticket.User.Name}}</div>
+            <small class="text-muted">{{.Ticket.User.Email}}</small>
+          </div>
+        </div>
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted pl-0">{{translate "User Type"}}</td><td><span class="badge badge-info text-capitalize">{{.Ticket.User.UserType}}</span></td></tr>
+        </table>
+        {{else}}
+        <p class="text-muted mb-0">{{translate "User not found"}}</p>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- Ticket info -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Ticket Details"}}</h5></div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tr>
+            <td class="text-muted pl-3">{{translate "Code"}}</td>
+            <td class="pr-3"><strong>#{{.Ticket.Code}}</strong></td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Type"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Type "general"}}<span class="badge badge-light">{{translate "General"}}</span>
+              {{else if eq .Ticket.Type "order"}}<span class="badge badge-primary">{{translate "Order"}}</span>
+              {{else if eq .Ticket.Type "product"}}<span class="badge badge-info">{{translate "Product"}}</span>
+              {{else if eq .Ticket.Type "payment"}}<span class="badge badge-dark">{{translate "Payment"}}</span>
+              {{else}}<span class="badge badge-light">{{.Ticket.Type}}</span>{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Priority"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Priority "low"}}<span class="badge badge-info">{{translate "Low"}}</span>
+              {{else if eq .Ticket.Priority "medium"}}<span class="badge badge-warning">{{translate "Medium"}}</span>
+              {{else if eq .Ticket.Priority "high"}}<span class="badge badge-danger">{{translate "High"}}</span>
+              {{else}}<span class="badge badge-secondary">{{.Ticket.Priority}}</span>{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Status"}}</td>
+            <td class="pr-3">
+              {{if eq .Ticket.Status "pending"}}<span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{else if eq .Ticket.Status "open"}}<span class="badge badge-info">{{translate "Open"}}</span>
+              {{else if eq .Ticket.Status "answered"}}<span class="badge badge-success">{{translate "Answered"}}</span>
+              {{else if eq .Ticket.Status "closed"}}<span class="badge badge-secondary">{{translate "Closed"}}</span>{{end}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Created"}}</td>
+            <td class="pr-3"><small>{{date_format .Ticket.CreatedAt "Jan 02, 2006"}}</small></td>
+          </tr>
+          <tr>
+            <td class="text-muted pl-3">{{translate "Updated"}}</td>
+            <td class="pr-3"><small>{{date_format .Ticket.UpdatedAt "Jan 02, 2006"}}</small></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Actions"}}</h5></div>
+      <div class="card-body">
+        {{if ne .Ticket.Status "closed"}}
+        <form method="POST" action="/admin/tickets/{{.Ticket.ID}}/close" class="mb-2">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="btn btn-secondary btn-block">
+            <i class="las la-lock mr-1"></i>{{translate "Close Ticket"}}
+          </button>
+        </form>
+        {{else}}
+        <form method="POST" action="/admin/tickets/{{.Ticket.ID}}/open" class="mb-2">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="btn btn-info btn-block">
+            <i class="las la-lock-open mr-1"></i>{{translate "Re-open Ticket"}}
+          </button>
+        </form>
+        {{end}}
+        <form method="POST" action="/admin/tickets/{{.Ticket.ID}}/delete" onsubmit="return confirm('Delete this ticket permanently?')">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <button type="submit" class="btn btn-danger btn-block">
+            <i class="las la-trash mr-1"></i>{{translate "Delete Ticket"}}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

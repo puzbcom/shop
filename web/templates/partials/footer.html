@@ -1,0 +1,102 @@
+{{define "partials/footer"}}
+<footer class="footer d-print-none mt-auto">
+    <!-- main footer -->
+    <div class="bg-dark text-white pt-8 pb-4">
+        <div class="container">
+            <div class="row">
+                <!-- Brand -->
+                <div class="col-lg-3 col-md-6 mb-6">
+                    <a href="/" class="d-block mb-4">
+                        <img src="{{uploaded_asset (get_setting "footer_logo")}}" alt="{{get_setting "website_name"}}" height="40">
+                    </a>
+                    <p class="opacity-60 fs-13">{{get_setting "about_us_info"}}</p>
+                    <!-- social links -->
+                    <div class="d-flex flex-wrap mt-4" style="gap:8px">
+                        {{range list_socials}}
+                            {{$url := get_setting .Key}}
+                            {{if $url}}<a href="{{$url}}" target="_blank" rel="noopener" class="btn btn-icon btn-soft-secondary btn-sm" title="{{.Label}}" aria-label="{{.Label}}" style="display:inline-flex;align-items:center;justify-content:center">{{if .SVG}}{{safe_html .SVG}}{{else}}<i class="{{.Icon}}"></i>{{end}}</a>{{end}}
+                        {{end}}
+                    </div>
+                </div>
+
+                <!-- Useful Links -->
+                <div class="col-lg-2 col-md-6 mb-6 ml-lg-auto">
+                    <h6 class="text-white fw-700 mb-4 fs-13 text-uppercase">{{translate "Useful Links"}}</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a href="/" class="text-white opacity-60 fs-13">{{translate "Home"}}</a></li>
+                        <li class="mb-2"><a href="/products" class="text-white opacity-60 fs-13">{{translate "All Products"}}</a></li>
+                        <li class="mb-2"><a href="/shops" class="text-white opacity-60 fs-13">{{translate "All Shops"}}</a></li>
+                        <li class="mb-2"><a href="/blogs" class="text-white opacity-60 fs-13">{{translate "Blog"}}</a></li>
+                        <li class="mb-2"><a href="/contact" class="text-white opacity-60 fs-13">{{translate "Contact"}}</a></li>
+                    </ul>
+                </div>
+
+                <!-- Policies -->
+                <div class="col-lg-2 col-md-6 mb-6">
+                    <h6 class="text-white fw-700 mb-4 fs-13 text-uppercase">{{translate "Information"}}</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a href="/page/about-us" class="text-white opacity-60 fs-13">{{translate "About Us"}}</a></li>
+                        <li class="mb-2"><a href="/page/privacy-policy" class="text-white opacity-60 fs-13">{{translate "Privacy Policy"}}</a></li>
+                        <li class="mb-2"><a href="/page/terms-and-conditions" class="text-white opacity-60 fs-13">{{translate "Terms and Conditions"}}</a></li>
+                        <li class="mb-2"><a href="/page/return-policy" class="text-white opacity-60 fs-13">{{translate "Return Policy"}}</a></li>
+                        <li class="mb-2"><a href="/faq" class="text-white opacity-60 fs-13">{{translate "FAQ"}}</a></li>
+                    </ul>
+                </div>
+
+                <!-- App download / contact -->
+                <div class="col-lg-3 col-md-6 mb-6">
+                    <h6 class="text-white fw-700 mb-4 fs-13 text-uppercase">{{translate "Contact Us"}}</h6>
+                    <ul class="list-unstyled mb-0">
+                        {{if get_setting "contact_address"}}
+                        <li class="mb-2 d-flex">
+                            <i class="las la-map-marker text-primary mr-2 mt-1"></i>
+                            <span class="text-white opacity-60 fs-13">{{get_setting "contact_address"}}</span>
+                        </li>
+                        {{end}}
+                        {{if get_setting "contact_phone"}}
+                        <li class="mb-2">
+                            <i class="las la-phone text-primary mr-2"></i>
+                            <a href="tel:{{get_setting "contact_phone"}}" class="text-white opacity-60 fs-13">{{get_setting "contact_phone"}}</a>
+                        </li>
+                        {{end}}
+                        {{if get_setting "contact_email"}}
+                        <li class="mb-2">
+                            <i class="las la-envelope text-primary mr-2"></i>
+                            <a href="mailto:{{get_setting "contact_email"}}" class="text-white opacity-60 fs-13">{{get_setting "contact_email"}}</a>
+                        </li>
+                        {{end}}
+                    </ul>
+
+                    <!-- Newsletter -->
+                    <div class="mt-4">
+                        <h6 class="text-white fw-700 mb-3 fs-13 text-uppercase">{{translate "Newsletter"}}</h6>
+                        <form method="POST" action="/newsletter/subscribe" class="d-flex">
+                            {{csrf_field}}
+                            <input type="email" name="email" class="form-control form-control-sm mr-2" placeholder="{{translate "Your email"}}">
+                            <button class="btn btn-primary btn-sm">{{translate "Subscribe"}}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- bottom bar -->
+    <div class="bg-black text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-left mb-2 mb-md-0">
+                    <span class="opacity-50 fs-12">
+                        &copy; {{now.Year}} {{get_setting "website_name"}}. {{translate "All rights reserved"}}.
+                    </span>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    {{if get_setting "payment_gateway_image"}}
+                    <img src="{{uploaded_asset (get_setting "payment_gateway_image")}}" alt="payment methods" height="24">
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+{{end}}

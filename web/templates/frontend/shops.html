@@ -1,0 +1,73 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; }
+  .page-header { margin-bottom:32px; }
+  .page-header h1 { font-size:28px; font-weight:800; margin-bottom:6px; }
+  .page-header p { font-size:14px; color:var(--gray); }
+  .shops-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  .shop-card { border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:box-shadow .15s,transform .15s; }
+  .shop-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.09); transform:translateY(-3px); }
+  .shop-banner { height:100px; background:linear-gradient(135deg,#f4f0eb,#e8d5c0); position:relative; overflow:hidden; }
+  .shop-banner img { width:100%; height:100%; object-fit:cover; }
+  .shop-body { padding:16px; }
+  .shop-avatar { width:56px; height:56px; border-radius:50%; border:3px solid #fff; background:var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:var(--gray); overflow:hidden; margin-top:-36px; margin-bottom:10px; }
+  .shop-avatar img { width:100%; height:100%; object-fit:cover; }
+  .shop-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .shop-meta { font-size:12px; color:var(--gray); display:flex; gap:12px; flex-wrap:wrap; }
+  .shop-rating { display:flex; align-items:center; gap:4px; }
+  .star { color:var(--star); }
+  .pagination { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:40px; }
+  .page-btn { border:2px solid var(--border); background:#fff; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; color:var(--black); }
+  .page-btn.active { border-color:var(--black); background:var(--black); color:#fff; }
+  .page-btn.disabled { opacity:.4; pointer-events:none; }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); grid-column:1/-1; }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+    <a href="/shops" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid var(--black);display:block">{{translate "Sellers"}}</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:24px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Sellers"}}</span>
+  </div>
+  <div class="page-header">
+    <h1>{{translate "Meet our sellers"}}</h1>
+    <p>{{.Total}} {{translate "independent shops — handmade, vintage, and unique."}}</p>
+  </div>
+  <div class="shops-grid">
+    {{range .Shops}}
+    <a href="/shop/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" class="shop-card">
+      <div class="shop-banner">
+        {{if .TopBanner}}<img src="{{uploaded_asset .TopBanner}}" alt="{{if .Name}}{{deref_str .Name}}{{end}} shop banner">{{end}}
+      </div>
+      <div class="shop-body">
+        <div class="shop-avatar">
+          {{if .Logo}}<img src="{{uploaded_asset .Logo}}" alt="{{if .Name}}{{deref_str .Name}}{{end}}">
+          {{else}}{{first_char .Name}}{{end}}
+        </div>
+        <div class="shop-name">{{if .Name}}{{.Name}}{{else}}{{translate "Shop #"}}{{.ID}}{{end}}</div>
+        <div class="shop-meta">
+          {{if gt .Rating 0.0}}
+          <span class="shop-rating"><span class="star">★</span> {{printf "%.1f" .Rating}} ({{.NumOfReviews}})</span>
+          {{end}}
+          <span>{{.NumOfSale}} {{translate "sales"}}</span>
+        </div>
+      </div>
+    </a>
+    {{else}}
+    <div class="empty-state"><h3>{{translate "No shops yet"}}</h3><p>{{translate "Sellers are setting up their stores — check back soon."}}</p></div>
+    {{end}}
+  </div>
+  {{if gt .TotalPages 1}}
+  <div class="pagination">
+    {{if gt .Page 1}}<a href="?page={{sub .Page 1}}" class="page-btn">{{translate "← Prev"}}</a>{{else}}<span class="page-btn disabled">{{translate "← Prev"}}</span>{{end}}
+    {{$p := .Page}}{{range seq .TotalPages}}<a href="?page={{.}}" class="page-btn {{if eq . $p}}active{{end}}">{{.}}</a>{{end}}
+    {{if lt .Page .TotalPages}}<a href="?page={{add .Page 1}}" class="page-btn">{{translate "Next →"}}</a>{{else}}<span class="page-btn disabled">{{translate "Next →"}}</span>{{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}

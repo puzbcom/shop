@@ -1,0 +1,115 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:0 24px 64px; }
+  .shop-header { position:relative; margin-bottom:40px; }
+  .shop-cover { height:220px; background:linear-gradient(135deg,#f4f0eb,#e8d5c0); border-radius:0 0 16px 16px; overflow:hidden; }
+  .shop-cover img { width:100%; height:100%; object-fit:cover; }
+  .shop-profile { display:flex; align-items:flex-end; gap:20px; padding:0 32px; margin-top:-36px; flex-wrap:wrap; }
+  .shop-avatar { width:80px; height:80px; border-radius:50%; border:4px solid #fff; background:var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:var(--gray); overflow:hidden; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+  .shop-avatar img { width:100%; height:100%; object-fit:cover; }
+  .shop-info { flex:1; padding-bottom:8px; }
+  .shop-name { font-size:26px; font-weight:800; margin-bottom:4px; }
+  .shop-meta { display:flex; gap:16px; font-size:13px; color:var(--gray); flex-wrap:wrap; }
+  .shop-rating { display:flex; align-items:center; gap:4px; color:var(--black); }
+  .star { color:var(--star); }
+  .shop-actions { display:flex; gap:10px; padding-bottom:8px; }
+  .btn-follow { border:2px solid var(--black); background:#fff; border-radius:99px; padding:9px 20px; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s; }
+  .btn-follow:hover { background:var(--light-gray); }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-top:24px; border-top:1px solid var(--border); }
+  .toolbar-left { font-size:13px; color:var(--gray); }
+  .sort-select { border:2px solid var(--border); border-radius:8px; padding:6px 10px; font-size:13px; outline:none; cursor:pointer; background:#fff; }
+  .product-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  .product-card { cursor:pointer; }
+  .product-card:hover .product-img-wrap { transform:translateY(-3px); }
+  .product-img-wrap { position:relative; border-radius:10px; overflow:hidden; background:var(--light-gray); aspect-ratio:1; transition:transform .2s; }
+  .product-img-wrap img { width:100%; height:100%; object-fit:cover; }
+  .product-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:44px; }
+  .product-info { padding:10px 0 0; }
+  .product-name { font-size:13px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+  .product-price { font-size:14px; font-weight:700; }
+  .product-price .was { font-size:12px; color:var(--gray); text-decoration:line-through; font-weight:400; margin-left:4px; }
+  .product-badge { display:inline-block; border-radius:4px; padding:2px 7px; font-size:10px; font-weight:700; margin-top:4px; text-transform:uppercase; }
+  .badge-bestseller { background:#d5fde8; color:#1a7f4b; }
+  .badge-sale { background:#ffe8e8; color:#c0392b; }
+  .pagination { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:36px; }
+  .page-btn { border:2px solid var(--border); background:#fff; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); }
+  .page-btn.active { border-color:var(--black); background:var(--black); color:#fff; }
+  .page-btn.disabled { opacity:.4; pointer-events:none; }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); grid-column:1/-1; }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+{{$s := .Shop}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);padding:16px 0;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <a href="/shops">{{translate "Sellers"}}</a> <span>›</span> <span>{{if $s.Name}}{{$s.Name}}{{else}}{{translate "Shop #"}}{{$s.ID}}{{end}}</span>
+  </div>
+  <div class="shop-header">
+    <div class="shop-cover">
+      {{if $s.TopBannerImage}}<img src="{{uploaded_asset $s.TopBannerImage}}" alt="{{$s.Name}} shop banner">{{end}}
+    </div>
+    <div class="shop-profile">
+      <div class="shop-avatar">
+        {{if $s.Logo}}<img src="{{uploaded_asset $s.Logo}}" alt="{{$s.Name}}">
+        {{else}}{{first_char $s.Name}}{{end}}
+      </div>
+      <div class="shop-info">
+        <div class="shop-name">{{if $s.Name}}{{$s.Name}}{{else}}{{translate "Shop #"}}{{$s.ID}}{{end}}</div>
+        <div class="shop-meta">
+          {{if gt $s.Rating 0.0}}<span class="shop-rating"><span class="star">★</span> {{printf "%.1f" $s.Rating}} ({{$s.NumOfReviews}} {{translate "reviews)"}}</span>{{end}}
+          <span>{{$s.NumOfSale}} {{translate "sales"}}</span>
+          {{if $s.Address}}<span>📍 {{$s.Address}}</span>{{end}}
+        </div>
+      </div>
+      <div class="shop-actions">
+        <button class="btn-follow">{{translate "Follow this shop"}}</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left"><strong>{{.Total}}</strong> {{translate "products in this shop"}}</div>
+    <select class="sort-select" onchange="applySort(this.value)">
+      <option value="newest"    {{if eq .Sort "newest"}}selected{{end}}>{{translate "Newest"}}</option>
+      <option value="popular"   {{if eq .Sort "popular"}}selected{{end}}>{{translate "Most popular"}}</option>
+      <option value="price_asc" {{if eq .Sort "price_asc"}}selected{{end}}>{{translate "Price: low to high"}}</option>
+      <option value="price_desc"{{if eq .Sort "price_desc"}}selected{{end}}>{{translate "Price: high to low"}}</option>
+    </select>
+  </div>
+
+  <div class="product-grid">
+    {{range .Products}}
+    <a href="/product/{{.Slug}}" class="product-card">
+      <div class="product-img-wrap">
+        {{if .ThumbnailImg}}<img src="{{uploaded_asset .ThumbnailImg}}" alt="{{.Name}}" loading="lazy">
+        {{else}}<div class="product-placeholder">🛍️</div>{{end}}
+      </div>
+      <div class="product-info">
+        <div class="product-name">{{.Name}}</div>
+        <div class="product-price">{{if gt .Discount 0.0}}{{format_price (subf .UnitPrice .Discount)}}{{else}}{{format_price .UnitPrice}}{{end}}
+          {{if gt .Discount 0.0}}<span class="was">{{format_price .UnitPrice}}</span>{{end}}
+        </div>
+        {{if gt .NumOfSale 100}}<span class="product-badge badge-bestseller">{{translate "Bestseller"}}</span>
+        {{else if gt .Discount 0.0}}<span class="product-badge badge-sale">{{translate "Sale"}}</span>{{end}}
+      </div>
+    </a>
+    {{else}}
+    <div class="empty-state"><h3>{{translate "No products yet"}}</h3><p>{{translate "This shop hasn't listed any products."}}</p></div>
+    {{end}}
+  </div>
+
+  {{if gt .TotalPages 1}}
+  <div class="pagination">
+    {{if gt .Page 1}}<a href="?page={{sub .Page 1}}&sort={{.Sort}}" class="page-btn">{{translate "← Prev"}}</a>{{else}}<span class="page-btn disabled">{{translate "← Prev"}}</span>{{end}}
+    {{$p := .Page}}{{range seq .TotalPages}}<a href="?page={{.}}&sort={{$.Sort}}" class="page-btn {{if eq . $p}}active{{end}}">{{.}}</a>{{end}}
+    {{if lt .Page .TotalPages}}<a href="?page={{add .Page 1}}&sort={{.Sort}}" class="page-btn">{{translate "Next →"}}</a>{{else}}<span class="page-btn disabled">{{translate "Next →"}}</span>{{end}}
+  </div>
+  {{end}}
+</div>
+<script>function applySort(v){const u=new URL(window.location.href);u.searchParams.set('sort',v);u.searchParams.delete('page');window.location.href=u.toString();}</script>
+{{end}}

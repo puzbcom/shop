@@ -1,0 +1,85 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Payout Requests"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header">
+    <div class="d-flex align-items-center gap-2" style="gap:8px">
+      <a href="/admin/sellers/payout-requests" class="btn btn-sm {{if eq .StatusFilter ""}}btn-primary{{else}}btn-light{{end}}">{{translate "All"}}</a>
+      <a href="/admin/sellers/payout-requests?status=pending"  class="btn btn-sm {{if eq .StatusFilter "pending"}}btn-warning{{else}}btn-light{{end}}">{{translate "Pending"}}</a>
+      <a href="/admin/sellers/payout-requests?status=approved" class="btn btn-sm {{if eq .StatusFilter "approved"}}btn-success{{else}}btn-light{{end}}">{{translate "Approved"}}</a>
+      <a href="/admin/sellers/payout-requests?status=rejected" class="btn btn-sm {{if eq .StatusFilter "rejected"}}btn-danger{{else}}btn-light{{end}}">{{translate "Rejected"}}</a>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Seller"}}</th>
+            <th>{{translate "Amount"}}</th>
+            <th>{{translate "Message"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th>{{translate "Date"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range $i, $r := .Rows}}
+          <tr>
+            <td>{{add $i 1}}</td>
+            <td>
+              <div class="fw-600">{{$r.SellerName}}</div>
+              <div class="text-muted small">{{$r.Email}}</div>
+            </td>
+            <td><strong>${{printf "%.2f" $r.Amount}}</strong></td>
+            <td>
+              <span title="{{$r.Message}}" style="max-width:200px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">
+                {{if $r.Message}}{{$r.Message}}{{else}}<span class="text-muted">—</span>{{end}}
+              </span>
+            </td>
+            <td>
+              {{if eq $r.Status 1}}<span class="badge badge-success">{{translate "Approved"}}</span>
+              {{else if eq $r.Status 2}}<span class="badge badge-danger">{{translate "Rejected"}}</span>
+              {{else}}<span class="badge badge-warning">{{translate "Pending"}}</span>{{end}}
+            </td>
+            <td class="text-muted small">{{$r.CreatedAt.Format "2006-01-02"}}</td>
+            <td class="text-right">
+              {{if eq $r.Status 0}}
+              <form method="POST" action="/admin/sellers/payout-requests/{{$r.ID}}/approve" class="d-inline"
+                    onsubmit="return confirm('Approve this payout request?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-success btn-sm" title="{{translate "Approve"}}">
+                  <i class="las la-check mr-1"></i>{{translate "Approve"}}
+                </button>
+              </form>
+              <form method="POST" action="/admin/sellers/payout-requests/{{$r.ID}}/reject" class="d-inline"
+                    onsubmit="return confirm('Reject this payout request?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-sm" title="{{translate "Reject"}}">
+                  <i class="las la-times mr-1"></i>{{translate "Reject"}}
+                </button>
+              </form>
+              {{else}}
+              <span class="text-muted small">—</span>
+              {{end}}
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="las la-money-bill-wave d-block mb-2" style="font-size:40px"></i>
+              {{translate "No payout requests found"}}
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

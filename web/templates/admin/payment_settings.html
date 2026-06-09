@@ -1,0 +1,273 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Payment Gateways"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{translate "Settings saved successfully."}}</div>{{end}}
+
+<style>
+.gateway-card { border-radius: 10px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.gateway-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+.gateway-logo { width: 80px; height: 32px; object-fit: contain; }
+.gateway-name { font-size: 15px; font-weight: 700; color: #111827; }
+.gateway-body { background: #fff; padding: 20px; }
+.toggle-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider { width: 42px; height: 24px; background: #d1d5db; border-radius: 12px; transition: background .2s; flex-shrink: 0; }
+.toggle-slider::after { content:""; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:transform .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.toggle-switch input:checked ~ .toggle-slider { background: #059669; }
+.toggle-switch input:checked ~ .toggle-slider::after { transform: translateX(18px); }
+.mode-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.mode-badge.sandbox { background: #fef3c7; color: #92400e; }
+.mode-badge.live { background: #d1fae5; color: #065f46; }
+</style>
+
+<form method="POST" action="/admin/payment-settings">
+  <input type="hidden" name="_token" value="{{csrf_token}}">
+
+  <!-- ── PayPal ── -->
+  <div class="gateway-card">
+    <div class="gateway-header">
+      <svg width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="22" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#003087">Pay</text>
+        <text x="34" y="22" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#009cde">Pal</text>
+      </svg>
+      <div>
+        <div class="gateway-name">PayPal</div>
+        <small class="text-muted">Accept PayPal, credit &amp; debit cards</small>
+      </div>
+      <div class="ml-auto">
+        <label class="toggle-switch mb-0" style="position:relative;">
+          <input type="hidden" name="paypal_enabled" value="0">
+          <input type="checkbox" name="paypal_enabled" value="1" {{if eq (index .Settings "paypal_enabled") "1"}}checked{{end}}>
+          <span class="toggle-slider"></span>
+          <span class="text-muted small">{{translate "Enabled"}}</span>
+        </label>
+      </div>
+    </div>
+    <div class="gateway-body">
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Mode"}}</label>
+        <div class="col-md-9">
+          <select name="paypal_mode" class="form-control">
+            <option value="sandbox" {{if eq (index .Settings "paypal_mode") "sandbox"}}selected{{end}}>Sandbox (Testing)</option>
+            <option value="live" {{if eq (index .Settings "paypal_mode") "live"}}selected{{end}}>Live (Production)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Client ID"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="paypal_client_id" class="form-control"
+            value="{{index .Settings "paypal_client_id"}}"
+            placeholder="AXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Client Secret"}}</label>
+        <div class="col-md-9">
+          <input type="password" name="paypal_secret" class="form-control"
+            value="{{index .Settings "paypal_secret"}}"
+            placeholder="EKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            autocomplete="new-password">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Webhook URL"}}</label>
+        <div class="col-md-9">
+          <div class="input-group">
+            <input type="text" id="paypal_webhook_url" class="form-control" readonly>
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary"
+                onclick="navigator.clipboard.writeText(document.getElementById('paypal_webhook_url').value)">{{translate "Copy"}}</button>
+            </div>
+          </div>
+          <small class="text-muted">{{translate "Paste this into your PayPal app's Webhooks settings, then put the resulting Webhook ID below."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Webhook ID"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="paypal_webhook_id" class="form-control"
+            value="{{index .Settings "paypal_webhook_id"}}"
+            placeholder="Optional — for IPN / webhook verification">
+          <small class="text-muted">{{translate "Found in your PayPal developer dashboard under Webhooks."}}</small>
+        </div>
+      </div>
+      <script>
+        (function(){
+          var el = document.getElementById('paypal_webhook_url');
+          if (el) el.value = window.location.origin + '/webhooks/paypal';
+        })();
+      </script>
+    </div>
+  </div>
+
+  <!-- ── Stripe ── -->
+  <div class="gateway-card">
+    <div class="gateway-header">
+      <svg width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="32" rx="6" fill="#635bff"/>
+        <text x="10" y="22" font-family="Arial Black,Arial" font-weight="900" font-size="16" fill="#fff">stripe</text>
+      </svg>
+      <div>
+        <div class="gateway-name">Stripe</div>
+        <small class="text-muted">Cards, wallets &amp; bank transfers worldwide</small>
+      </div>
+      <div class="ml-auto">
+        <label class="toggle-switch mb-0" style="position:relative;">
+          <input type="hidden" name="stripe_enabled" value="0">
+          <input type="checkbox" name="stripe_enabled" value="1" {{if eq (index .Settings "stripe_enabled") "1"}}checked{{end}}>
+          <span class="toggle-slider"></span>
+          <span class="text-muted small">{{translate "Enabled"}}</span>
+        </label>
+      </div>
+    </div>
+    <div class="gateway-body">
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Mode"}}</label>
+        <div class="col-md-9">
+          <select name="stripe_mode" class="form-control">
+            <option value="test" {{if eq (index .Settings "stripe_mode") "test"}}selected{{end}}>Test</option>
+            <option value="live" {{if eq (index .Settings "stripe_mode") "live"}}selected{{end}}>Live</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Publishable Key"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="stripe_publishable_key" class="form-control"
+            value="{{index .Settings "stripe_publishable_key"}}"
+            placeholder="pk_test_xxxxxxxxxxxx or pk_live_xxxxxxxxxxxx">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Secret Key"}}</label>
+        <div class="col-md-9">
+          <input type="password" name="stripe_secret_key" class="form-control"
+            value="{{index .Settings "stripe_secret_key"}}"
+            placeholder="sk_test_xxxxxxxxxxxx or sk_live_xxxxxxxxxxxx"
+            autocomplete="new-password">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Webhook URL"}}</label>
+        <div class="col-md-9">
+          <div class="input-group">
+            <input type="text" id="stripe_webhook_url" class="form-control" readonly>
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary"
+                onclick="navigator.clipboard.writeText(document.getElementById('stripe_webhook_url').value)">{{translate "Copy"}}</button>
+            </div>
+          </div>
+          <small class="text-muted">{{translate "Paste this into Stripe → Developers → Webhooks → Add endpoint, then put the Signing secret below."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Webhook Secret"}}</label>
+        <div class="col-md-9">
+          <input type="password" name="stripe_webhook_secret" class="form-control"
+            value="{{index .Settings "stripe_webhook_secret"}}"
+            placeholder="whsec_xxxxxxxxxxxx"
+            autocomplete="new-password">
+          <small class="text-muted">{{translate "From the Stripe dashboard → Developers → Webhooks → your endpoint → Signing secret."}}</small>
+        </div>
+      </div>
+      <script>
+        (function(){
+          var el = document.getElementById('stripe_webhook_url');
+          if (el) el.value = window.location.origin + '/webhooks/stripe';
+        })();
+      </script>
+    </div>
+  </div>
+
+  <!-- ── Alipay ── -->
+  <div class="gateway-card">
+    <div class="gateway-header">
+      <svg width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="32" rx="6" fill="#1677ff"/>
+        <text x="6" y="22" font-family="Arial Black,Arial" font-weight="900" font-size="14" fill="#fff">Alipay</text>
+      </svg>
+      <div>
+        <div class="gateway-name">Alipay</div>
+        <small class="text-muted">China's leading digital payment platform</small>
+      </div>
+      <div class="ml-auto">
+        <label class="toggle-switch mb-0" style="position:relative;">
+          <input type="hidden" name="alipay_enabled" value="0">
+          <input type="checkbox" name="alipay_enabled" value="1" {{if eq (index .Settings "alipay_enabled") "1"}}checked{{end}}>
+          <span class="toggle-slider"></span>
+          <span class="text-muted small">{{translate "Enabled"}}</span>
+        </label>
+      </div>
+    </div>
+    <div class="gateway-body">
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Mode"}}</label>
+        <div class="col-md-9">
+          <select name="alipay_mode" class="form-control">
+            <option value="sandbox" {{if eq (index .Settings "alipay_mode") "sandbox"}}selected{{end}}>Sandbox (Testing)</option>
+            <option value="live" {{if eq (index .Settings "alipay_mode") "live"}}selected{{end}}>Live (Production)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "App ID"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="alipay_app_id" class="form-control"
+            value="{{index .Settings "alipay_app_id"}}"
+            placeholder="2021001xxxxxxxxxx">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "App Private Key"}}</label>
+        <div class="col-md-9">
+          <textarea name="alipay_private_key" class="form-control" rows="4"
+            placeholder="MIIEowIBAAKCAQEA...">{{index .Settings "alipay_private_key"}}</textarea>
+          <small class="text-muted">{{translate "RSA2 private key generated in Alipay Open Platform, without header/footer lines."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Alipay Public Key"}}</label>
+        <div class="col-md-9">
+          <textarea name="alipay_public_key" class="form-control" rows="4"
+            placeholder="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCg...">{{index .Settings "alipay_public_key"}}</textarea>
+          <small class="text-muted">{{translate "Download from Alipay Open Platform → App → RSA public key."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Notify URL"}}</label>
+        <div class="col-md-9">
+          <div class="input-group">
+            <input type="text" id="alipay_notify_url_display" class="form-control" readonly>
+            <input type="hidden" name="alipay_notify_url" id="alipay_notify_url_hidden">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary"
+                onclick="navigator.clipboard.writeText(document.getElementById('alipay_notify_url_display').value)">{{translate "Copy"}}</button>
+            </div>
+          </div>
+          <small class="text-muted">{{translate "Async callback URL passed to Alipay when creating each trade. Saved automatically."}}</small>
+        </div>
+        <script>
+          (function(){
+            var u = window.location.origin + '/webhooks/alipay';
+            var d = document.getElementById('alipay_notify_url_display');
+            var h = document.getElementById('alipay_notify_url_hidden');
+            if (d) d.value = u;
+            if (h) h.value = u;
+          })();
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group row mt-3">
+    <div class="col-md-9 ml-auto">
+      <button type="submit" class="btn btn-primary px-5">{{translate "Save Settings"}}</button>
+    </div>
+  </div>
+</form>
+{{end}}

@@ -1,0 +1,93 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Users"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/users/create" class="btn btn-primary"><i class="las la-plus"></i> {{translate "Create User"}}</a>
+    </div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{.Success}}</div>{{end}}
+{{if .Error}}<div class="alert alert-danger">{{.Error}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none mb-3">
+  <div class="card-body">
+    <form method="GET" class="form-inline">
+      <input type="text" name="search" class="form-control mr-2" placeholder="{{translate "Search by name or email"}}" value="{{.Search}}">
+      <select name="status" class="form-control mr-2">
+        <option value="">{{translate "All Status"}}</option>
+        <option value="active" {{if eq .Status "active"}}selected{{end}}>{{translate "Active"}}</option>
+        <option value="banned" {{if eq .Status "banned"}}selected{{end}}>{{translate "Banned"}}</option>
+      </select>
+      <button type="submit" class="btn btn-primary">{{translate "Filter"}}</button>
+    </form>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{{translate "Name"}}</th>
+          <th>{{translate "Email"}}</th>
+          <th>{{translate "Role"}}</th>
+          <th>{{translate "Status"}}</th>
+          <th>{{translate "Actions"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{if .Users}}
+          {{range $user := .Users}}
+          <tr>
+            <td>{{$user.ID}}</td>
+            <td>{{$user.Name}}</td>
+            <td>{{$user.Email}}</td>
+            <td>
+              <form method="POST" action="/admin/users/{{$user.ID}}/assign-role" style="display:inline">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <select name="role_id" class="form-control form-control-sm" style="width:150px;display:inline-block" onchange="this.form.submit()">
+                  <option value="">{{translate "No Role"}}</option>
+                  {{range $.Roles}}
+                  <option value="{{.ID}}" {{if eq (index $.UserRoleMap $user.ID) .ID}}selected{{end}}>{{.Name}}</option>
+                  {{end}}
+                </select>
+              </form>
+            </td>
+            <td>
+              {{if eq $user.Banned 1}}
+              <span class="badge badge-danger">{{translate "Banned"}}</span>
+              {{else}}
+              <span class="badge badge-success">{{translate "Active"}}</span>
+              {{end}}
+            </td>
+            <td>
+              {{if eq $user.UserType "admin"}}
+              <span class="badge badge-info">Admin</span>
+              {{else if eq $user.UserType "seller"}}
+              <span class="badge badge-warning">Seller</span>
+              {{else}}
+              <span class="badge badge-secondary">Customer</span>
+              {{end}}
+            </td>
+            <td class="text-right">
+              <a href="/admin/users/{{$user.ID}}/edit" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+              <form method="POST" action="/admin/users/{{$user.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this user?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        {{else}}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">{{translate "No users found"}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{end}}

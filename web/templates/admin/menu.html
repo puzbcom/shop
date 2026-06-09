@@ -1,0 +1,148 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Main Menu"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Add item form -->
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Menu Item"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/menu">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label class="font-weight-bold small mb-1">{{translate "Label"}} <span class="text-danger">*</span></label>
+            <input type="text" name="label" class="form-control" placeholder="e.g. New Arrivals" required>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold small mb-1">{{translate "URL"}} <span class="text-danger">*</span></label>
+            <input type="text" name="url" class="form-control" placeholder="/new-arrivals or https://..." required>
+          </div>
+          <div class="form-group mb-3">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="new_tab" name="new_tab" value="1">
+              <label class="custom-control-label" for="new_tab">{{translate "Open in new tab"}}</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="las la-plus mr-1"></i>{{translate "Add Item"}}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current items (sortable) -->
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 h6">{{translate "Menu Items"}}</h5>
+        <small class="text-muted">{{translate "Drag to reorder"}}</small>
+      </div>
+      <div class="card-body p-0">
+        {{if .Items}}
+        <ul class="list-group list-group-flush" id="menu-sortable">
+          {{range .Items}}
+          <li class="list-group-item d-flex align-items-center" data-id="{{.ID}}">
+            <i class="las la-grip-lines text-muted mr-3 fs-18" style="cursor:grab"></i>
+            <div class="flex-grow-1">
+              <div class="font-weight-bold">{{.Label}}</div>
+              <small class="text-muted">{{.URL}}{{if eq .NewTab 1}} <span class="badge badge-secondary ml-1">new tab</span>{{end}}</small>
+            </div>
+            <div class="ml-3 d-flex gap-1" style="gap:4px">
+              <button type="button" class="btn btn-soft-primary btn-icon btn-circle btn-sm"
+                title="{{translate "Edit"}}"
+                onclick="openEdit({{.ID}}, '{{.Label}}', '{{.URL}}', {{.NewTab}})">
+                <i class="las la-edit"></i>
+              </button>
+              <form method="POST" action="/admin/menu/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('{{translate "Remove this item?"}}')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}">
+                  <i class="las la-trash"></i>
+                </button>
+              </form>
+            </div>
+          </li>
+          {{end}}
+        </ul>
+        {{else}}
+        <div class="text-center text-muted py-5">
+          <i class="las la-bars fs-40 d-block mb-2"></i>
+          {{translate "No menu items yet. Add one on the left."}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="editForm">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="modal-header">
+          <h5 class="modal-title">{{translate "Edit Menu Item"}}</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="font-weight-bold small mb-1">{{translate "Label"}} <span class="text-danger">*</span></label>
+            <input type="text" name="label" id="edit_label" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold small mb-1">{{translate "URL"}} <span class="text-danger">*</span></label>
+            <input type="text" name="url" id="edit_url" class="form-control" required>
+          </div>
+          <div class="form-group mb-0">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="edit_new_tab" name="new_tab" value="1">
+              <label class="custom-control-label" for="edit_new_tab">{{translate "Open in new tab"}}</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-primary">{{translate "Save"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+(function() {
+  var el = document.getElementById('menu-sortable');
+  if (!el) return;
+  Sortable.create(el, {
+    animation: 150,
+    handle: '.la-grip-lines',
+    onEnd: function() {
+      var ids = Array.from(el.querySelectorAll('[data-id]')).map(function(li) {
+        return parseInt(li.dataset.id, 10);
+      });
+      fetch('/admin/menu/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '{{csrf_token}}' },
+        body: JSON.stringify({ ids: ids })
+      });
+    }
+  });
+})();
+
+function openEdit(id, label, url, newTab) {
+  document.getElementById('editForm').action = '/admin/menu/' + id + '/update';
+  document.getElementById('edit_label').value = label;
+  document.getElementById('edit_url').value = url;
+  document.getElementById('edit_new_tab').checked = newTab === 1;
+  $('#editModal').modal('show');
+}
+</script>
+{{end}}

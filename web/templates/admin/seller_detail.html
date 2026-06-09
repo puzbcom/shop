@@ -1,0 +1,125 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Seller"}}: {{.Seller.Name}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <form method="POST" action="/admin/sellers/{{.Seller.ID}}/login-as" class="d-inline">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <button type="submit" class="btn btn-primary"><i class="las la-sign-in-alt"></i> {{translate "Login as Seller"}}</button>
+      </form>
+      <a href="/admin/sellers" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Shop Information"}}</h5></div>
+      <div class="card-body">
+        {{if .Seller.Shop}}
+        <table class="table table-borderless mb-0">
+          <tr><td>{{translate "Shop Name"}}</td><td class="text-right fw-600">{{deref_str .Seller.Shop.Name}}</td></tr>
+          <tr><td>{{translate "Phone"}}</td><td class="text-right">{{deref_str .Seller.Shop.Phone}}</td></tr>
+          <tr><td>{{translate "Address"}}</td><td class="text-right">{{deref_str .Seller.Shop.Address}}</td></tr>
+          <tr><td>{{translate "Rating"}}</td><td class="text-right">{{.Seller.Shop.Rating}}</td></tr>
+          <tr><td>{{translate "Verified"}}</td><td class="text-right">
+            {{if eq .Seller.Shop.VerificationStatus 1}}<span class="badge badge-success">{{translate "Verified"}}</span>
+            {{else}}<span class="badge badge-warning">{{translate "Pending"}}</span>{{end}}
+          </td></tr>
+          <tr><td>{{translate "Bank Name"}}</td><td class="text-right">{{deref_str .Seller.Shop.BankName}}</td></tr>
+          <tr><td>{{translate "Account Name"}}</td><td class="text-right">{{deref_str .Seller.Shop.BankAccName}}</td></tr>
+          <tr><td>{{translate "Account No"}}</td><td class="text-right">{{deref_str .Seller.Shop.BankAccNo}}</td></tr>
+        </table>
+        {{else}}
+        <p class="mb-0 text-muted">{{translate "No shop found"}}</p>
+        {{end}}
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Account"}}</h5></div>
+      <div class="card-body">
+        <table class="table table-borderless mb-0">
+          <tr><td>{{translate "Email"}}</td><td class="text-right">{{deref_str .Seller.Email}}</td></tr>
+          <tr><td>{{translate "Status"}}</td><td class="text-right">
+            {{if eq .Seller.Banned 1}}<span class="badge badge-danger">{{translate "Banned"}}</span>
+            {{else}}<span class="badge badge-success">{{translate "Active"}}</span>{{end}}
+          </td></tr>
+          <tr><td>{{translate "Total Earning"}}</td><td class="text-right fw-600">{{format_price .TotalEarning}}</td></tr>
+          <tr><td>{{translate "Products"}}</td><td class="text-right">{{.ProductCount}}</td></tr>
+          <tr><td>{{translate "Orders"}}</td><td class="text-right">{{.OrderCount}}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Products"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Name"}}</th>
+                <th>{{translate "Price"}}</th>
+                <th>{{translate "Stock"}}</th>
+                <th>{{translate "Published"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Products}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Name}}</td>
+                <td>{{format_price .UnitPrice}}</td>
+                <td>{{.CurrentStock}}</td>
+                <td>{{if eq .Published 1}}<span class="badge badge-success">{{translate "Yes"}}</span>{{else}}<span class="badge badge-warning">{{translate "No"}}</span>{{end}}</td>
+              </tr>
+              {{else}}
+              <tr><td colspan="5" class="text-center py-4">{{translate "No products found"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mb-3">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Recent Orders"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Code"}}</th>
+                <th>{{translate "Customer"}}</th>
+                <th>{{translate "Total"}}</th>
+                <th>{{translate "Status"}}</th>
+                <th>{{translate "Date"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Orders}}
+              <tr>
+                <td><a href="/admin/orders/{{.ID}}">{{.ID}}</a></td>
+                <td>{{deref_str .Code}}</td>
+                <td>{{if .Buyer}}{{.Buyer.Name}}{{else}}—{{end}}</td>
+                <td>{{if .GrandTotal}}{{deref_float .GrandTotal | format_price}}{{end}}</td>
+                <td>{{deref_str .DeliveryStatus}}</td>
+                <td>{{date_format .CreatedAt "Jan 2, 2006"}}</td>
+              </tr>
+              {{else}}
+              <tr><td colspan="6" class="text-center py-4">{{translate "No orders found"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

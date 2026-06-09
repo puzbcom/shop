@@ -1,0 +1,106 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Contact Messages"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <span class="badge badge-primary" style="font-size:13px;padding:6px 12px;">
+        {{.Total}} {{translate "Total"}}
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    {{if .Contacts}}
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th width="5%">{{translate "ID"}}</th>
+            <th width="18%">{{translate "Name"}}</th>
+            <th width="22%">{{translate "Email"}}</th>
+            <th>{{translate "Message"}}</th>
+            <th width="12%">{{translate "Received"}}</th>
+            <th width="8%">{{translate "Replied"}}</th>
+            <th width="5%" class="text-right">{{translate "Action"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Contacts}}
+          <tr>
+            <td><strong>#{{.ID}}</strong></td>
+            <td>
+              <a href="/admin/contacts/{{.ID}}" class="font-weight-600 text-dark">{{.Name}}</a>
+            </td>
+            <td>
+              <a href="mailto:{{.Email}}" class="text-primary" style="font-size:12px;">{{.Email}}</a>
+            </td>
+            <td>
+              <span class="text-muted" style="font-size:13px;">
+                {{if gt (len .Content) 80}}{{slice .Content 0 80}}…{{else}}{{.Content}}{{end}}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">{{date_format .CreatedAt "Jan 02, 2006"}}</small>
+            </td>
+            <td>
+              {{if .Reply}}
+              <span class="badge badge-success">{{translate "Yes"}}</span>
+              {{else}}
+              <span class="badge badge-warning">{{translate "No"}}</span>
+              {{end}}
+            </td>
+            <td class="text-right">
+              <a href="/admin/contacts/{{.ID}}" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "View"}}">
+                <i class="las la-eye"></i>
+              </a>
+              <form method="POST" action="/admin/contacts/{{.ID}}/delete" class="d-inline"
+                    onsubmit="return confirm('{{translate "Delete this message?"}}')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}">
+                  <i class="las la-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+    {{if gt .TotalPages 1}}
+    <div class="aiz-pagination px-3 py-3">
+      <nav>
+        <ul class="pagination justify-content-end mb-0">
+          {{if gt .Page 1}}
+          <li class="page-item">
+            <a class="page-link" href="/admin/contacts?page={{sub .Page 1}}">{{translate "Previous"}}</a>
+          </li>
+          {{end}}
+          {{$pages := .TotalPages}}
+          {{range $i := seq 1 $pages}}
+          <li class="page-item {{if eq $i $.Page}}active{{end}}">
+            <a class="page-link" href="/admin/contacts?page={{$i}}">{{$i}}</a>
+          </li>
+          {{end}}
+          {{if lt .Page .TotalPages}}
+          <li class="page-item">
+            <a class="page-link" href="/admin/contacts?page={{add .Page 1}}">{{translate "Next"}}</a>
+          </li>
+          {{end}}
+        </ul>
+      </nav>
+    </div>
+    {{end}}
+
+    {{else}}
+    <div class="text-center py-5">
+      <i class="las la-envelope-open" style="font-size:48px;color:#dee2e6;"></i>
+      <p class="mt-3 mb-0 text-muted">{{translate "No contact messages yet"}}</p>
+      <small class="text-muted">{{translate "Messages from the contact form will appear here"}}</small>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

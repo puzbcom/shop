@@ -1,0 +1,181 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 bg-transparent p-0">
+          <li class="breadcrumb-item"><a href="/seller/tickets">{{translate "Support Tickets"}}</a></li>
+          <li class="breadcrumb-item active">{{translate "New Ticket"}}</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mt-1">{{translate "Open a Support Ticket"}}</h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/tickets" class="btn btn-light btn-sm">
+        <i class="las la-arrow-left mr-1"></i>{{translate "Back"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+{{if .Error}}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="las la-exclamation-circle mr-1"></i>{{.Error}}
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{{end}}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Ticket Details"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/seller/tickets">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group">
+            <label for="subject" class="font-weight-700">
+              {{translate "Subject"}} <span class="text-danger">*</span>
+            </label>
+            <input type="text" id="subject" name="subject" class="form-control"
+                   placeholder="{{translate "Brief summary of your issue"}}" required maxlength="255">
+            <small class="text-muted">{{translate "Be specific so we can help you faster"}}</small>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="font-weight-700">{{translate "Category"}}</label>
+                <!-- Category radio cards -->
+                <div class="d-flex flex-wrap" style="gap:8px;margin-top:4px;">
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="type" value="general" class="sr-only" checked>
+                    <span class="btn btn-sm btn-outline-secondary js-cat-btn" data-val="general">
+                      💬 {{translate "General"}}
+                    </span>
+                  </label>
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="type" value="order" class="sr-only">
+                    <span class="btn btn-sm btn-outline-secondary js-cat-btn" data-val="order">
+                      📦 {{translate "Order"}}
+                    </span>
+                  </label>
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="type" value="product" class="sr-only">
+                    <span class="btn btn-sm btn-outline-secondary js-cat-btn" data-val="product">
+                      🛍️ {{translate "Product"}}
+                    </span>
+                  </label>
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="type" value="payment" class="sr-only">
+                    <span class="btn btn-sm btn-outline-secondary js-cat-btn" data-val="payment">
+                      💳 {{translate "Payment"}}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="font-weight-700">{{translate "Priority"}}</label>
+                <div class="d-flex" style="gap:8px;margin-top:4px;">
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="priority" value="low" class="sr-only">
+                    <span class="btn btn-sm btn-outline-info js-pri-btn" data-val="low">
+                      {{translate "Low"}}
+                    </span>
+                  </label>
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="priority" value="medium" class="sr-only" checked>
+                    <span class="btn btn-sm btn-outline-warning js-pri-btn active" data-val="medium">
+                      {{translate "Medium"}}
+                    </span>
+                  </label>
+                  <label class="mb-0" style="cursor:pointer;">
+                    <input type="radio" name="priority" value="high" class="sr-only">
+                    <span class="btn btn-sm btn-outline-danger js-pri-btn" data-val="high">
+                      {{translate "High"}}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="details" class="font-weight-700">
+              {{translate "Details"}} <span class="text-danger">*</span>
+            </label>
+            <textarea id="details" name="details" rows="8" class="form-control"
+                      placeholder="{{translate "Describe your issue in detail. Include order numbers, product names, or screenshots links if helpful."}}"
+                      required oninput="document.getElementById('charCount').textContent=this.value.length+' chars'"></textarea>
+            <small class="text-muted float-right" id="charCount">0 chars</small>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <button type="submit" class="btn btn-primary mr-2">
+              <i class="las la-paper-plane mr-1"></i>{{translate "Submit Ticket"}}
+            </button>
+            <a href="/seller/tickets" class="btn btn-light">{{translate "Cancel"}}</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tips sidebar -->
+  <div class="col-lg-4 mt-3 mt-lg-0">
+    <div class="card rounded-0 shadow-none" style="border-left:3px solid #007bff;">
+      <div class="card-body">
+        <h6 class="font-weight-700 mb-3"><i class="las la-lightbulb mr-1 text-warning"></i>{{translate "Tips for faster support"}}</h6>
+        <ul class="list-unstyled mb-0" style="font-size:13px;">
+          <li class="mb-2 d-flex" style="gap:8px;">
+            <span class="badge badge-secondary" style="min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;">1</span>
+            <span>{{translate "Include order numbers or transaction IDs"}}</span>
+          </li>
+          <li class="mb-2 d-flex" style="gap:8px;">
+            <span class="badge badge-secondary" style="min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;">2</span>
+            <span>{{translate "Describe what you expected vs. what happened"}}</span>
+          </li>
+          <li class="mb-2 d-flex" style="gap:8px;">
+            <span class="badge badge-secondary" style="min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+            <span>{{translate "Select High priority only for urgent issues"}}</span>
+          </li>
+          <li class="d-flex" style="gap:8px;">
+            <span class="badge badge-secondary" style="min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;">4</span>
+            <span>{{translate "We typically respond within 1 business day"}}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card rounded-0 shadow-none mt-3">
+      <div class="card-body text-center">
+        <i class="las la-clock" style="font-size:32px;color:#adb5bd;"></i>
+        <p class="mt-2 mb-0 small text-muted">{{translate "Average response time"}}</p>
+        <p class="font-weight-700 mb-0">{{translate "Under 24 hours"}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Highlight selected category button
+document.querySelectorAll('.js-cat-btn').forEach(function(btn) {
+  btn.closest('label').querySelector('input').addEventListener('change', function() {
+    document.querySelectorAll('.js-cat-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  });
+});
+// Mark default
+document.querySelector('.js-cat-btn[data-val="general"]').classList.add('active');
+
+// Highlight selected priority button
+document.querySelectorAll('.js-pri-btn').forEach(function(btn) {
+  btn.closest('label').querySelector('input').addEventListener('change', function() {
+    document.querySelectorAll('.js-pri-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  });
+});
+</script>
+{{end}}

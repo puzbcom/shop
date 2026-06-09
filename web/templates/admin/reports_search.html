@@ -1,0 +1,35 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Search Report"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header"><h5 class="mb-0 h6">{{translate "Top Search Keywords"}}</h5></div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Keyword"}}</th>
+            <th>{{translate "Search Count"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range $i, $r := .Rows}}
+          <tr>
+            <td>{{add $i 1}}</td>
+            <td>{{$r.Keyword}}</td>
+            <td><span class="badge badge-info px-3 py-2">{{$r.Count}}</span></td>
+          </tr>
+          {{else}}
+          <tr><td colspan="3" class="text-center py-4">{{translate "No search data yet"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

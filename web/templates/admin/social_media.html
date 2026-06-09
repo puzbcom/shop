@@ -1,0 +1,42 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Social Media"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{translate "Settings saved successfully."}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <p class="text-muted mb-4">{{translate "Paste the full URL for each platform. Empty fields are hidden from the footer."}}</p>
+
+    <form method="POST" action="/admin/social-media">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      {{$socials := list_socials}}
+      {{range $socials}}
+      <div class="form-group row align-items-center">
+        <label class="col-md-3 col-form-label">
+          <span class="mr-2 d-inline-flex align-items-center justify-content-center" style="font-size:18px;width:22px;height:22px;{{if .Color}}color:{{.Color}};{{end}}">
+            {{if .SVG}}{{safe_html .SVG}}{{else}}<i class="{{.Icon}}"></i>{{end}}
+          </span>
+          {{.Label}}
+        </label>
+        <div class="col-md-9">
+          <input type="url" name="{{.Key}}" class="form-control"
+            value="{{index $.Settings .Key}}"
+            placeholder="{{.Placeholder}}">
+        </div>
+      </div>
+      {{end}}
+
+      <div class="form-group row mt-4">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save Settings"}}</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

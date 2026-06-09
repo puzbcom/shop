@@ -1,0 +1,65 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Customers"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <form class="d-inline-block" method="GET">
+        <div class="input-group input-group-sm" style="width:280px">
+          <input type="text" name="search" class="form-control" placeholder="{{translate "Search customers..."}}" value="{{.Search}}">
+          <div class="input-group-append"><button class="btn btn-primary" type="submit"><i class="las la-search"></i></button></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Name"}}</th>
+            <th>{{translate "Email"}}</th>
+            <th>{{translate "Phone"}}</th>
+            <th>{{translate "Joined"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Customers}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
+            <td>{{deref_str .Email}}</td>
+            <td>{{deref_str .Phone}}</td>
+            <td>{{if .CreatedAt}}{{date_format (deref_time .CreatedAt) "Jan 2, 2006"}}{{end}}</td>
+            <td>
+              {{if eq .Banned 1}}<span class="badge badge-danger">{{translate "Banned"}}</span>
+              {{else}}<span class="badge badge-success">{{translate "Active"}}</span>{{end}}
+            </td>
+            <td class="text-right">
+              <form method="POST" action="/admin/customers/{{.ID}}/ban" class="d-inline" onsubmit="return confirm('Toggle ban status?')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Ban / Unban"}}"><i class="las la-ban"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="text-center py-4">{{translate "No customers found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}&search={{$.Search}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

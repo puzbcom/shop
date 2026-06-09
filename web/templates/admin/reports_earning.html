@@ -1,0 +1,47 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Earning Report"}}</h1></div>
+  </div>
+</div>
+
+<div class="card rounded-0 mb-3">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col">
+        <div class="h2 fw-700 text-primary mb-0">{{format_price .TotalPlatform}}</div>
+        <div class="opacity-60">{{translate "Total Platform Revenue (Paid)"}}</div>
+      </div>
+      <div class="col-auto"><i class="las la-dollar-sign la-3x opacity-60 text-primary"></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-header"><h5 class="mb-0 h6">{{translate "Top Sellers by Revenue"}}</h5></div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Seller"}}</th>
+            <th>{{translate "Total Sales"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range $i, $r := .SellerRows}}
+          <tr>
+            <td>{{add $i 1}}</td>
+            <td>{{$r.Name}}</td>
+            <td class="fw-600">{{format_price $r.Total}}</td>
+          </tr>
+          {{else}}
+          <tr><td colspan="3" class="text-center py-4">{{translate "No earning data yet"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

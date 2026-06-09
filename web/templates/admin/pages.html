@@ -1,0 +1,47 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Pages"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/pages/create" class="btn btn-primary btn-sm"><i class="las la-plus mr-1"></i>{{translate "New Page"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Title"}}</th>
+            <th>{{translate "Slug"}}</th>
+            <th>{{translate "Type"}}</th>
+            <th class="text-right">{{translate "Options"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Pages}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{if .Title}}{{deref_str .Title}}{{else}}—{{end}}</td>
+            <td><a href="/page/{{if .Slug}}{{deref_str .Slug}}{{end}}" target="_blank" class="text-muted small"><code>{{if .Slug}}{{deref_str .Slug}}{{end}}</code></a></td>
+            <td><span class="badge badge-secondary">{{.Type}}</span></td>
+            <td class="text-right">
+              <a href="/admin/pages/{{.ID}}/edit" class="btn btn-soft-primary btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+              <form method="POST" action="/admin/pages/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('{{translate "Delete this page?"}}')">
+                <input type="hidden" name="_token" value="{{csrf_token}}">
+                <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="5" class="text-center py-4">{{translate "No pages found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,111 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Import/Export Products"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/products" class="btn btn-light btn-sm"><i class="las la-arrow-left mr-1"></i>{{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">{{translate "Import Products from Excel"}}</h5>
+      </div>
+      <div class="card-body">
+        {{if .success}}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{.success}}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {{end}}
+
+        {{if .error}}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          {{.error}}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {{end}}
+
+        <form method="POST" action="/admin/products/import" enctype="multipart/form-data">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group">
+            <label>{{translate "Select Excel File (.xlsx)"}}</label>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="file" name="file" accept=".xlsx" required>
+              <label class="custom-file-label" for="file">{{translate "Choose file..."}}</label>
+            </div>
+            <small class="form-text text-muted">{{translate "File format: Excel (.xlsx)"}}</small>
+          </div>
+
+          <div class="form-group">
+            <h6>{{translate "Column order:"}} A–L</h6>
+            <pre class="bg-light p-3" style="font-size: 11px;">A: name
+B: description (HTML allowed)
+C: category
+D: unit_price
+E: current_stock
+F: sku              (product-level, shared across all variants)
+G: variants         (name|price|stock|sku; name2|price|stock|sku)
+H: thumbnail_img
+I: images           (semicolon-separated paths)
+J: product_url      (external product link)
+K: source_1688_url  (1688 source URL with CPS tracking)
+L: min_qty          (MOQ, default 1)</pre>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="las la-upload mr-1"></i>{{translate "Import Products"}}
+          </button>
+        </form>
+
+        <hr>
+
+        <div class="alert alert-info mt-4">
+          <h6>{{translate "Import Guidelines:"}}</h6>
+          <ul class="mb-0">
+            <li>{{translate "First row must be the header row"}}
+            <li>{{translate "Required: name (column A)"}}
+            <li>{{translate "Categories are created automatically if they don't exist"}}
+            <li>{{translate "Variants: 6mm|15.38|100|SKU1; 8mm|20.00|80|SKU2"}}
+            <li>{{translate "Images: semicolon-separated paths, e.g. uploads/all/a.webp; uploads/all/b.webp"}}
+            <li>{{translate "Variant product stock is summed from all variants automatically"}}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">{{translate "Export Products"}}</h5>
+      </div>
+      <div class="card-body">
+        <p>{{translate "Download all products as an Excel file (.xlsx) for backup or editing."}}</p>
+
+        <a href="/admin/products/export" class="btn btn-success btn-block">
+          <i class="las la-download mr-1"></i>{{translate "Download Excel (.xlsx)"}}
+        </a>
+
+        <hr>
+
+        <h6>{{translate "What's included:"}}</h6>
+        <ul class="mb-0">
+          <li>{{translate "Name, description (HTML), category"}}
+          <li>{{translate "Price, stock, SKU"}}
+          <li>{{translate "Variants (encoded as name|price|stock|sku)"}}
+          <li>{{translate "Thumbnail and gallery image paths"}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

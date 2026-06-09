@@ -1,0 +1,425 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Business Settings"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{translate "Settings saved successfully."}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <form method="POST" action="/admin/business-settings">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "General"}}</h6>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Website Name"}}</label>
+        <div class="col-md-9"><input type="text" name="website_name" class="form-control" value="{{index .Settings "website_name"}}"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Website Title"}}</label>
+        <div class="col-md-9"><input type="text" name="website_title" class="form-control" value="{{index .Settings "website_title"}}"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Meta Description"}}</label>
+        <div class="col-md-9"><textarea name="meta_description" class="form-control" rows="3">{{index .Settings "meta_description"}}</textarea></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Footer Copyright"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="footer_copyright" class="form-control" value="{{index .Settings "footer_copyright"}}" placeholder="© 2025 {{index .Settings "website_name"}}. All rights reserved.">
+          <small class="text-muted">{{translate "Shown at the bottom of the site footer. Leave blank to use the default."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Header Logo"}}</label>
+        <div class="col-md-9">
+          {{$logo := index .Settings "header_logo"}}
+          {{if $logo}}
+          <div class="mb-2">
+            <img id="logo-preview" src="{{uploaded_asset $logo}}" alt="Header logo" style="max-height:60px;max-width:200px;object-fit:contain;background:#f5f5f5;padding:4px;border-radius:4px;border:1px solid #e0e0e0;">
+          </div>
+          {{end}}
+          <div class="mb-2 d-flex align-items-center gap-2" style="gap:8px">
+            <input type="file" id="logo-file" name="logo-file" accept="image/*" class="form-control-file" style="max-width:300px">
+            <button type="button" id="logo-upload-btn" class="btn btn-sm btn-primary ml-2">{{translate "Upload"}}</button>
+            <span id="logo-upload-status" class="text-muted small" style="display:none"></span>
+          </div>
+          <div class="d-flex align-items-center mt-1">
+            <span class="text-muted small mr-2">{{translate "Or enter URL:"}}</span>
+          </div>
+          <input type="text" name="header_logo" class="form-control mt-1"
+            value="{{$logo}}"
+            placeholder="/static/img/cyshoplogo.webp">
+          <small class="text-muted">{{translate "Upload an image or paste a URL. Changes to the URL field are saved with the main Save button."}}</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Promo Bar"}}</h6>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Promo Text"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="promo_bar_text" class="form-control"
+            value="{{index .Settings "promo_bar_text"}}"
+            placeholder="Free shipping on orders over $35 · Shop the sale →">
+          <small class="text-muted">{{translate "Text shown in the top announcement bar. Leave blank to hide it."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Promo Link"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="promo_bar_link" class="form-control"
+            value="{{index .Settings "promo_bar_link"}}"
+            placeholder="/products or https://...">
+          <small class="text-muted">{{translate "Optional URL — wraps the bar in a link."}}</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Gift Banner"}}</h6>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Title"}}</label>
+        <div class="col-md-9"><input type="text" name="gift_banner_title" class="form-control" value="{{index .Settings "gift_banner_title"}}" placeholder="🎁 Find the perfect gift"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Subtitle"}}</label>
+        <div class="col-md-9"><input type="text" name="gift_banner_subtitle" class="form-control" value="{{index .Settings "gift_banner_subtitle"}}" placeholder="From personalised keepsakes to handcrafted home goods — every gift tells a story."></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Button Text"}}</label>
+        <div class="col-md-9"><input type="text" name="gift_banner_cta_text" class="form-control" value="{{index .Settings "gift_banner_cta_text"}}" placeholder="Shop Gifts →"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Button Link"}}</label>
+        <div class="col-md-9"><input type="text" name="gift_banner_cta_link" class="form-control" value="{{index .Settings "gift_banner_cta_link"}}" placeholder="/products"></div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Hero Slides"}}</h6>
+      <p class="text-muted small mb-3">{{translate "Up to 3 slides shown in the homepage hero carousel."}}</p>
+
+      <!-- Slide 1 -->
+      <div class="card mb-3">
+        <div class="card-header py-2"><strong>{{translate "Slide"}} 1</strong></div>
+        <div class="card-body">
+          {{if index .Settings "hero_slide_1"}}
+          <img id="slide-1-preview" src="{{uploaded_asset (index .Settings "hero_slide_1")}}" class="img-fluid rounded mb-2" style="max-height:120px;object-fit:cover" alt="Hero slide 1 preview">
+          {{end}}
+          <div class="input-group input-group-sm mb-2">
+            <input type="file" id="slide-1-file" class="form-control" accept="image/*">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-sm btn-primary slide-upload-btn" data-slide="1">{{translate "Upload"}}</button>
+              <span class="slide-upload-status text-muted small ml-2" id="slide-1-status" style="display:none"></span>
+            </div>
+          </div>
+          <div class="form-group mb-1">
+            <label class="small mb-1">{{translate "Image URL (or leave after upload)"}}</label>
+            <input type="text" name="hero_slide_1" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_1"}}" placeholder="/uploads/... or https://...">
+          </div>
+          <div class="form-group mb-0">
+            <label class="small mb-1">{{translate "Target Link"}}</label>
+            <input type="text" name="hero_slide_1_link" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_1_link"}}" placeholder="/products or https://...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="card mb-3">
+        <div class="card-header py-2"><strong>{{translate "Slide"}} 2</strong></div>
+        <div class="card-body">
+          {{if index .Settings "hero_slide_2"}}
+          <img id="slide-2-preview" src="{{uploaded_asset (index .Settings "hero_slide_2")}}" class="img-fluid rounded mb-2" style="max-height:120px;object-fit:cover" alt="Hero slide 2 preview">
+          {{end}}
+          <div class="input-group input-group-sm mb-2">
+            <input type="file" id="slide-2-file" class="form-control" accept="image/*">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-sm btn-primary slide-upload-btn" data-slide="2">{{translate "Upload"}}</button>
+              <span class="slide-upload-status text-muted small ml-2" id="slide-2-status" style="display:none"></span>
+            </div>
+          </div>
+          <div class="form-group mb-1">
+            <label class="small mb-1">{{translate "Image URL (or leave after upload)"}}</label>
+            <input type="text" name="hero_slide_2" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_2"}}" placeholder="/uploads/... or https://...">
+          </div>
+          <div class="form-group mb-0">
+            <label class="small mb-1">{{translate "Target Link"}}</label>
+            <input type="text" name="hero_slide_2_link" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_2_link"}}" placeholder="/products or https://...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="card mb-3">
+        <div class="card-header py-2"><strong>{{translate "Slide"}} 3</strong></div>
+        <div class="card-body">
+          {{if index .Settings "hero_slide_3"}}
+          <img id="slide-3-preview" src="{{uploaded_asset (index .Settings "hero_slide_3")}}" class="img-fluid rounded mb-2" style="max-height:120px;object-fit:cover" alt="Hero slide 3 preview">
+          {{end}}
+          <div class="input-group input-group-sm mb-2">
+            <input type="file" id="slide-3-file" class="form-control" accept="image/*">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-sm btn-primary slide-upload-btn" data-slide="3">{{translate "Upload"}}</button>
+              <span class="slide-upload-status text-muted small ml-2" id="slide-3-status" style="display:none"></span>
+            </div>
+          </div>
+          <div class="form-group mb-1">
+            <label class="small mb-1">{{translate "Image URL (or leave after upload)"}}</label>
+            <input type="text" name="hero_slide_3" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_3"}}" placeholder="/uploads/... or https://...">
+          </div>
+          <div class="form-group mb-0">
+            <label class="small mb-1">{{translate "Target Link"}}</label>
+            <input type="text" name="hero_slide_3_link" class="form-control form-control-sm"
+              value="{{index .Settings "hero_slide_3_link"}}" placeholder="/products or https://...">
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Currency"}}</h6>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Default Currency"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="default_currency" class="form-control" value="{{index .Settings "default_currency"}}"
+            placeholder="USD" style="text-transform:uppercase">
+          <small class="text-muted">{{translate "3-letter ISO 4217 currency code (e.g. USD, EUR, GBP). Used for the 1688 exchange-rate conversion."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Currency Symbol"}}</label>
+        <div class="col-md-9"><input type="text" name="currency_symbol" class="form-control" value="{{index .Settings "currency_symbol"}}"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Symbol Position"}}</label>
+        <div class="col-md-9">
+          <select name="currency_symbol_position" class="form-control">
+            <option value="left" {{if eq (index .Settings "currency_symbol_position") "left"}}selected{{end}}>{{translate "Left"}}</option>
+            <option value="right" {{if eq (index .Settings "currency_symbol_position") "right"}}selected{{end}}>{{translate "Right"}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Decimal Points"}}</label>
+        <div class="col-md-9"><input type="number" name="no_of_decimal_points" class="form-control" min="0" max="4" value="{{index .Settings "no_of_decimal_points"}}"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Decimal Separator"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="decimal_separator" class="form-control" maxlength="1"
+            value="{{index .Settings "decimal_separator"}}" placeholder=".">
+          <small class="text-muted">{{translate "Character used as the decimal point (e.g. . or ,)."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Thousands Separator"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="thousands_separator" class="form-control" maxlength="1"
+            value="{{index .Settings "thousands_separator"}}" placeholder=",">
+          <small class="text-muted">{{translate "Character used to group thousands (e.g. , or .)."}}</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "1688 Import"}}</h6>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "exchangerate-api.com Key"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="exchange_rate_api_key" class="form-control"
+            value="{{index .Settings "exchange_rate_api_key"}}" placeholder="Your free API key">
+          <small class="text-muted">
+            {{translate "Free key from"}} <a href="https://www.exchangerate-api.com" target="_blank">exchangerate-api.com</a>.
+            {{translate "The rate is fetched automatically every Monday at 08:00."}}
+          </small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Exchange Rate (CNY → store currency)"}}</label>
+        <div class="col-md-9">
+          <input type="number" name="exchange_rate" class="form-control" step="0.000001" min="0.000001"
+            value="{{index .Settings "exchange_rate"}}" placeholder="e.g. 0.14">
+          <small class="text-muted">{{translate "Auto-updated weekly. You can also override it manually here."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Markup (%)"}}</label>
+        <div class="col-md-9">
+          <input type="number" name="price_markup" class="form-control" step="0.1" min="0"
+            value="{{index .Settings "price_markup"}}" placeholder="e.g. 30">
+          <small class="text-muted">{{translate "Profit margin added on top of the converted price. Final price = 1688 price × exchange rate × (1 + markup / 100)."}}</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Seller"}}</h6>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Commission (%)"}}</label>
+        <div class="col-md-9"><input type="number" name="commission" class="form-control" step="0.01" min="0" max="100" value="{{index .Settings "commission"}}"></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Seller Registration"}}</label>
+        <div class="col-md-9">
+          <select name="seller_registration" class="form-control">
+            <option value="1" {{if eq (index .Settings "seller_registration") "1"}}selected{{end}}>{{translate "Open"}}</option>
+            <option value="0" {{if eq (index .Settings "seller_registration") "0"}}selected{{end}}>{{translate "Closed"}}</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Affiliate Program"}}</h6>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Affiliate Program"}}</label>
+        <div class="col-md-9">
+          <select name="affiliate_status" class="form-control">
+            <option value="1" {{if eq (index .Settings "affiliate_status") "1"}}selected{{end}}>{{translate "Enabled"}}</option>
+            <option value="0" {{if eq (index .Settings "affiliate_status") "0"}}selected{{end}}>{{translate "Disabled"}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Commission Rate (%)"}}</label>
+        <div class="col-md-9">
+          <input type="number" name="affiliate_commission" class="form-control" step="0.1" min="0" max="100"
+            value="{{index .Settings "affiliate_commission"}}" placeholder="5">
+          <small class="text-muted">{{translate "Percentage of order value paid to affiliates."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Minimum Payout"}}</label>
+        <div class="col-md-9">
+          <input type="number" name="affiliate_min_payout" class="form-control" step="0.01" min="0"
+            value="{{index .Settings "affiliate_min_payout"}}" placeholder="10">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Cookie Duration (days)"}}</label>
+        <div class="col-md-9">
+          <input type="number" name="affiliate_cookie_days" class="form-control" min="1"
+            value="{{index .Settings "affiliate_cookie_days"}}" placeholder="30">
+          <small class="text-muted">{{translate "How long a referral cookie is remembered."}}</small>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <h6 class="mb-3 fw-700 text-uppercase opacity-60">{{translate "Shipping"}}</h6>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Shipping Method"}}</label>
+        <div class="col-md-9">
+          <input type="text" name="shipping_method" class="form-control"
+            value="{{index .Settings "shipping_method"}}"
+            placeholder="Standard shipping · 3–5 business days">
+          <small class="text-muted">{{translate "Label shown on cart and checkout. Leave blank to hide the shipping line."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Shipping Cost"}}</label>
+        <div class="col-md-9">
+          <input type="number" step="0.01" min="0" name="shipping_cost" class="form-control"
+            value="{{index .Settings "shipping_cost"}}"
+            placeholder="0.00">
+          <small class="text-muted">{{translate "Flat shipping fee added to every order. Enter 0 for free shipping."}}</small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Free Shipping Over"}}</label>
+        <div class="col-md-9">
+          <input type="number" step="0.01" min="0" name="free_shipping_threshold" class="form-control"
+            value="{{index .Settings "free_shipping_threshold"}}"
+            placeholder="0.00">
+          <small class="text-muted">{{translate "Subtotal threshold at which shipping becomes free (满XX免运费). Leave 0 to disable."}}</small>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save Settings"}}</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('logo-upload-btn').addEventListener('click', async function(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById('logo-file');
+  if (!fileInput.files.length) return;
+
+  const formData = new FormData();
+  formData.append('_token', '{{csrf_token}}');
+  formData.append('image', fileInput.files[0]);
+
+  const statusEl = document.getElementById('logo-upload-status');
+  statusEl.textContent = 'Uploading...';
+  statusEl.style.display = 'inline';
+
+  try {
+    const resp = await fetch('/admin/business-settings/logo/upload', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await resp.json();
+    if (data.url) {
+      document.querySelector('input[name="header_logo"]').value = data.url;
+      const preview = document.getElementById('logo-preview');
+      if (preview) preview.src = data.url;
+      statusEl.textContent = 'Done ✓';
+      setTimeout(() => statusEl.style.display = 'none', 2000);
+      fileInput.value = '';
+    } else {
+      statusEl.textContent = 'Error: ' + (data.error || 'unknown');
+    }
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + e.message;
+  }
+});
+
+document.querySelectorAll('.slide-upload-btn').forEach(btn => {
+  btn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    const slideNum = this.dataset.slide;
+    const fileInput = document.getElementById('slide-' + slideNum + '-file');
+    if (!fileInput.files.length) return;
+
+    const formData = new FormData();
+    formData.append('_token', '{{csrf_token}}');
+    formData.append('image', fileInput.files[0]);
+
+    const statusEl = document.getElementById('slide-' + slideNum + '-status');
+    statusEl.textContent = 'Uploading...';
+    statusEl.style.display = 'inline';
+
+    try {
+      const resp = await fetch('/admin/business-settings/slides/' + slideNum + '/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await resp.json();
+      if (data.url) {
+        document.querySelector('input[name="hero_slide_' + slideNum + '"]').value = data.url;
+        const preview = document.getElementById('slide-' + slideNum + '-preview');
+        if (preview) preview.src = data.url;
+        statusEl.textContent = 'Done ✓';
+        setTimeout(() => statusEl.style.display = 'none', 2000);
+        fileInput.value = '';
+      } else {
+        statusEl.textContent = 'Error: ' + (data.error || 'unknown');
+      }
+    } catch(e) {
+      statusEl.textContent = 'Error: ' + e.message;
+    }
+  });
+});
+</script>
+{{end}}

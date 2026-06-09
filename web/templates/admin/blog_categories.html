@@ -1,0 +1,101 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Blog Categories"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/blogs" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Blogs"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "New Category"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/blog-categories">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Name"}} <span class="text-danger">*</span></label>
+            <input type="text" name="category_name" class="form-control" required
+              oninput="autoSlug(this.value)">
+          </div>
+          <div class="form-group">
+            <label>{{translate "Slug"}}</label>
+            <input type="text" name="slug" id="slug" class="form-control"
+              placeholder="{{translate "Auto-generated from name"}}">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Save"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header">
+        <form method="GET" action="/admin/blog-categories" class="form-inline">
+          <input type="text" name="search" value="{{.Search}}" class="form-control form-control-sm mr-2"
+            placeholder="{{translate "Search"}}">
+          <button type="submit" class="btn btn-sm btn-primary">{{translate "Filter"}}</button>
+          {{if .Search}}<a href="/admin/blog-categories" class="btn btn-sm btn-light ml-1">{{translate "Reset"}}</a>{{end}}
+        </form>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Name"}}</th>
+                <th>{{translate "Slug"}}</th>
+                <th>{{translate "Created"}}</th>
+                <th class="text-right">{{translate "Options"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Categories}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>{{.CategoryName}}</td>
+                <td><code>{{.Slug}}</code></td>
+                <td>{{if .CreatedAt}}{{date_format .CreatedAt "Jan 2, 2006"}}{{end}}</td>
+                <td class="text-right">
+                  <form method="POST" action="/admin/blog-categories/{{.ID}}/delete" class="d-inline"
+                    onsubmit="return confirm('{{translate "Delete this category?"}}')">
+                    <input type="hidden" name="_token" value="{{csrf_token}}">
+                    <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm"
+                      title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {{else}}
+              <tr><td colspan="5" class="text-center py-4">{{translate "No categories found"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+        {{if gt .Pages 1}}
+        <div class="aiz-pagination p-3">
+          {{range $i := iterate .Pages}}
+          <a href="?page={{add $i 1}}&search={{$.Search}}"
+             class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function autoSlug(v) {
+  var s = document.getElementById('slug');
+  if (s.dataset.manual) return;
+  s.value = v.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+}
+document.getElementById('slug').addEventListener('input', function() {
+  this.dataset.manual = '1';
+});
+</script>
+{{end}}

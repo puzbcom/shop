@@ -1,0 +1,1263 @@
+{{define "styles"}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.css">
+{{end}}
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{if .Product}}{{translate "Edit Product"}}{{else}}{{translate "Add New Product"}}{{end}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <a href="/admin/products" class="btn btn-light btn-sm"><i class="las la-arrow-left mr-1"></i>{{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<!-- Import from 1688 -->
+<div class="card rounded-0 shadow-none mb-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2" style="gap:10px">
+      <button type="button" class="btn btn-warning flex-shrink-0" id="ali1688Btn" onclick="import1688()">
+        <i class="las la-download mr-1"></i>{{translate "Import from 1688"}}
+      </button>
+      <input type="url" id="ali1688Url" class="form-control" placeholder="https://detail.1688.com/offer/123456789.html" style="--placeholder-color:#bbb;">
+      <style>#ali1688Url::placeholder{color:#bbb;opacity:1;}</style>
+    </div>
+    <div id="ali1688Status" class="mt-2 small"></div>
+    {{/* Use nested {{if}} guards instead of and/or — Go templates evaluate ALL
+         arguments to and/or eagerly, so (deref_str .Product.Source1688URL)
+         would be called even when .Product is nil (create form), causing a
+         nil-pointer template panic that aborts rendering before the <form>. */}}
+    {{$has1688 := false}}
+    {{if .Product}}{{if deref_str .Product.Source1688URL}}{{$has1688 = true}}{{end}}{{end}}
+    <div id="ali1688OrderLink" class="mt-2" {{if not $has1688}}style="display:none"{{end}}>
+      <a id="ali1688OrderAnchor" href="{{if $has1688}}{{deref_str .Product.Source1688URL}}{{else}}#{{end}}" target="_blank" class="btn btn-sm btn-outline-warning">
+        <i class="las la-shopping-cart mr-1"></i>{{translate "Order on 1688 (CPS link)"}}
+      </a>
+    </div>
+  </div>
+</div>
+
+<form method="POST" action="{{if .Product}}/admin/products/{{.Product.ID}}/update{{else}}/admin/products/create{{end}}" enctype="multipart/form-data" data-schema-type="Product">
+  <input type="hidden" name="_token" value="{{csrf_token}}">
+  <div class="card rounded-0 shadow-none mb-4">
+    <div class="card-header"><h5 class="mb-0 h6">{{translate "1688 Source"}}</h5></div>
+    <div class="card-body">
+      <div class="form-group row mb-0">
+        <label class="col-md-3 col-form-label">{{translate "1688 URL"}}</label>
+        <div class="col-md-9">
+          <input type="url" name="source_1688_url" id="source_1688_url" class="form-control" placeholder="https://detail.1688.com/offer/..."
+            value="{{if .Product}}{{deref_str .Product.Source1688URL}}{{end}}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Left column: main fields -->
+    <div class="col-lg-8">
+
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Basic Information"}}</h5></div>
+        <div class="card-body">
+
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small mb-1">{{translate "Product Name"}} <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" value="{{if .Product}}{{.Product.Name}}{{end}}" required>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="font-weight-bold small mb-1">{{translate "Category"}} <span class="text-danger">*</span></label>
+                <select name="category_id" class="form-control" required>
+                  <option value="">{{translate "Select Category"}}</option>
+                  {{range .Categories}}
+                  <option value="{{.ID}}" {{if $.Product}}{{if eq $.Product.CategoryID .ID}}selected{{end}}{{end}}>
+                    {{if gt .Level 0}}&nbsp;&mdash; {{end}}{{.Name}}
+                  </option>
+                  {{end}}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="font-weight-bold small mb-1">{{translate "Brand"}}</label>
+                <select name="brand_id" class="form-control">
+                  <option value="">{{translate "No Brand"}}</option>
+                  {{range .Brands}}
+                  <option value="{{.ID}}" {{if $.Product}}{{if $.Product.BrandID}}{{if eq (deref_uint $.Product.BrandID) .ID}}selected{{end}}{{end}}{{end}}>{{.Name}}</option>
+                  {{end}}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="font-weight-bold small mb-1">{{translate "Description"}}</label>
+            <textarea id="product-description" name="description" class="form-control" rows="8">{{if .Product}}{{deref_str .Product.Description}}{{end}}</textarea>
+          </div>
+
+        </div>
+      </div>
+
+      {{if .Languages}}
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0 h6">{{translate "Translations"}}</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="translateAllBtn" onclick="translateAll()">
+            <i class="las la-language mr-1"></i>{{translate "Translate All"}}
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <!-- Language tabs -->
+          <ul class="nav nav-tabs nav-fill border-bottom" id="transLangTabs" role="tablist" style="background:#f8f9fa">
+            {{range $i, $lang := .Languages}}
+            <li class="nav-item">
+              <a class="nav-link {{if eq $i 0}}active{{end}}" id="tab-{{$lang.Code}}" data-toggle="tab" href="#trans-{{$lang.Code}}" role="tab">
+                {{$lang.Name}} <small class="text-muted">({{$lang.Code}})</small>
+              </a>
+            </li>
+            {{end}}
+          </ul>
+          <div class="tab-content p-3">
+            {{range $i, $lang := .Languages}}
+            {{$tr := index $.TransMap $lang.Code}}
+            <input type="hidden" name="trans_langs[]" value="{{$lang.Code}}">
+            <div class="tab-pane fade {{if eq $i 0}}show active{{end}}" id="trans-{{$lang.Code}}" role="tabpanel">
+              <div class="form-group mb-3">
+                <label class="font-weight-bold small mb-1">{{translate "Product Name"}} ({{$lang.Name}})</label>
+                <input type="text" name="trans_name[{{$lang.Code}}]" class="form-control"
+                  value="{{if $tr.Name}}{{deref_str $tr.Name}}{{end}}"
+                  placeholder="{{translate "Leave blank to use default"}}">
+              </div>
+              <div class="form-group mb-0">
+                <label class="font-weight-bold small mb-1">{{translate "Description"}} ({{$lang.Name}})</label>
+                <textarea name="trans_desc[{{$lang.Code}}]" class="form-control trans-desc-editor" rows="6"
+                  data-lang="{{$lang.Code}}">{{if $tr.Description}}{{deref_str $tr.Description}}{{end}}</textarea>
+              </div>
+            </div>
+            {{end}}
+          </div>
+        </div>
+      </div>
+      {{end}}
+
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Pricing & Stock"}}</h5></div>
+        <div class="card-body">
+
+          <div id="no-variant-fields">
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Unit Price"}} <span class="text-danger">*</span></label>
+              <div class="col-md-9">
+                <input type="number" name="unit_price" id="unit_price" class="form-control" step="0.01" min="0" value="{{if .Product}}{{.Product.UnitPrice}}{{end}}">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Current Stock"}}</label>
+              <div class="col-md-9">
+                <input type="number" name="current_stock" id="current_stock" class="form-control" min="0" value="{{if .Product}}{{.Product.CurrentStock}}{{else}}0{{end}}">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Minimum Order Qty"}}</label>
+            <div class="col-md-9">
+              <input type="number" name="min_qty" id="min_qty" class="form-control" min="1" value="{{if .Product}}{{.Product.MinQty}}{{else}}1{{end}}">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label">{{translate "Discount"}}</label>
+            <div class="col-md-9">
+              <input type="number" name="discount" class="form-control" step="0.01" min="0" value="{{if .Product}}{{.Product.Discount}}{{else}}0{{end}}">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Variants -->
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0 h6">{{translate "Variants"}}</h5>
+          <label class="aiz-switch aiz-switch-success mb-0">
+            <input type="hidden" name="variant_product" value="0">
+            {{$variantOn := false}}{{if .Product}}{{if eq .Product.VariantProduct 1}}{{$variantOn = true}}{{end}}{{end}}
+            <input type="checkbox" id="variant-toggle" name="variant_product" value="1"
+              {{if $variantOn}}checked{{end}}>
+            <span></span>
+          </label>
+        </div>
+        <div class="card-body" id="variant-body" style="{{if not $variantOn}}display:none{{end}}">
+
+          <p class="small text-muted mb-3">{{translate "Define option groups (e.g. \"Color\" → Red, Blue, Green). Separate values with commas."}}</p>
+
+          <div id="choice-rows">
+            {{range $i, $opt := .ChoiceOptions}}
+            <div class="choice-row border rounded p-3 mb-3">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="small font-weight-bold">{{translate "Option Name"}}</label>
+                  <input type="text" name="choice_name[]" class="form-control choice-name" value="{{$opt.AttributeName}}" placeholder="e.g. Color">
+                </div>
+                <div class="col-md-7">
+                  <label class="small font-weight-bold">{{translate "Values"}} <span class="text-muted">{{translate "(comma-separated)"}}</span></label>
+                  <input type="text" name="choice_values[]" class="form-control choice-values" value="{{join $opt.Values ","}}" placeholder="e.g. Red, Blue, Green">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                  <button type="button" class="btn btn-soft-danger btn-sm remove-choice"><i class="las la-times"></i></button>
+                </div>
+              </div>
+            </div>
+            {{end}}
+          </div>
+
+          <button type="button" id="add-choice" class="btn btn-soft-primary btn-sm mb-3">
+            <i class="las la-plus mr-1"></i>{{translate "Add Option"}}
+          </button>
+          <button type="button" id="generate-variants" class="btn btn-primary btn-sm mb-3 ml-2">
+            <i class="las la-sync mr-1"></i>{{translate "Generate Variant Table"}}
+          </button>
+
+          {{$hasStocks := false}}{{if .Product}}{{if .Product.Stocks}}{{$hasStocks = true}}{{end}}{{end}}
+          <div id="variant-table-wrap" style="{{if not $hasStocks}}display:none{{end}}">
+            <table class="table table-bordered mb-0" id="variant-table">
+              <thead class="thead-light">
+                <tr>
+                  <th>{{translate "Variant"}}</th>
+                  <th style="width:90px">{{translate "Image"}}</th>
+                  <th style="width:140px">{{translate "Price"}}</th>
+                  <th style="width:120px">{{translate "Stock"}}</th>
+                  <th style="width:120px">{{translate "SKU"}}</th>
+                  <th style="width:50px"></th>
+                </tr>
+              </thead>
+              <tbody id="variant-tbody">
+                {{if $hasStocks}}
+                {{range .Product.Stocks}}
+                <tr>
+                  <td><strong>{{.Variant}}</strong><input type="hidden" name="var_combo[]" value="{{.Variant}}"></td>
+                  <td>
+                    <input type="hidden" name="var_image[]" value="{{deref_str .VariantImage}}">
+                    <img class="var-img-preview" src="{{if .VariantImage}}{{uploaded_asset .VariantImage}}{{else}}/static/assets/img/placeholder.jpg{{end}}" onclick="openVariantPicker(this)" onerror="this.onerror=null;this.src='/static/assets/img/placeholder.jpg'" title="{{translate "Click to pick variant image"}}" style="width:48px;height:48px;object-fit:cover;cursor:pointer;border:1px solid #dee2e6;border-radius:4px;background:#f1f3f5;">
+                  </td>
+                  <td><input type="number" name="var_price[]" class="form-control form-control-sm" step="0.01" min="0" value="{{.Price}}"></td>
+                  <td><input type="number" name="var_qty[]" class="form-control form-control-sm" min="0" value="{{.Qty}}"></td>
+                  <td><input type="text" name="var_sku[]" class="form-control form-control-sm" value="{{deref_str .Sku}}"></td>
+                  <td class="text-center"><button type="button" class="btn btn-soft-danger btn-sm remove-variant" title="{{translate "Remove variant"}}"><i class="las la-trash"></i></button></td>
+                </tr>
+                {{end}}
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEO Panel -->
+    {{template "admin/partials/seo_panel" .}}
+
+    <!-- Right column: toggles -->
+    <div class="col-lg-4">
+
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Status"}}</h5></div>
+        <div class="card-body">
+
+          <div class="form-group d-flex justify-content-between align-items-center">
+            <label class="mb-0">{{translate "Published"}}</label>
+            <label class="aiz-switch aiz-switch-success mb-0">
+              <input type="hidden" name="published" value="0">
+              {{/* Default checked for new products; use nested if to avoid eager eval on nil .Product */}}
+              {{$publishedChecked := true}}{{if .Product}}{{if ne .Product.Published 1}}{{$publishedChecked = false}}{{end}}{{end}}
+              <input type="checkbox" name="published" value="1" {{if $publishedChecked}}checked{{end}}>
+              <span></span>
+            </label>
+          </div>
+
+          <div class="form-group d-flex justify-content-between align-items-center">
+            <label class="mb-0">{{translate "Approved"}}</label>
+            <label class="aiz-switch aiz-switch-success mb-0">
+              <input type="hidden" name="approved" value="0">
+              {{$approvedChecked := true}}{{if .Product}}{{if ne .Product.Approved 1}}{{$approvedChecked = false}}{{end}}{{end}}
+              <input type="checkbox" name="approved" value="1" {{if $approvedChecked}}checked{{end}}>
+              <span></span>
+            </label>
+          </div>
+
+          <div class="form-group d-flex justify-content-between align-items-center">
+            <label class="mb-0">{{translate "Featured"}}</label>
+            <label class="aiz-switch aiz-switch-success mb-0">
+              {{$featuredOn := false}}{{if .Product}}{{if eq .Product.Featured 1}}{{$featuredOn = true}}{{end}}{{end}}
+              <input type="hidden" name="featured" value="0">
+              <input type="checkbox" name="featured" value="1" {{if $featuredOn}}checked{{end}}>
+              <span></span>
+            </label>
+          </div>
+
+          {{$digitalOn := false}}{{if .Product}}{{if eq .Product.Digital 1}}{{$digitalOn = true}}{{end}}{{end}}
+          <div class="form-group d-flex justify-content-between align-items-center mb-2">
+            <label class="mb-0">{{translate "Digital Product"}}</label>
+            <label class="aiz-switch aiz-switch-success mb-0">
+              <input type="hidden" name="digital" value="0">
+              <input type="checkbox" id="digital-toggle" name="digital" value="1" {{if $digitalOn}}checked{{end}}>
+              <span></span>
+            </label>
+          </div>
+
+          {{$auctionOn := false}}{{if .Product}}{{if eq .Product.AuctionProduct 1}}{{$auctionOn = true}}{{end}}{{end}}
+          <div class="form-group d-flex justify-content-between align-items-center mb-0">
+            <label class="mb-0">{{translate "Auction Product"}}</label>
+            <label class="aiz-switch aiz-switch-success mb-0">
+              <input type="hidden" name="auction_product" value="0">
+              <input type="checkbox" id="auction-toggle" name="auction_product" value="1" {{if $auctionOn}}checked{{end}}>
+              <span></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Digital Product File (shown when Digital toggle is on) -->
+      <div class="card rounded-0 shadow-none mb-4" id="digital-card" style="{{if not $digitalOn}}display:none{{end}}">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Digital File / Download Link"}}</h5></div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label class="small font-weight-bold">{{translate "Download File"}} <span class="text-muted">(PDF, ZIP, MP3…)</span></label>
+            {{if .Product}}{{if .Product.FileName}}
+            <p class="small text-success mb-1"><i class="las la-check-circle mr-1"></i>Current file: <strong>{{deref_str .Product.FileName}}</strong></p>
+            {{end}}{{end}}
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="digital-file" name="digital_file" onchange="this.nextElementSibling.textContent=this.files[0].name">
+              <label class="custom-file-label" for="digital-file">{{translate "Choose file"}}</label>
+            </div>
+            {{if .Product}}{{if .Product.FileName}}
+            <p class="small text-muted mt-1 mb-0">{{translate "Leave blank to keep the current file."}}</p>
+            {{end}}{{end}}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Auction Settings (shown when Auction toggle is on) -->
+      <div class="card rounded-0 shadow-none mb-4" id="auction-card" style="{{if not $auctionOn}}display:none{{end}}">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Auction Settings"}}</h5></div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="small font-weight-bold">{{translate "Start Price"}}</label>
+                <input type="number" name="auction_start_price" step="0.01" min="0" class="form-control form-control-sm"
+                  placeholder="0.00"
+                  value="{{if .Product}}{{if .Product.AuctionStartPrice}}{{deref_float .Product.AuctionStartPrice}}{{end}}{{end}}">
+                <p class="small text-muted mt-1 mb-0">Minimum opening bid.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="small font-weight-bold">{{translate "Min Bid Increment"}}</label>
+                <input type="number" name="auction_min_bid_increment" step="0.01" min="0" class="form-control form-control-sm"
+                  placeholder="0.00"
+                  value="{{if .Product}}{{if .Product.AuctionMinBidIncrement}}{{deref_float .Product.AuctionMinBidIncrement}}{{end}}{{end}}">
+                <p class="small text-muted mt-1 mb-0">Each new bid must exceed current by at least this amount.</p>
+              </div>
+            </div>
+          </div>
+          <div class="form-group mb-0">
+            <label class="small font-weight-bold">{{translate "Auction End Date &amp; Time"}}</label>
+            <input type="datetime-local" name="auction_end_at" class="form-control form-control-sm"
+              value="{{if .Product}}{{if .Product.AuctionEndAt}}{{date_format (deref_time .Product.AuctionEndAt) "2006-01-02T15:04"}}{{end}}{{end}}">
+            <p class="small text-muted mt-1 mb-0">Leave blank for no end date.</p>
+          </div>
+        </div>
+      </div>
+
+      {{if .Product}}
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Info"}}</h5></div>
+        <div class="card-body">
+          <p class="mb-1 small text-muted">{{translate "ID"}}: <strong>{{.Product.ID}}</strong></p>
+          <p class="mb-1 small text-muted">{{translate "Added by"}}: <strong>{{.Product.AddedBy}}</strong></p>
+          <p class="mb-1 small text-muted">{{translate "Sales"}}: <strong>{{.Product.NumOfSale}}</strong></p>
+          <p class="mb-1 small text-muted">{{translate "Rating"}}: <strong>{{.Product.Rating}}</strong></p>
+          <p class="mb-0 small text-muted">{{translate "Created"}}: <strong>{{date_format .Product.CreatedAt "Jan 2, 2006"}}</strong></p>
+        </div>
+      </div>
+      {{end}}
+
+      <!-- Featured Image -->
+      {{$hasThumb := false}}{{if .Product}}{{if .Product.ThumbnailImg}}{{$hasThumb = true}}{{end}}{{end}}
+      {{$thumbAlt := ""}}{{if .Product}}{{if .Product.ThumbnailImgAlt}}{{$thumbAlt = deref_str .Product.ThumbnailImgAlt}}{{end}}{{end}}{{if not $thumbAlt}}{{if .SEO}}{{if .SEO.FocusKeyword}}{{$thumbAlt = .SEO.FocusKeyword}}{{end}}{{end}}{{end}}
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Featured Image"}}</h5></div>
+        <div class="card-body text-center">
+          <input type="hidden" name="thumbnail_img" id="thumb-path" value="{{if $hasThumb}}{{deref_str .Product.ThumbnailImg}}{{end}}">
+          <input type="hidden" name="thumbnail_img_alt" id="thumb-alt" value="{{$thumbAlt}}">
+          <div id="thumb-wrap" class="mb-2" style="min-height:80px;">
+            {{if $hasThumb}}
+            <img id="thumb-preview" src="{{uploaded_asset .Product.ThumbnailImg}}" class="img-fluid rounded" style="max-height:160px;object-fit:contain;" alt="">
+            {{else}}
+            <img id="thumb-preview" src="" class="img-fluid rounded" style="max-height:160px;object-fit:contain;display:none;" alt="">
+            {{end}}
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm mr-1" onclick="openPicker('thumb')"><i class="las la-image mr-1"></i>{{translate "Pick Image"}}</button>
+          <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearThumb()"><i class="las la-times mr-1"></i>{{translate "Remove"}}</button>
+        </div>
+      </div>
+
+      <!-- Gallery -->
+      <div class="card rounded-0 shadow-none mb-4">
+        <div class="card-header"><h5 class="mb-0 h6">{{translate "Gallery Photos"}}</h5></div>
+        <div class="card-body">
+          <div id="gallery-wrap" class="d-flex flex-wrap mb-3" style="gap:8px;">
+            {{if .Product}}{{if .Product.Photos}}
+            {{range (split_comma (deref_str .Product.Photos))}}
+            {{if .}}
+            <div class="gallery-item position-relative" data-path="{{.}}">
+              <img src="{{uploaded_asset .}}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;" alt="">
+              <input type="hidden" name="gallery_photos[]" value="{{.}}">
+              <button type="button" class="btn btn-danger btn-sm gallery-del" onclick="removeGalleryItem(this)" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;padding:0;line-height:1;border-radius:50%;font-size:12px;">&times;</button>
+            </div>
+            {{end}}
+            {{end}}
+            {{end}}{{end}}
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="openPicker('gallery')"><i class="las la-plus mr-1"></i>{{translate "Add Photos"}}</button>
+        </div>
+      </div>
+
+      <div class="card rounded-0 shadow-none">
+        <div class="card-body">
+          <button type="submit" class="btn btn-primary btn-block">{{translate "Save Changes"}}</button>
+          <a href="/admin/products" class="btn btn-light btn-block mt-2">{{translate "Cancel"}}</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</form>
+
+<style>
+.aiz-switch { position:relative; display:inline-block; width:44px; height:24px; }
+.aiz-switch input { opacity:0; width:0; height:0; }
+.aiz-switch span { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:24px; transition:.3s; }
+.aiz-switch span:before { content:""; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+.aiz-switch input:checked + span { background:#28a745; }
+.aiz-switch-success input:checked + span { background:#28a745; }
+.aiz-switch input:checked + span:before { transform:translateX(20px); }
+</style>
+
+<script>
+(function(){
+  // Digital toggle → show/hide digital card
+  var digitalToggle = document.getElementById('digital-toggle');
+  var digitalCard   = document.getElementById('digital-card');
+  function syncDigital() { digitalCard.style.display = digitalToggle.checked ? '' : 'none'; }
+  digitalToggle.addEventListener('change', syncDigital);
+
+  // Auction toggle → show/hide auction card
+  var auctionToggle = document.getElementById('auction-toggle');
+  var auctionCard   = document.getElementById('auction-card');
+  function syncAuction() { auctionCard.style.display = auctionToggle.checked ? '' : 'none'; }
+  auctionToggle.addEventListener('change', syncAuction);
+
+  var toggle = document.getElementById('variant-toggle');
+  var body   = document.getElementById('variant-body');
+  var noVar  = document.getElementById('no-variant-fields');
+
+  function syncVisibility(){
+    if(toggle.checked){
+      body.style.display  = '';
+      noVar.style.display = 'none';
+    } else {
+      body.style.display  = 'none';
+      noVar.style.display = '';
+    }
+  }
+  toggle.addEventListener('change', syncVisibility);
+  syncVisibility();
+
+  // Add option row
+  document.getElementById('add-choice').addEventListener('click', function(){
+    var row = document.createElement('div');
+    row.className = 'choice-row border rounded p-3 mb-3';
+    row.innerHTML = '<div class="row">'
+      +'<div class="col-md-4"><label class="small font-weight-bold">{{translate "Option Name"}}</label>'
+      +'<input type="text" name="choice_name[]" class="form-control choice-name" placeholder="e.g. Color"></div>'
+      +'<div class="col-md-7"><label class="small font-weight-bold">{{translate "Values"}} <span class="text-muted">{{translate "(comma-separated)"}}</span></label>'
+      +'<input type="text" name="choice_values[]" class="form-control choice-values" placeholder="e.g. Red, Blue, Green"></div>'
+      +'<div class="col-md-1 d-flex align-items-end">'
+      +'<button type="button" class="btn btn-soft-danger btn-sm remove-choice"><i class="las la-times"></i></button></div>'
+      +'</div>';
+    document.getElementById('choice-rows').appendChild(row);
+  });
+
+  // Remove option row
+  document.getElementById('choice-rows').addEventListener('click', function(e){
+    var btn = e.target.closest('.remove-choice');
+    if(btn) btn.closest('.choice-row').remove();
+  });
+
+  // Remove a single variant row
+  var vtbody = document.getElementById('variant-tbody');
+  if (vtbody) {
+    vtbody.addEventListener('click', function(e){
+      var btn = e.target.closest('.remove-variant');
+      if(btn) btn.closest('tr').remove();
+    });
+  }
+
+  // Generate variant table from cartesian product of all option values
+  document.getElementById('generate-variants').addEventListener('click', function(){
+    var names  = Array.from(document.querySelectorAll('.choice-name')).map(i=>i.value.trim()).filter(Boolean);
+    var values = Array.from(document.querySelectorAll('.choice-values')).map(i=>
+      i.value.split(',').map(v=>v.trim()).filter(Boolean)
+    );
+
+    if(!names.length){ alert('Add at least one option.'); return; }
+
+    // Cartesian product
+    var combos = [[]];
+    values.forEach(function(vals){
+      var next = [];
+      combos.forEach(function(c){
+        vals.forEach(function(v){ next.push(c.concat([v])); });
+      });
+      combos = next;
+    });
+
+    // Gather existing prices/qtys by combo string so edits survive regeneration
+    var existing = {};
+    document.querySelectorAll('#variant-tbody tr').forEach(function(tr){
+      var key   = tr.querySelector('input[name="var_combo[]"]').value;
+      var price = tr.querySelector('input[name="var_price[]"]').value;
+      var qty   = tr.querySelector('input[name="var_qty[]"]').value;
+      var sku   = tr.querySelector('input[name="var_sku[]"]').value;
+      var imgEl = tr.querySelector('input[name="var_image[]"]');
+      existing[key] = {price:price, qty:qty, sku:sku, image: imgEl ? imgEl.value : ''};
+    });
+
+    var defaultPrice = document.getElementById('unit_price') ? document.getElementById('unit_price').value : '0';
+
+    var tbody = document.getElementById('variant-tbody');
+    tbody.innerHTML = '';
+    combos.forEach(function(combo){
+      // Variant key = "OptionName-Value" per group, joined by " | " between groups.
+      // e.g. ["Red"] with name "Color" -> "Color-Red"; with Size too -> "Color-Red | Size-S".
+      var key = combo.map(function(v, i){ return (names[i] || ('Opt'+i)) + '-' + v; }).join(' | ');
+      var prev = existing[key] || {price: defaultPrice, qty:'0', sku:'', image:''};
+      var safeKey = escHtml(key);
+      var tr   = document.createElement('tr');
+      tr.innerHTML = '<td><strong>'+safeKey+'</strong><input type="hidden" name="var_combo[]" value="'+safeKey+'"></td>'
+        +variantImageCell(prev.image)
+        +'<td><input type="number" name="var_price[]" class="form-control form-control-sm" step="0.01" min="0" value="'+escHtml(prev.price)+'"></td>'
+        +'<td><input type="number" name="var_qty[]" class="form-control form-control-sm" min="0" value="'+escHtml(prev.qty)+'"></td>'
+        +'<td><input type="text" name="var_sku[]" class="form-control form-control-sm" value="'+escHtml(prev.sku)+'"></td>'
+        +variantDeleteCell();
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('variant-table-wrap').style.display = '';
+  });
+})();
+</script>
+
+<!-- Media Picker Modal -->
+<div class="modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h5 class="modal-title">Media Center</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body p-0">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs px-3 pt-2" id="mediaTabs">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-browse">Browse Library</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-upload">Upload New</a></li>
+        </ul>
+        <div class="tab-content">
+          <!-- Browse tab -->
+          <div class="tab-pane active p-3" id="tab-browse">
+            <div class="d-flex mb-3">
+              <input type="text" id="media-search" class="form-control form-control-sm mr-2" placeholder="Search by filename..." style="max-width:260px;">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="mediaLoad(1)">Search</button>
+            </div>
+            <div id="media-grid" class="d-flex flex-wrap" style="gap:8px;min-height:200px;max-height:420px;overflow-y:auto;"></div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="media-prev" onclick="mediaPage(-1)">&#8249; Prev</button>
+              <span id="media-info" class="small text-muted"></span>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="media-next" onclick="mediaPage(1)">Next &#8250;</button>
+            </div>
+          </div>
+          <!-- Upload tab -->
+          <div class="tab-pane p-3" id="tab-upload">
+            <div id="drop-zone" style="border:2px dashed #ccc;border-radius:8px;padding:40px;text-align:center;cursor:pointer;transition:border-color .2s;">
+              <i class="las la-cloud-upload-alt" style="font-size:40px;color:#aaa;"></i>
+              <p class="mt-2 mb-1 text-muted">Drag &amp; drop images here, or click to select</p>
+              <input type="file" id="media-file-input" accept="image/*" multiple style="display:none;">
+            </div>
+            <div id="upload-progress" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{end}}
+
+{{define "scripts"}}
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.js"></script>
+<script>
+$(document).ready(function() {
+
+  // ── AI Typeset custom button ──────────────────────────────────
+  var aiTypesetBtn = function(context) {
+    var ui = $.summernote.ui;
+    var button = ui.button({
+      contents: '<i class="las la-magic"></i> AI Typeset',
+      tooltip: 'Reformat with AI',
+      click: function(e) {
+        var $editor = $('#product-description');
+        var rawHtml = $editor.summernote('code');
+        if (!rawHtml || rawHtml === '<p><br></p>') {
+          alert('Nothing to typeset — please add some text first.');
+          return;
+        }
+        var focusKeyword = $('#seo_focus_keyword').val().trim();
+        if (!focusKeyword) {
+          alert('Please enter a Focus Keyword in the SEO panel before using AI Typeset.');
+          $('#seo_focus_keyword').addClass('is-invalid').focus();
+          setTimeout(function() { $('#seo_focus_keyword').removeClass('is-invalid'); }, 3000);
+          return;
+        }
+        var productName = $('input[name="name"]').val().trim();
+        var $btn = $(e.currentTarget);
+        $btn.prop('disabled', true).html('<i class="las la-spinner la-spin"></i> Formatting…');
+        $.ajax({
+          url: '/admin/ai/typeset',
+          method: 'POST',
+          data: {
+            _token: $('input[name="_token"]').first().val(),
+            text: rawHtml,
+            focus_keyword: focusKeyword,
+            product_name: productName
+          },
+          success: function(r) {
+            if (r.html) {
+              $editor.summernote('code', r.html);
+            } else {
+              alert('AI error: ' + (r.error || 'Unknown'));
+              return;
+            }
+            if (r.meta_title)       { $('#seo_meta_title').val(r.meta_title).trigger('input'); }
+            if (r.meta_description) { $('#seo_meta_description').val(r.meta_description).trigger('input'); }
+            if (r.meta_keywords)    { $('#seo_meta_keywords').val(r.meta_keywords).trigger('input'); }
+            // OG fields mirror meta fields + featured image
+            if (r.meta_title)       { $('#seo_og_title').val(r.meta_title).trigger('input'); }
+            if (r.meta_description) { $('#seo_og_description').val(r.meta_description).trigger('input'); }
+            var thumbSrc = $('#thumb-preview').attr('src') || '';
+            if (thumbSrc && thumbSrc !== '') {
+              var thumbUrl = thumbSrc.startsWith('http') ? thumbSrc : window.location.origin + (thumbSrc.startsWith('/') ? '' : '/') + thumbSrc;
+              $('#seo_og_image').val(thumbUrl).trigger('input');
+            }
+            var schemaType = $('form[data-schema-type]').data('schema-type') || 'Product';
+            var $schema = $('#seo_schema_type');
+            if ($schema.length && !$schema.val()) { $schema.val(schemaType).trigger('change'); }
+            // Recalculate SEO score now that fields are populated
+            if (typeof computeScore === 'function') { computeScore(); }
+          },
+          error: function(xhr) {
+            var msg = 'Request failed';
+            try { msg = JSON.parse(xhr.responseText).error || msg; } catch(e) {}
+            alert('AI error: ' + msg);
+          },
+          complete: function() {
+            $btn.prop('disabled', false).html('<i class="las la-magic"></i> AI Typeset');
+          }
+        });
+      }
+    });
+    return button.render();
+  };
+
+  $('#product-description').summernote({
+    height: 500,
+    toolbar: [
+      ['ai',    ['aiTypeset']],
+      ['style', ['style']],
+      ['font',  ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+      ['color', ['color']],
+      ['para',  ['ul', 'ol', 'paragraph']],
+      ['table', ['table']],
+      ['insert',['link', 'hr']],
+      ['view',  ['fullscreen', 'codeview', 'help']]
+    ],
+    buttons: { aiTypeset: aiTypesetBtn },
+    styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    placeholder: 'Enter product description…'
+  });
+
+  // Style the AI button purple
+  setTimeout(function() {
+    $('.note-ai .note-btn').css({background:'#6f42c1',color:'#fff','border-color':'#5a32a3','font-weight':'600','border-radius':'4px'});
+  }, 100);
+
+});
+
+// ── Media picker ──────────────────────────────────────────────
+var _pickerMode = 'thumb'; // 'thumb' or 'gallery'
+var _mediaPage  = 1;
+
+function openPicker(mode) {
+  _pickerMode = mode;
+  $('#mediaModal').modal('show');
+  mediaLoad(1);
+}
+
+function mediaLoad(page) {
+  _mediaPage = page;
+  var search = $('#media-search').val();
+  $('#media-grid').html('<div class="w-100 text-center py-4"><div class="spinner-border text-primary" style="width:2rem;height:2rem;"></div></div>');
+  $.getJSON('/admin/media/files', {page: page, search: search}, function(data) {
+    renderGrid(data);
+  });
+}
+
+function mediaPage(delta) {
+  mediaLoad(_mediaPage + delta);
+}
+
+function renderGrid(data) {
+  var grid = $('#media-grid').empty();
+  if (!data.files || !data.files.length) {
+    grid.html('<p class="text-muted w-100 text-center py-4">No images found.</p>');
+  } else {
+    $.each(data.files, function(_, f) {
+      var el = $('<div>').css({position:'relative',cursor:'pointer',border:'2px solid transparent',borderRadius:'6px',overflow:'hidden',width:'90px',height:'90px',flexShrink:0})
+        .on('click', function() { selectMedia(f); });
+      $('<img>').attr('src', f.url).css({width:'100%',height:'100%','object-fit':'cover'}).appendTo(el);
+      grid.append(el);
+    });
+  }
+  var total = data.total || 0;
+  var pages = data.pages || 1;
+  $('#media-info').text('Page ' + _mediaPage + ' of ' + pages + ' (' + total + ' files)');
+  $('#media-prev').prop('disabled', _mediaPage <= 1);
+  $('#media-next').prop('disabled', _mediaPage >= pages);
+}
+
+function selectMedia(f) {
+  if (_pickerMode === 'variant') {
+    if (_variantTargetImg) {
+      var hid = _variantTargetImg.parentNode.querySelector('input[name="var_image[]"]');
+      if (hid) hid.value = f.path;
+      _variantTargetImg.src = f.url;
+    }
+    _variantTargetImg = null;
+    $('#mediaModal').modal('hide');
+  } else if (_pickerMode === 'thumb') {
+    $('#thumb-path').val(f.path);
+    $('#thumb-preview').attr('src', f.url).show();
+    $('#mediaModal').modal('hide');
+  } else {
+    addGalleryItem(f.path, f.url);
+    // stay open for multi-select, close on X
+  }
+}
+
+// ── Thumbnail helpers ─────────────────────────────────────────
+function clearThumb() {
+  $('#thumb-path').val('');
+  $('#thumb-preview').attr('src','').hide();
+}
+
+// Keep thumbnail alt in sync with focus keyword
+$(document).on('input change', '#seo_focus_keyword', function() {
+  $('#thumb-alt').val($(this).val().trim());
+});
+
+// ── Gallery helpers ───────────────────────────────────────────
+function addGalleryItem(path, url) {
+  // avoid duplicates
+  if ($('#gallery-wrap [data-path="'+path+'"]').length) return;
+  var wrap = $('#gallery-wrap');
+  var div = $('<div>').addClass('gallery-item position-relative').attr('data-path', path)
+    .css({width:'80px',height:'80px',flexShrink:0});
+  $('<img>').attr('src', url).css({width:'80px',height:'80px','object-fit':'cover','border-radius':'6px',border:'1px solid #dee2e6'}).appendTo(div);
+  $('<input>').attr({type:'hidden',name:'gallery_photos[]',value:path}).appendTo(div);
+  var btn = $('<button>').attr('type','button').addClass('btn btn-danger btn-sm gallery-del')
+    .css({position:'absolute',top:'-6px',right:'-6px',width:'22px',height:'22px',padding:'0','line-height':'1','border-radius':'50%','font-size':'12px'})
+    .html('&times;').on('click', function(){ $(this).closest('.gallery-item').remove(); });
+  div.append(btn);
+  wrap.append(div);
+}
+
+function removeGalleryItem(btn) {
+  $(btn).closest('.gallery-item').remove();
+}
+
+// ── Upload tab ────────────────────────────────────────────────
+$(function() {
+  var dropZone = $('#drop-zone');
+  var fileInput = $('#media-file-input');
+  var csrfToken = $('input[name="_token"]').first().val();
+
+  // The file input lives inside the drop-zone, so its own (bubbling) click must be
+  // ignored here — otherwise triggering it re-enters this handler and recurses
+  // until the stack overflows (file dialog never opens).
+  dropZone.on('click', function(e){ if (e.target === fileInput[0]) return; fileInput[0].click(); });
+  dropZone.on('dragover', function(e){ e.preventDefault(); dropZone.css('border-color','#007bff'); });
+  dropZone.on('dragleave drop', function(){ dropZone.css('border-color','#ccc'); });
+  dropZone.on('drop', function(e){
+    e.preventDefault();
+    uploadFiles(e.originalEvent.dataTransfer.files);
+  });
+  fileInput.on('change', function(){ uploadFiles(this.files); this.value=''; });
+});
+
+function uploadFiles(files) {
+  var progress = $('#upload-progress').empty();
+  Array.from(files).forEach(function(file) {
+    var row = $('<div>').addClass('d-flex align-items-center mb-2');
+    var bar = $('<div>').addClass('progress flex-grow-1 mr-2').html('<div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>');
+    var label = $('<span>').addClass('small text-truncate').css('max-width','180px').text(file.name);
+    row.append(label).append(bar);
+    progress.append(row);
+
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('_token', $('input[name="_token"]').first().val());
+
+    $.ajax({
+      url: '/admin/media/upload',
+      method: 'POST',
+      data: fd,
+      processData: false,
+      contentType: false,
+      xhr: function() {
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) bar.find('.progress-bar').css('width', Math.round(e.loaded/e.total*100)+'%');
+        });
+        return xhr;
+      },
+      success: function(r) {
+        bar.find('.progress-bar').removeClass('progress-bar-striped progress-bar-animated').css('width','100%').addClass('bg-success');
+        if (_pickerMode === 'variant') {
+          selectMedia(r);
+        } else if (_pickerMode === 'thumb') {
+          $('#thumb-path').val(r.path);
+          $('#thumb-preview').attr('src', r.url).show();
+        } else {
+          addGalleryItem(r.path, r.url);
+        }
+        // reload browse tab in background
+        if (_mediaPage === 1) mediaLoad(1);
+      },
+      error: function() {
+        bar.find('.progress-bar').addClass('bg-danger').css('width','100%').removeClass('progress-bar-striped progress-bar-animated');
+      }
+    });
+  });
+}
+
+// search on Enter
+$('#media-search').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); mediaLoad(1); }});
+</script>
+
+<script>
+var _exchangeRate  = {{.ExchangeRate}} || 1;
+var _priceMarkup   = {{.PriceMarkup}}  || 0;
+
+// Converts a 1688 CNY price to the store price: price × exchange × (1 + markup%)
+// Returns a string with exactly 2 decimal places, ready for input[type=number].
+function calc1688Price(cnyPrice) {
+  return (cnyPrice * _exchangeRate * (1 + _priceMarkup / 100)).toFixed(2);
+}
+
+function import1688() {
+  var urlVal = document.getElementById('ali1688Url').value.trim();
+  var status = document.getElementById('ali1688Status');
+  var btn = document.getElementById('ali1688Btn');
+
+  if (!urlVal) {
+    status.innerHTML = '<span class="text-danger">Please enter a 1688 product URL.</span>';
+    return;
+  }
+  if (!/1688\.com/.test(urlVal)) {
+    status.innerHTML = '<span class="text-danger">Not a valid 1688 URL.</span>';
+    return;
+  }
+
+  btn.disabled = true;
+  status.className = 'mt-2 small'; // reset any leftover colour class from a previous attempt
+  status.innerHTML = '<span class="text-muted"><i class="las la-spinner la-spin mr-1"></i>Fetching from 1688...</span>';
+
+  fetch('/admin/products/import-1688?url=' + encodeURIComponent(urlVal))
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        btn.disabled = false;
+        status.innerHTML = '<span class="text-danger">Error: ' + escHtml(String(d.error)) + '</span>';
+        return;
+      }
+
+      // Copy Chinese name & description to the CN translation fields (original language)
+      if (d.name) {
+        var cnName = $('[name="trans_name[cn]"]');
+        if (cnName.length) cnName.val(d.name);
+      }
+      if (d.description) {
+        var cnDesc = $('[name="trans_desc[cn]"]');
+        if (cnDesc.length) cnDesc.val(d.description);
+      }
+
+      // Price & Stock (apply price multiplier)
+      if (d.price) $('#unit_price').val(calc1688Price(d.price));
+      if (d.stock) $('#current_stock').val(d.stock);
+
+      // Thumbnail
+      if (d.thumbnail) {
+        $('#thumb-path').val(d.thumbnail);
+        $('#thumb-preview').attr('src', '/uploads/' + d.thumbnail.replace(/^uploads\//, '')).show();
+      }
+
+      // Gallery images: the server strips images[0] (the thumbnail) before sending,
+      // so every element here is a unique gallery image — start from index 0.
+      if (d.images && d.images.length > 0) {
+        for (var i = 0; i < d.images.length; i++) {
+          var imgPath = d.images[i];
+          var imgUrl = '/uploads/' + imgPath.replace(/^uploads\//, '');
+          addGalleryItem(imgPath, imgUrl);
+        }
+      }
+
+      // Show CPS order link & store URL in hidden form field
+      if (d.source_url) {
+        document.getElementById('ali1688OrderAnchor').href = d.source_url;
+        document.getElementById('ali1688OrderLink').style.display = '';
+        document.getElementById('source_1688_url').value = d.source_url;
+      }
+
+      // Translate Chinese content to English
+      status.innerHTML = '<span class="text-muted"><i class="las la-spinner la-spin mr-1"></i>Translating to English...</span>';
+
+      var fieldsToTranslate = {};
+      if (d.name) fieldsToTranslate.name = d.name;
+      if (d.description) {
+        var div = document.createElement('div');
+        div.innerHTML = d.description;
+        var plainDesc = (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+        if (plainDesc) fieldsToTranslate.description = plainDesc;
+      }
+      // Collect variant names (one per line) for batch translation
+      var variantNames = [];
+      if (d.variants && d.variants.length > 0) {
+        d.variants.forEach(function(v) { variantNames.push(v.name || ''); });
+        fieldsToTranslate.variant_names = variantNames.join('\n');
+      }
+
+      var csrf = $('input[name="_token"]').first().val();
+      $.ajax({
+        url: '/translate',
+        method: 'POST',
+        contentType: 'application/json',
+        timeout: 180000,
+        data: JSON.stringify({ source_lang: 'cn', fields: fieldsToTranslate, target_langs: ['en'] }),
+        headers: { 'X-CSRF-Token': csrf },
+        success: function(results) {
+          var trans = results['en'] || {};
+
+          // English name → main name field
+          $('[name="name"]').val(trans.name || d.name);
+
+          // English description → main description editor
+          var engDesc = trans.description || '';
+          if ($('#product-description').data('summernote')) {
+            $('#product-description').summernote('code', engDesc);
+          } else {
+            $('#product-description').val(engDesc);
+          }
+
+          // Import variants with translated English names
+          if (d.variants && d.variants.length > 0) {
+            import1688Variants(d.variants, trans.variant_names || '');
+          }
+
+          if (window.seoRecompute) window.seoRecompute();
+          btn.disabled = false;
+          status.innerHTML = '<span class="text-success"><i class="las la-check-circle mr-1"></i>' +
+            'Imported and translated to English. Click <strong>Translate All</strong> to fill other languages.</span>';
+        },
+        error: function() {
+          // Fallback: use Chinese content in main fields if translation fails
+          $('[name="name"]').val(d.name || '');
+          if ($('#product-description').data('summernote')) {
+            $('#product-description').summernote('code', d.description || '');
+          } else {
+            $('#product-description').val(d.description || '');
+          }
+          if (d.variants && d.variants.length > 0) {
+            import1688Variants(d.variants, '');
+          }
+          if (window.seoRecompute) window.seoRecompute();
+          btn.disabled = false;
+          status.innerHTML = '<span class="text-warning"><i class="las la-exclamation-triangle mr-1"></i>' +
+            'Imported (translation failed — Chinese used as fallback). Check AI settings.</span>';
+        }
+      });
+    })
+    .catch(function(e) {
+      btn.disabled = false;
+      status.innerHTML = '<span class="text-danger">Request failed: ' + escHtml(e.message || String(e)) + '</span>';
+    });
+}
+
+// Import 1688 variants into the variant table with (optionally) translated names.
+// translatedNamesStr is a newline-separated string matching the order of variants[].
+function import1688Variants(variants, translatedNamesStr) {
+  var translatedNames = translatedNamesStr ? translatedNamesStr.split('\n') : [];
+
+  // Enable variant mode
+  var toggle = document.getElementById('variant-toggle');
+  if (toggle && !toggle.checked) {
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event('change'));
+  }
+
+  // Collect resolved variant names
+  var allNames = [];
+  variants.forEach(function(v, i) {
+    var tname = (i < translatedNames.length) ? translatedNames[i] : '';
+    allNames.push((tname && tname.trim()) ? tname.trim() : v.name);
+  });
+
+  // Populate choice rows so choice_options is saved to DB
+  var choiceRowsDiv = document.getElementById('choice-rows');
+  if (choiceRowsDiv) {
+    choiceRowsDiv.innerHTML =
+      '<div class="choice-row border rounded p-3 mb-3"><div class="row">' +
+      '<div class="col-md-4"><label class="small font-weight-bold">{{translate "Option Name"}}</label>' +
+      '<input type="text" name="choice_name[]" class="form-control choice-name" value="Variant"></div>' +
+      '<div class="col-md-7"><label class="small font-weight-bold">{{translate "Values"}} <span class="text-muted">{{translate "(comma-separated)"}}</span></label>' +
+      '<input type="text" name="choice_values[]" class="form-control choice-values" value="' + escHtml(allNames.join(', ')) + '"></div>' +
+      '<div class="col-md-1 d-flex align-items-end"><button type="button" class="btn btn-soft-danger btn-sm remove-choice"><i class="las la-times"></i></button></div>' +
+      '</div></div>';
+  }
+
+  $('#variant-table-wrap').show();
+  var tbody = document.getElementById('variant-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var html = '';
+  allNames.forEach(function(name, i) {
+    var v = variants[i];
+    html +=
+      '<tr>' +
+      '<td><strong>' + escHtml(name) + '</strong>' +
+      '<input type="hidden" name="var_combo[]" value="' + escHtml(name) + '"></td>' +
+      variantImageCell(v.image || '') +
+      '<td><input type="number" name="var_price[]" class="form-control form-control-sm" step="0.01" min="0" value="' + calc1688Price(v.price) + '"></td>' +
+      '<td><input type="number" name="var_qty[]" class="form-control form-control-sm" min="0" value="' + v.stock + '"></td>' +
+      '<td><input type="text" name="var_sku[]" class="form-control form-control-sm" value="' + escHtml(v.sku) + '"></td>' +
+      variantDeleteCell() +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Resolve a stored upload path to a browser URL (mirrors the Go uploaded_asset helper for path strings).
+function assetUrl(path) {
+  if (!path) return '/static/assets/img/placeholder.jpg';
+  if (/^https?:\/\//i.test(path)) return path;
+  var p = String(path).replace(/^\/+/, '');
+  if (p.indexOf('uploads/') === 0 || p.indexOf('/uploads/') !== -1) return '/' + p;
+  return '/uploads/' + p;
+}
+
+// Build the <td> for a variant's featured image (hidden path input + clickable preview).
+function variantImageCell(path) {
+  return '<td>' +
+    '<input type="hidden" name="var_image[]" value="' + escHtml(path || '') + '">' +
+    '<img class="var-img-preview" src="' + assetUrl(path) + '" onclick="openVariantPicker(this)" ' +
+    'onerror="this.onerror=null;this.src=\'/static/assets/img/placeholder.jpg\'" ' +
+    'title="Click to pick variant image" ' +
+    'style="width:48px;height:48px;object-fit:cover;cursor:pointer;border:1px solid #dee2e6;border-radius:4px;background:#f1f3f5;">' +
+    '</td>';
+}
+
+// Build the <td> with a delete button for a variant row.
+function variantDeleteCell() {
+  return '<td class="text-center">' +
+    '<button type="button" class="btn btn-soft-danger btn-sm remove-variant" title="Remove variant">' +
+    '<i class="las la-trash"></i></button></td>';
+}
+
+// Open the media picker targeting a specific variant row's image.
+var _variantTargetImg = null;
+function openVariantPicker(img) {
+  _variantTargetImg = img;
+  _pickerMode = 'variant';
+  $('#mediaModal').modal('show');
+  mediaLoad(1);
+}
+
+// ── Toast notification ────────────────────────────────────────────────────────
+function showTranslateToast(msg, type) {
+  var container = document.getElementById('_xlToastBox');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = '_xlToastBox';
+    container.style.cssText = [
+      'position:fixed', 'bottom:24px', 'right:24px', 'z-index:99999',
+      'display:flex', 'flex-direction:column-reverse', 'gap:8px',
+      'pointer-events:none'
+    ].join(';');
+    document.body.appendChild(container);
+  }
+  var colors = { success:'#28a745', error:'#dc3545', info:'#0069d9', warn:'#e0a800' };
+  var bg = colors[type] || colors.info;
+  var toast = document.createElement('div');
+  toast.style.cssText = [
+    'background:' + bg,
+    'color:#fff',
+    'padding:9px 15px',
+    'border-radius:8px',
+    'font-size:13px',
+    'font-weight:500',
+    'box-shadow:0 4px 14px rgba(0,0,0,.25)',
+    'opacity:0',
+    'transform:translateX(30px)',
+    'transition:opacity .25s,transform .25s',
+    'white-space:nowrap',
+    'max-width:320px',
+    'overflow:hidden',
+    'text-overflow:ellipsis'
+  ].join(';');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(0)';
+    });
+  });
+  setTimeout(function() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(30px)';
+    setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 4000);
+}
+
+// ── Translate All (one language at a time) ───────────────────────────────────
+function translateAll() {
+  var name = $('[name="name"]').val().trim();
+  var rawDesc = $('#product-description').data('summernote')
+    ? $('#product-description').summernote('code')
+    : $('#product-description').val();
+  var descPlain = (function(html) {
+    var d = document.createElement('div');
+    d.innerHTML = html;
+    return (d.textContent || d.innerText || '').replace(/\s+/g, ' ').trim();
+  })(rawDesc);
+
+  if (!name && !descPlain) {
+    alert('Please enter a product name or description first.');
+    return;
+  }
+
+  // Skip CN if it already has content (e.g. populated by 1688 import)
+  var cnAlreadyFilled = !!$('[name="trans_name[cn]"]').val().trim();
+  var targetLangs = [];
+  $('input[name="trans_langs[]"]').each(function() {
+    if (this.value && !(this.value === 'cn' && cnAlreadyFilled)) targetLangs.push(this.value);
+  });
+  if (!targetLangs.length) { alert('No languages configured.'); return; }
+
+  // Build language name map from the tab labels
+  var langNames = {};
+  $('a[id^="tab-"]').each(function() {
+    var code = this.id.replace('tab-', '');
+    // Tab text is "English (en)" — grab everything before the <small>
+    var clone = $(this).clone();
+    clone.find('small').remove();
+    langNames[code] = clone.text().trim() || code.toUpperCase();
+  });
+
+  var fields = {};
+  if (name) fields.name = name;
+  if (descPlain) fields.description = descPlain;
+
+  var btn = document.getElementById('translateAllBtn');
+  var csrf = $('input[name="_token"]').first().val();
+  var total = targetLangs.length;
+  var done = 0;
+
+  btn.disabled = true;
+
+  function resetBtn() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="las la-language mr-1"></i>{{translate "Translate All"}}';
+  }
+
+  function next(i) {
+    if (i >= targetLangs.length) {
+      resetBtn();
+      if (window.seoRecompute) window.seoRecompute();
+      showTranslateToast('✓ All ' + done + ' / ' + total + ' languages done — save the product!', done > 0 ? 'success' : 'warn');
+      return;
+    }
+
+    var code = targetLangs[i];
+    var langName = langNames[code] || code.toUpperCase();
+    btn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>' +
+      langName + ' (' + (i + 1) + '/' + total + ')…';
+
+    $.ajax({
+      url: '/translate',
+      method: 'POST',
+      contentType: 'application/json',
+      timeout: 180000, // 3 min per language (name + full description)
+      data: JSON.stringify({ source_lang: 'en', fields: fields, target_langs: [code] }),
+      headers: { 'X-CSRF-Token': csrf },
+      success: function(results) {
+        var filled = 0;
+        var trans = results[code] || {};
+        var nameInput = $('[name="trans_name[' + code + ']"]');
+        var descInput = $('[name="trans_desc[' + code + ']"]');
+        if (nameInput.length && trans.name)        { nameInput.val(trans.name);        filled++; }
+        if (descInput.length && trans.description) { descInput.val(trans.description); filled++; }
+        if (filled > 0) {
+          done++;
+          showTranslateToast('✓ ' + langName + ' translated', 'success');
+        } else {
+          showTranslateToast('⚠ ' + langName + ': empty response', 'warn');
+        }
+        next(i + 1);
+      },
+      error: function(xhr) {
+        var msg = 'failed';
+        try { msg = JSON.parse(xhr.responseText).error || msg; } catch(e) {}
+        showTranslateToast('✗ ' + langName + ': ' + msg, 'error');
+        next(i + 1); // keep going even on error
+      }
+    });
+  }
+
+  showTranslateToast('Starting translation for ' + total + ' languages…', 'info');
+  next(0);
+}
+</script>
+{{end}}

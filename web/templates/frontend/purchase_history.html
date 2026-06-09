@@ -1,0 +1,82 @@
+{{define "extra_css"}}
+  .account-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:220px 1fr; gap:32px; align-items:start; }
+  .account-nav { border:1px solid var(--border); border-radius:14px; overflow:hidden; position:sticky; top:90px; }
+  .account-nav a { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); border-bottom:1px solid var(--border); transition:background .12s; }
+  .account-nav a:last-child { border-bottom:none; }
+  .account-nav a:hover { background:var(--light-gray); }
+  .account-nav a.active { background:var(--black); color:#fff; }
+  .page-title { font-size:22px; font-weight:800; margin-bottom:24px; }
+  .order-card { border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+  .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+  .order-ref { font-size:14px; font-weight:800; }
+  .order-date { font-size:12px; color:var(--gray); }
+  .badge { display:inline-block; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-delivered { background:#d1fae5; color:#065f46; }
+  .badge-processing { background:#dbeafe; color:#1e40af; }
+  .badge-cancelled { background:#fee2e2; color:#991b1b; }
+  .badge-on-the-way { background:#ede9fe; color:#5b21b6; }
+  .order-items { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .order-item-thumb { width:52px; height:52px; border-radius:8px; background:var(--light-gray); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .order-item-thumb img { width:100%; height:100%; object-fit:cover; }
+  .order-footer { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:12px; }
+  .order-total { font-size:15px; font-weight:800; }
+  .empty-box { text-align:center; padding:60px 0; color:var(--gray); }
+  .pagination { display:flex; gap:6px; margin-top:24px; }
+  .page-btn { border:2px solid var(--border); background:#fff; border-radius:8px; padding:7px 13px; font-size:13px; font-weight:600; text-decoration:none; color:var(--black); }
+  .page-btn.active { border-color:var(--black); background:var(--black); color:#fff; }
+  .page-btn.disabled { opacity:.4; pointer-events:none; }
+{{end}}
+{{define "content"}}
+<div class="account-wrap">
+  {{template "account_nav" "purchase_history"}}
+  <div>
+    <div class="page-title">{{translate "My orders ("}}{{.Total}})</div>
+    {{if .Orders}}
+      {{range .Orders}}
+      <a href="/purchase_history/{{.ID}}" style="text-decoration:none;color:inherit;display:block;">
+      <div class="order-card" style="cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''">
+        <div class="order-header">
+          <div>
+            <div class="order-ref">{{translate "Order #"}}{{.ID}}</div>
+            <div class="order-date">{{date_format .CreatedAt "January 2, 2006"}}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            {{range .Orders}}
+              {{if .DeliveryStatus}}<span class="badge badge-{{deref_str .DeliveryStatus}}">{{deref_str .DeliveryStatus}}</span>{{end}}
+              {{if .PaymentStatus}}<span class="badge" style="background:#f3f4f6;color:#374151">{{deref_str .PaymentStatus}}</span>{{end}}
+            {{end}}
+          </div>
+        </div>
+        <div class="order-items">
+          {{range .Orders}}{{range .OrderDetails}}
+          <div class="order-item-thumb" title="{{if .Product}}{{.Product.Name}}{{end}}">
+            {{if and .Product .Product.ThumbnailImg}}<img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else}}🛍️{{end}}
+          </div>
+          {{end}}{{end}}
+        </div>
+        <div class="order-footer">
+          <div class="order-total">{{format_price .GrandTotal}}</div>
+          <span style="font-size:12px;color:var(--gray);font-weight:600;">{{translate "View details →"}}</span>
+        </div>
+      </div>
+      </a>
+      {{end}}
+      {{if gt .TotalPages 1}}
+      <div class="pagination">
+        {{if gt .Page 1}}<a href="?page={{sub .Page 1}}" class="page-btn">{{translate "← Prev"}}</a>{{else}}<span class="page-btn disabled">{{translate "← Prev"}}</span>{{end}}
+        {{$p := .Page}}{{range seq .TotalPages}}<a href="?page={{.}}" class="page-btn {{if eq . $p}}active{{end}}">{{.}}</a>{{end}}
+        {{if lt .Page .TotalPages}}<a href="?page={{add .Page 1}}" class="page-btn">{{translate "Next →"}}</a>{{else}}<span class="page-btn disabled">{{translate "Next →"}}</span>{{end}}
+      </div>
+      {{end}}
+    {{else}}
+    <div class="empty-box">
+      <div style="font-size:52px;margin-bottom:14px">📦</div>
+      <div style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px">{{translate "No orders yet"}}</div>
+      <div style="margin-bottom:20px">{{translate "When you place an order, it will appear here."}}</div>
+      <a href="/products" style="background:var(--black);color:#fff;border-radius:99px;padding:11px 26px;font-size:13px;font-weight:700;text-decoration:none">{{translate "Start shopping"}}</a>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

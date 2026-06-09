@@ -1,0 +1,162 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{if .Product}}{{translate "Edit Product"}}{{else}}{{translate "Add New Product"}}{{end}}</h1>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <form method="POST" action="{{if .Product}}/seller/products/{{.Product.ID}}{{else}}/seller/products{{end}}">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <!-- Source language + auto-translate -->
+      <div class="d-flex align-items-center flex-wrap mb-3" style="gap:8px">
+        <label class="mb-0 mr-2 font-weight-semibold">{{translate "Source Language"}}:</label>
+        <select id="sourceLangSelect" name="source_lang" class="form-control form-control-sm" style="width:auto">
+          {{range .Langs}}
+          <option value="{{.Code}}"{{if eq .Code "en"}} selected{{end}}>{{.Name}}</option>
+          {{end}}
+        </select>
+        <button type="button" id="btnAutoTranslate" class="btn btn-sm btn-info">
+          <i class="las la-language"></i> {{translate "Auto-translate to all languages"}}
+        </button>
+        <span id="translateStatus" class="text-muted small"></span>
+      </div>
+
+      <!-- Language tabs for name + description -->
+      <div class="card rounded-0 shadow-none mb-3">
+        <div class="card-header p-0">
+          <ul class="nav nav-tabs card-header-tabs" id="langTabs" role="tablist">
+            {{range $i, $lang := .Langs}}
+            <li class="nav-item">
+              <a class="nav-link{{if eq $i 0}} active{{end}}" id="tab-{{$lang.Code}}" data-toggle="tab"
+                 href="#pane-{{$lang.Code}}" role="tab">{{$lang.Name}}</a>
+            </li>
+            {{end}}
+          </ul>
+        </div>
+        <div class="tab-content">
+          {{range $i, $lang := .Langs}}
+          {{$tr := index $.TransMap $lang.Code}}
+          <div class="tab-pane fade{{if eq $i 0}} show active{{end}} p-3" id="pane-{{$lang.Code}}" role="tabpanel"
+               {{if $lang.RTL}}dir="rtl"{{end}}>
+
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Product Name"}}{{if eq $i 0}} <span class="text-danger">*</span>{{end}}</label>
+              <div class="col-md-9">
+                <input type="text" name="name_{{$lang.Code}}" id="name_{{$lang.Code}}"
+                  class="form-control"
+                  value="{{if $.Product}}{{if $tr.Name}}{{deref_str $tr.Name}}{{else}}{{$.Product.Name}}{{end}}{{end}}">
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label">{{translate "Description"}}</label>
+              <div class="col-md-9">
+                <textarea name="description_{{$lang.Code}}" id="description_{{$lang.Code}}"
+                  class="form-control" rows="6">{{if $.Product}}{{if $tr.Description}}{{deref_str $tr.Description}}{{else}}{{deref_str $.Product.Description}}{{end}}{{end}}</textarea>
+              </div>
+            </div>
+
+          </div>
+          {{end}}
+        </div>
+      </div>
+
+      <!-- Shared fields -->
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Category"}} <span class="text-danger">*</span></label>
+        <div class="col-md-9">
+          <select name="category_id" class="form-control aiz-selectpicker" required>
+            <option value="">{{translate "Select Category"}}</option>
+            {{range .Categories}}
+            <option value="{{.ID}}" {{if and $.Product (eq $.Product.CategoryID .ID)}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Brand"}}</label>
+        <div class="col-md-9">
+          <select name="brand_id" class="form-control aiz-selectpicker">
+            <option value="">{{translate "No Brand"}}</option>
+            {{range .Brands}}
+            <option value="{{.ID}}" {{if and $.Product $.Product.BrandID (eq (deref_uint $.Product.BrandID) .ID)}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Unit Price"}} <span class="text-danger">*</span></label>
+        <div class="col-md-9">
+          <input type="number" name="unit_price" class="form-control" step="0.01" min="0"
+            value="{{if .Product}}{{.Product.UnitPrice}}{{end}}" required>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Current Stock"}} <span class="text-danger">*</span></label>
+        <div class="col-md-9">
+          <input type="number" name="current_stock" class="form-control" min="0"
+            value="{{if .Product}}{{.Product.CurrentStock}}{{else}}0{{end}}" required>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save Product"}}</button>
+          <a href="/seller/products" class="btn btn-light ml-2">{{translate "Cancel"}}</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('sourceLangSelect').addEventListener('change', function() {
+  var tab = document.getElementById('tab-' + this.value);
+  if (tab) { tab.click(); }
+});
+
+document.getElementById('btnAutoTranslate').addEventListener('click', function() {
+  var sourceLang = document.getElementById('sourceLangSelect').value;
+  var statusEl = document.getElementById('translateStatus');
+  var fields = {
+    name: document.getElementById('name_' + sourceLang).value,
+    description: document.getElementById('description_' + sourceLang).value,
+  };
+  var hasContent = Object.values(fields).some(function(v) { return v.trim() !== ''; });
+  if (!hasContent) { statusEl.textContent = 'No content to translate.'; return; }
+
+  statusEl.textContent = 'Translating...';
+  this.disabled = true;
+  var btn = this;
+
+  var token = document.querySelector('input[name="_token"]').value;
+  fetch('/translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+    body: JSON.stringify({ source_lang: sourceLang, fields: fields })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    Object.keys(data).forEach(function(lang) {
+      var tr = data[lang];
+      Object.keys(tr).forEach(function(field) {
+        var el = document.getElementById(field + '_' + lang);
+        if (el && tr[field]) { el.value = tr[field]; }
+      });
+    });
+    statusEl.textContent = 'Done!';
+    setTimeout(function() { statusEl.textContent = ''; }, 3000);
+  })
+  .catch(function(e) { statusEl.textContent = 'Error: ' + e.message; })
+  .finally(function() { btn.disabled = false; });
+});
+</script>
+{{end}}

@@ -1,0 +1,62 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Profile"}}</h1></div>
+  </div>
+</div>
+
+{{if .Success}}<div class="alert alert-success">{{translate "Profile updated successfully."}}</div>{{end}}
+{{if eq .Error "wrong_password"}}<div class="alert alert-danger">{{translate "Current password is incorrect."}}</div>{{end}}
+{{if eq .Error "password_too_short"}}<div class="alert alert-danger">{{translate "New password must be at least 8 characters."}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body">
+    <form method="POST" action="/seller/profile">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Full Name"}} <span class="text-danger">*</span></label>
+        <div class="col-md-9">
+          <input type="text" name="name" class="form-control" value="{{.User.Name}}" required>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Email"}}</label>
+        <div class="col-md-9">
+          <input type="email" class="form-control" value="{{deref_str .User.Email}}" disabled>
+          <small class="text-muted">{{translate "Email cannot be changed."}}</small>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Phone"}}</label>
+        <div class="col-md-9">
+          <input type="tel" name="phone" class="form-control" value="{{deref_str .User.Phone}}">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "Current Password"}}</label>
+        <div class="col-md-9">
+          <input type="password" name="current_password" class="form-control" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-md-3 col-form-label">{{translate "New Password"}}</label>
+        <div class="col-md-9">
+          <input type="password" name="new_password" class="form-control" minlength="8" autocomplete="new-password">
+          <small class="text-muted">{{translate "Leave blank to keep current password."}}</small>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-md-9 ml-auto">
+          <button type="submit" class="btn btn-primary">{{translate "Save Changes"}}</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

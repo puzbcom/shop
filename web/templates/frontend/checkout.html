@@ -1,0 +1,222 @@
+{{define "extra_css"}}
+  .checkout-wrap { max-width:1100px; margin:0 auto; padding:32px 24px 64px; display:grid; grid-template-columns:1fr 340px; gap:40px; align-items:start; }
+  .checkout-wrap h1 { font-size:28px; font-weight:800; margin-bottom:28px; grid-column:1/-1; }
+  .section-card { border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+  .section-card h2 { font-size:16px; font-weight:800; margin-bottom:18px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; border:2px solid var(--border); border-radius:10px; padding:10px 14px; font-size:14px; outline:none; transition:border .15s; box-sizing:border-box; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--black); }
+  .radio-card { border:2px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; gap:12px; transition:border .15s; }
+  .radio-card:has(input:checked) { border-color:var(--black); background:#fafafa; }
+  .radio-label { font-size:14px; font-weight:600; }
+  .radio-sub { font-size:12px; color:var(--gray); }
+  .order-summary { border:1px solid var(--border); border-radius:14px; padding:24px; position:sticky; top:90px; }
+  .order-summary h3 { font-size:16px; font-weight:800; margin-bottom:18px; }
+  .summary-line { display:flex; gap:12px; margin-bottom:14px; align-items:center; }
+  .summary-thumb { width:48px; height:48px; border-radius:8px; background:var(--light-gray); flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .summary-thumb img { width:100%; height:100%; object-fit:cover; }
+  .summary-name { font-size:13px; font-weight:600; flex:1; }
+  .summary-price { font-size:13px; font-weight:700; white-space:nowrap; }
+  .summary-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+  .summary-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px; color:var(--gray); }
+  .summary-total { display:flex; justify-content:space-between; font-size:17px; font-weight:800; margin-top:14px; border-top:2px solid var(--black); padding-top:14px; }
+  .btn-place { width:100%; background:var(--orange); color:#fff; border:none; border-radius:99px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; margin-top:16px; }
+  .btn-place:hover { opacity:.9; }
+  .saved-address { border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:10px; cursor:pointer; font-size:13px; display:flex; gap:10px; align-items:center; }
+  .saved-address input[type=radio] { flex-shrink:0; }
+  .saved-address.selected { border-color:var(--black); background:#fafafa; }
+  .coupon-row { display:flex; gap:8px; margin-bottom:12px; }
+  .coupon-input { flex:1; border:2px solid var(--border); border-radius:10px; padding:10px 14px; font-size:14px; outline:none; transition:border .15s; }
+  .coupon-input:focus { border-color:var(--black); }
+  .coupon-btn { background:var(--black); color:#fff; border:none; border-radius:10px; padding:10px 18px; font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .coupon-btn:hover { opacity:.85; }
+  .coupon-applied { display:flex; align-items:center; justify-content:space-between; background:#d1fae5; border:1px solid #6ee7b7; border-radius:10px; padding:10px 14px; font-size:13px; color:#065f46; font-weight:600; }
+  .coupon-remove { background:none; border:none; cursor:pointer; font-size:16px; color:#065f46; line-height:1; padding:0; }
+  .coupon-error { color:#dc2626; font-size:13px; margin-top:6px; display:none; }
+  .summary-discount { display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px; color:#059669; font-weight:600; }
+{{end}}
+{{define "content"}}
+<form method="POST" action="/checkout">
+  <input type="hidden" name="_token" value="{{csrf_token}}">
+  <div class="checkout-wrap">
+    <div style="grid-column:1/-1"><h1>{{translate "Checkout"}}</h1></div>
+
+    <div>
+      {{if .Addresses}}
+      <div class="section-card">
+        <h2>{{translate "📍 Saved addresses"}}</h2>
+        {{range .Addresses}}
+        <label class="saved-address {{if .SetDefault}}selected{{end}}">
+          <input type="radio" name="address_id" value="{{.ID}}" {{if .SetDefault}}checked{{end}}>
+          <div>
+            <div style="font-weight:700">{{if .Address}}{{deref_str .Address}}{{end}}</div>
+            {{if .Phone}}<div style="color:var(--gray)">{{deref_str .Phone}}</div>{{end}}
+          </div>
+        </label>
+        {{end}}
+        <div style="margin-top:10px;font-size:13px"><a href="/addresses" style="color:var(--orange);font-weight:700">{{translate "+ Add new address"}}</a></div>
+      </div>
+      {{else}}
+      <div class="section-card">
+        <h2>{{translate "📍 Shipping address"}}</h2>
+        <div class="form-row">
+          <div class="form-group"><label>{{translate "Address line"}}</label><input type="text" name="address" placeholder="{{translate "123 Main St"}}" required></div>
+          <div class="form-group"><label>{{translate "City"}}</label><input type="text" name="city" placeholder="{{translate "New York"}}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>{{translate "Postal / ZIP"}}</label><input type="text" name="postal_code" placeholder="10001"></div>
+          <div class="form-group"><label>{{translate "Phone"}}</label><input type="tel" name="phone" placeholder="+1 555 000 0000"></div>
+        </div>
+      </div>
+      {{end}}
+
+      <div class="section-card">
+        <h2>{{translate "💳 Payment method"}}</h2>
+        <label class="radio-card">
+          <input type="radio" name="payment_type" value="wallet" checked>
+          <div>
+            <div class="radio-label">{{translate "Wallet balance"}}</div>
+            <div class="radio-sub">{{translate "Current balance:"}} {{format_price .User.Balance}}</div>
+          </div>
+        </label>
+        {{if .Gateways.paypal}}
+        <label class="radio-card">
+          <input type="radio" name="payment_type" value="paypal">
+          <div>
+            <div class="radio-label">PayPal</div>
+            <div class="radio-sub">{{translate "Pay with PayPal or credit/debit card"}}</div>
+          </div>
+        </label>
+        {{end}}
+        {{if .Gateways.stripe}}
+        <label class="radio-card">
+          <input type="radio" name="payment_type" value="stripe">
+          <div>
+            <div class="radio-label">{{translate "Credit / debit card"}}</div>
+            <div class="radio-sub">{{translate "Secure checkout via Stripe"}}</div>
+          </div>
+        </label>
+        {{end}}
+        {{if .Gateways.alipay}}
+        <label class="radio-card">
+          <input type="radio" name="payment_type" value="alipay">
+          <div>
+            <div class="radio-label">Alipay</div>
+            <div class="radio-sub">{{translate "Redirect to Alipay to complete payment"}}</div>
+          </div>
+        </label>
+        {{end}}
+      </div>
+
+      <div class="section-card">
+        <h2>{{translate "📝 Additional notes"}}</h2>
+        <div class="form-group">
+          <textarea name="additional_info" rows="3" placeholder="{{translate "Any special instructions for your order..."}}" style="resize:vertical"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary">
+      <h3>{{translate "Your order"}}</h3>
+      {{range .Lines}}
+      <div class="summary-line">
+        <div class="summary-thumb">
+          {{if .VariantImage}}<img src="{{uploaded_asset .VariantImage}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else if and .Product .Product.ThumbnailImg}}<img src="{{uploaded_asset .Product.ThumbnailImg}}" alt="{{if .Product}}{{.Product.Name}}{{end}}">{{else}}🛍️{{end}}
+        </div>
+        <div class="summary-name">{{if .Product}}{{.Product.Name}}{{end}} × {{.Quantity}}</div>
+        {{if .Price}}<div class="summary-price">{{format_price (mul (deref_float .Price) (itof .Quantity))}}</div>{{end}}
+      </div>
+      {{end}}
+      <hr class="summary-divider">
+
+      <!-- Coupon -->
+      {{if .CouponCode}}
+      <div class="coupon-applied" id="coupon-applied">
+        <span>🎟 <strong>{{.CouponCode}}</strong> {{translate "applied"}}</span>
+        <button type="button" class="coupon-remove" onclick="removeCoupon()" title="{{translate "Remove"}}">✕</button>
+      </div>
+      {{else}}
+      <div id="coupon-applied" style="display:none;" class="coupon-applied">
+        <span>🎟 <strong id="applied-code-label"></strong> {{translate "applied"}}</span>
+        <button type="button" class="coupon-remove" onclick="removeCoupon()" title="{{translate "Remove"}}">✕</button>
+      </div>
+      <div class="coupon-row" id="coupon-form">
+        <input type="text" class="coupon-input" id="coupon-input" placeholder="{{translate "Coupon code"}}" autocomplete="off">
+        <button type="button" class="coupon-btn" onclick="applyCoupon()">{{translate "Apply"}}</button>
+      </div>
+      <div class="coupon-error" id="coupon-error"></div>
+      {{end}}
+
+      <div class="summary-row" style="margin-top:12px"><span>{{translate "Subtotal"}}</span><span id="summary-subtotal">{{format_price .Subtotal}}</span></div>
+      {{if .CouponDiscount}}
+      <div class="summary-discount" id="summary-discount-row"><span>{{translate "Coupon discount"}}</span><span id="summary-discount">−{{format_price .CouponDiscount}}</span></div>
+      {{else}}
+      <div class="summary-discount" id="summary-discount-row" style="display:none"><span>{{translate "Coupon discount"}}</span><span id="summary-discount"></span></div>
+      {{end}}
+      {{if .ShippingMethod}}
+      <div class="summary-row">
+        <span>{{translate "Shipping"}}<br><span style="font-size:11px;color:var(--gray);font-weight:400">{{.ShippingMethod}}</span></span>
+        <span>{{if gt .ShippingCost 0.0}}{{format_price .ShippingCost}}{{else}}{{translate "Free"}}{{end}}</span>
+      </div>
+      {{if gt .FreeShippingRemaining 0.0}}
+      <div class="summary-row" style="background:#fef3c7;border-radius:8px;padding:8px 10px;margin-top:6px;color:#92400e;font-size:12px;font-weight:600;justify-content:center;">
+        {{translate "Add"}} {{format_price .FreeShippingRemaining}} {{translate "more for free shipping"}}
+      </div>
+      {{end}}
+      {{end}}
+      <div class="summary-total"><span>{{translate "Total"}}</span><span id="summary-total">{{format_price .FinalTotal}}</span></div>
+      <button type="submit" class="btn-place">{{translate "Place order →"}}</button>
+      <p style="font-size:11px;color:var(--gray);text-align:center;margin-top:12px;line-height:1.5">{{translate "🔒 Secured by 256-bit SSL encryption"}}</p>
+    </div>
+  </div>
+</form>
+
+<script>
+var _csrf = '{{csrf_token}}';
+
+function fmt(n) {
+  return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function applyCoupon() {
+  var code = document.getElementById('coupon-input').value.trim();
+  var errEl = document.getElementById('coupon-error');
+  errEl.style.display = 'none';
+  if (!code) { errEl.textContent = 'Please enter a coupon code.'; errEl.style.display='block'; return; }
+
+  fetch('/coupon/apply', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':_csrf},
+    body: 'coupon_code=' + encodeURIComponent(code) + '&_token=' + encodeURIComponent(_csrf)
+  })
+  .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,d:d}; }); })
+  .then(function(res) {
+    if (!res.ok) { errEl.textContent = res.d.error || 'Could not apply coupon.'; errEl.style.display='block'; return; }
+    // Show applied state
+    document.getElementById('applied-code-label').textContent = res.d.code;
+    document.getElementById('coupon-applied').style.display = 'flex';
+    document.getElementById('coupon-form').style.display = 'none';
+    errEl.style.display = 'none';
+    // Update totals
+    document.getElementById('summary-discount-row').style.display = 'flex';
+    document.getElementById('summary-discount').textContent = '−' + fmt(res.d.discount);
+    document.getElementById('summary-total').textContent = fmt(res.d.final_total);
+  })
+  .catch(function(){ errEl.textContent = 'Request failed. Please try again.'; errEl.style.display='block'; });
+}
+
+function removeCoupon() {
+  fetch('/coupon/remove', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':_csrf},
+    body: '_token=' + encodeURIComponent(_csrf)
+  }).then(function(){ location.reload(); });
+}
+
+// Allow Enter key in coupon input
+var inp = document.getElementById('coupon-input');
+if (inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();applyCoupon();} });
+</script>
+{{end}}

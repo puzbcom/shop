@@ -1,0 +1,61 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Warranties"}}</h1></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Add Warranty"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/warranties">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+          <div class="form-group">
+            <label>{{translate "Warranty Text"}} <span class="text-danger">*</span></label>
+            <input type="text" name="text" class="form-control" placeholder="e.g. 1 Year Warranty" required>
+          </div>
+          <button type="submit" class="btn btn-primary">{{translate "Save Warranty"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "All Warranties"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{translate "Text"}}</th>
+                <th class="text-right">{{translate "Options"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Warranties}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Text}}</td>
+                <td class="text-right">
+                  <a href="/admin/warranties/{{.ID}}/edit" class="btn btn-soft-info btn-icon btn-circle btn-sm" title="{{translate "Edit"}}"><i class="las la-edit"></i></a>
+                  <form method="POST" action="/admin/warranties/{{.ID}}/delete" class="d-inline" onsubmit="return confirm('Delete this warranty?')">
+                    <input type="hidden" name="_token" value="{{csrf_token}}">
+                    <button type="submit" class="btn btn-soft-danger btn-icon btn-circle btn-sm" title="{{translate "Delete"}}"><i class="las la-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {{else}}
+              <tr><td colspan="3" class="text-center py-4">{{translate "No warranties yet"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,48 @@
+{{define "extra_css"}}
+  .page-wrap { max-width:1440px; margin:0 auto; padding:32px 24px 64px; }
+  .page-header { margin-bottom:32px; }
+  .page-header h1 { font-size:28px; font-weight:800; margin-bottom:6px; }
+  .page-header p { font-size:14px; color:var(--gray); }
+  .brands-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:20px; }
+  .brand-card { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px 16px; border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:box-shadow .15s,transform .15s; text-align:center; }
+  .brand-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.08); transform:translateY(-2px); }
+  .brand-logo { width:80px; height:80px; border-radius:50%; background:var(--light-gray); display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:28px; font-weight:800; color:var(--gray); }
+  .brand-logo img { width:100%; height:100%; object-fit:contain; padding:8px; }
+  .brand-name { font-size:13px; font-weight:700; }
+  .brand-products { font-size:11px; color:var(--gray); }
+  .empty-state { text-align:center; padding:80px 0; color:var(--gray); }
+  .empty-state h3 { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--black); }
+{{end}}
+{{define "content"}}
+<nav style="border-bottom:1px solid var(--border);background:#fff">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none">
+    <a href="/" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{translate "Home"}}</a>
+    {{range .Categories}}<a href="/category/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;display:block">{{.Name}}</a>{{end}}
+    <a href="/brands" style="white-space:nowrap;padding:13px 14px;font-size:13px;font-weight:600;border-bottom:3px solid var(--black);display:block">{{translate "Brands"}}</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <div style="font-size:12px;color:var(--gray);margin-bottom:24px;display:flex;gap:6px">
+    <a href="/">{{translate "Home"}}</a> <span>›</span> <span>{{translate "Brands"}}</span>
+  </div>
+  <div class="page-header">
+    <h1>{{translate "Browse Brands"}}</h1>
+    <p>{{translate "Discover products from"}} {{len .Brands}} {{translate "brands"}}</p>
+  </div>
+  <div class="brands-grid">
+    {{range .Brands}}
+    <a href="/brand/{{if .Slug}}{{.Slug}}{{else}}{{.ID}}{{end}}" class="brand-card">
+      <div class="brand-logo">
+        {{if .Logo}}<img src="{{uploaded_asset .Logo}}" alt="{{.Name}}">{{else}}{{first_char .Name}}{{end}}
+      </div>
+      <span class="brand-name">{{.Name}}</span>
+    </a>
+    {{else}}
+    <div class="empty-state" style="grid-column:1/-1">
+      <h3>{{translate "No brands yet"}}</h3>
+      <p>{{translate "Check back soon."}}</p>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,123 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Refund Requests"}}</h1></div>
+    <div class="col-md-6 text-md-right">
+      <div class="btn-group">
+        <a href="/admin/refunds" class="btn btn-sm {{if eq .Status ""}}btn-primary{{else}}btn-light{{end}}">{{translate "All"}}</a>
+        <a href="/admin/refunds?status=pending" class="btn btn-sm {{if eq .Status "pending"}}btn-primary{{else}}btn-light{{end}}">{{translate "Pending"}}</a>
+        <a href="/admin/refunds?status=approved" class="btn btn-sm {{if eq .Status "approved"}}btn-primary{{else}}btn-light{{end}}">{{translate "Approved"}}</a>
+        <a href="/admin/refunds?status=declined" class="btn btn-sm {{if eq .Status "declined"}}btn-primary{{else}}btn-light{{end}}">{{translate "Declined"}}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{with flash_success}}<div class="alert alert-success">{{.}}</div>{{end}}
+{{with flash_error}}<div class="alert alert-danger">{{.}}</div>{{end}}
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table aiz-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{translate "Order"}}</th>
+            <th>{{translate "Customer"}}</th>
+            <th>{{translate "Reason"}}</th>
+            <th>{{translate "Status"}}</th>
+            <th>{{translate "Date"}}</th>
+            <th class="text-right">{{translate "Actions"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Refunds}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{if .Order}}<a href="/admin/orders/{{.Order.ID}}">#{{.Order.ID}}</a>{{else}}—{{end}}</td>
+            <td>{{if .User}}{{.User.Name}}{{else}}—{{end}}</td>
+            <td style="max-width:260px;white-space:normal">{{.Reason}}</td>
+            <td>
+              {{if eq .Status "pending"}}<span class="badge badge-warning">{{translate "Pending"}}</span>
+              {{else if eq .Status "approved"}}<span class="badge badge-success">{{translate "Approved"}}</span>
+              {{else if eq .Status "declined"}}<span class="badge badge-danger">{{translate "Declined"}}</span>
+              {{else}}<span class="badge badge-light">{{.Status}}</span>{{end}}
+              {{if .AdminNote}}<div class="text-muted small mt-1">{{deref_str .AdminNote}}</div>{{end}}
+            </td>
+            <td>{{date_format .CreatedAt "Jan 2, 2006"}}</td>
+            <td class="text-right">
+              {{if eq .Status "pending"}}
+              <!-- Approve -->
+              <button type="button" class="btn btn-soft-success btn-icon btn-circle btn-sm"
+                onclick="openRefundModal({{.ID}},'approve')" title="{{translate "Approve"}}">
+                <i class="las la-check"></i>
+              </button>
+              <!-- Decline -->
+              <button type="button" class="btn btn-soft-danger btn-icon btn-circle btn-sm ml-1"
+                onclick="openRefundModal({{.ID}},'decline')" title="{{translate "Decline"}}">
+                <i class="las la-times"></i>
+              </button>
+              {{end}}
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="text-center py-4">{{translate "No refund requests found"}}</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{if gt .Pages 1}}
+    <div class="aiz-pagination p-3">
+      {{range $i := iterate .Pages}}
+      <a href="?page={{add $i 1}}&status={{$.Status}}" class="btn btn-sm {{if eq (add $i 1) $.Page}}btn-primary{{else}}btn-light{{end}}">{{add $i 1}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Refund Action Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form id="refundForm" method="POST">
+        <input type="hidden" name="_token" value="{{csrf_token}}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="refundModalTitle">{{translate "Confirm"}}</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-0">
+            <label>{{translate "Note (optional)"}}</label>
+            <textarea name="note" class="form-control" rows="3" placeholder="{{translate "Admin note..."}}"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">{{translate "Cancel"}}</button>
+          <button type="submit" class="btn btn-sm" id="refundSubmitBtn">{{translate "Confirm"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openRefundModal(id, action) {
+  var form = document.getElementById('refundForm');
+  var title = document.getElementById('refundModalTitle');
+  var btn = document.getElementById('refundSubmitBtn');
+  form.action = '/admin/refunds/' + id + '/' + action;
+  if (action === 'approve') {
+    title.textContent = '{{translate "Approve Refund"}}';
+    btn.className = 'btn btn-success btn-sm';
+    btn.textContent = '{{translate "Approve"}}';
+  } else {
+    title.textContent = '{{translate "Decline Refund"}}';
+    btn.className = 'btn btn-danger btn-sm';
+    btn.textContent = '{{translate "Decline"}}';
+  }
+  $('#refundModal').modal('show');
+}
+</script>
+{{end}}

@@ -1,0 +1,42 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h1 class="h3">{{translate "Conversation with"}} {{.Other.Name}}</h1>
+    </div>
+    <div class="col-md-6 text-md-right">
+      <a href="/seller/conversations" class="btn btn-light"><i class="las la-arrow-left"></i> {{translate "Back"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="card rounded-0 shadow-none">
+  <div class="card-body" style="min-height:400px;max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px" id="msg-list">
+    {{range .Messages}}
+    <div class="d-flex {{if eq .UserID $.User.ID}}justify-content-end{{end}}">
+      <div class="px-3 py-2 rounded" style="max-width:70%;{{if eq .UserID $.User.ID}}background:#009ef7;color:#fff{{else}}background:#f1f3f5{{end}}">
+        <div style="font-size:13px">{{deref_str .Message}}</div>
+        <div style="font-size:10px;opacity:.7;margin-top:4px">{{date_format .CreatedAt "3:04 PM"}}</div>
+      </div>
+    </div>
+    {{else}}
+    <div class="text-center text-muted py-4">{{translate "No messages yet. Start the conversation!"}}</div>
+    {{end}}
+  </div>
+
+  <div class="card-footer p-0 border-top">
+    <form method="POST" action="/seller/conversations/{{.Conversation.ID}}/send" class="d-flex">
+      <input type="hidden" name="_token" value="{{csrf_token}}">
+      <input type="text" name="message" class="form-control border-0 rounded-0" placeholder="{{translate "Type a message..."}}" required autofocus>
+      <button type="submit" class="btn btn-primary rounded-0 px-4">
+        <i class="las la-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  var list = document.getElementById('msg-list');
+  if (list) list.scrollTop = list.scrollHeight;
+</script>
+{{end}}

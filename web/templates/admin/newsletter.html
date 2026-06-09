@@ -1,0 +1,202 @@
+{{define "content"}}
+<div class="aiz-titlebar mt-2 mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6"><h1 class="h3">{{translate "Newsletter"}}</h1></div>
+  </div>
+</div>
+
+{{if .Flash}}
+<div class="alert alert-{{.FlashType}} alert-dismissible fade show" role="alert">
+  {{.Flash}}
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{{end}}
+
+<div class="row">
+  <!-- Compose -->
+  <div class="col-lg-7 mb-4">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Compose Newsletter"}}</h5></div>
+      <div class="card-body">
+        <form method="POST" action="/admin/newsletter/send" id="newsletterForm">
+          <input type="hidden" name="_token" value="{{csrf_token}}">
+
+          <div class="form-group">
+            <label class="font-weight-bold">{{translate "Subject"}} <span class="text-danger">*</span></label>
+            <input type="text" name="subject" class="form-control" required placeholder="{{translate "Email subject line"}}">
+          </div>
+
+          <div class="form-group">
+            <label class="font-weight-bold">{{translate "Body"}} <span class="text-danger">*</span></label>
+            <textarea name="body" id="newsletter-body" class="form-control" rows="10"></textarea>
+          </div>
+
+          <hr class="my-3">
+          <h6 class="font-weight-bold mb-3">{{translate "Recipients"}}</h6>
+
+          <div class="form-group">
+            <label class="font-weight-bold">{{translate "Audience"}}</label>
+            <select name="recipient_type" id="recipientType" class="form-control" onchange="toggleCriteria()">
+              <option value="subscribers">{{translate "Newsletter Subscribers Only"}}</option>
+              <option value="all_users">{{translate "All Registered Customers"}}</option>
+              <option value="custom">{{translate "Custom Filter"}}</option>
+            </select>
+          </div>
+
+          <!-- Custom criteria (shown when "custom" selected) -->
+          <div id="customCriteria" style="display:none;">
+            <div class="card bg-light border-0 p-3 mb-3">
+
+              <div class="form-group mb-2">
+                <label class="small font-weight-bold">{{translate "Registered Between"}}</label>
+                <div class="row">
+                  <div class="col-6">
+                    <input type="date" name="reg_from" class="form-control form-control-sm" placeholder="From">
+                  </div>
+                  <div class="col-6">
+                    <input type="date" name="reg_to" class="form-control form-control-sm" placeholder="To">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="small font-weight-bold">{{translate "Total Spend (past 6 months)"}} <small class="text-muted">{{translate "leave blank to skip"}}</small></label>
+                <div class="row align-items-center">
+                  <div class="col-5">
+                    <input type="number" name="spend_min" class="form-control form-control-sm" placeholder="Min ($)" min="0" step="0.01">
+                  </div>
+                  <div class="col-1 text-center text-muted">—</div>
+                  <div class="col-5">
+                    <input type="number" name="spend_max" class="form-control form-control-sm" placeholder="Max ($)" min="0" step="0.01">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mb-0">
+                <label class="small font-weight-bold">{{translate "Include Subscribers"}}</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="includeSubscribers" name="include_subscribers" value="1">
+                  <label class="custom-control-label" for="includeSubscribers">{{translate "Also include newsletter subscribers"}}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="previewCount()">
+              <i class="las la-users mr-1"></i><span id="previewLabel">{{translate "Preview Recipient Count"}}</span>
+            </button>
+            <span id="previewResult" class="ml-2 text-muted small"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="sendBtn">
+            <i class="las la-paper-plane mr-1"></i>{{translate "Send Newsletter"}}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="col-lg-5">
+    <div class="card rounded-0 shadow-none">
+      <div class="card-header"><h5 class="mb-0 h6">{{translate "Sent Campaigns"}}</h5></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table aiz-table mb-0">
+            <thead>
+              <tr>
+                <th>{{translate "Subject"}}</th>
+                <th>{{translate "Audience"}}</th>
+                <th class="text-center">{{translate "Sent"}}</th>
+                <th class="text-muted text-center">{{translate "Failed"}}</th>
+                <th>{{translate "Date"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Newsletters}}
+              <tr>
+                <td class="small" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{.Subject}}">{{.Subject}}</td>
+                <td>
+                  {{if eq .RecipientType "subscribers"}}<span class="badge badge-info">Subscribers</span>
+                  {{else if eq .RecipientType "all_users"}}<span class="badge badge-primary">All Users</span>
+                  {{else}}<span class="badge badge-secondary">Custom</span>{{end}}
+                </td>
+                <td class="text-center"><span class="badge badge-success">{{.SentCount}}</span></td>
+                <td class="text-center">{{if .FailCount}}<span class="badge badge-danger">{{.FailCount}}</span>{{else}}<span class="text-muted">—</span>{{end}}</td>
+                <td class="small text-muted">{{date_format .CreatedAt "Jan 02"}}</td>
+              </tr>
+              {{else}}
+              <tr><td colspan="5" class="text-center py-4 text-muted">{{translate "No campaigns sent yet"}}</td></tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/vendors/summernote/summernote-bs4.min.js"></script>
+<script>
+$(function() {
+  $('#newsletter-body').summernote({
+    height: 300,
+    toolbar: [
+      ['style', ['bold','italic','underline','clear']],
+      ['font', ['fontsize']],
+      ['color', ['color']],
+      ['para', ['ul','ol','paragraph']],
+      ['insert', ['link','picture']],
+      ['view', ['fullscreen','codeview']]
+    ]
+  });
+});
+
+function toggleCriteria() {
+  var t = document.getElementById('recipientType').value;
+  document.getElementById('customCriteria').style.display = (t === 'custom') ? 'block' : 'none';
+  document.getElementById('previewResult').textContent = '';
+}
+
+function previewCount() {
+  var form = document.getElementById('newsletterForm');
+  var data = {
+    recipient_type: form.recipient_type.value,
+    reg_from: form.reg_from ? form.reg_from.value : '',
+    reg_to: form.reg_to ? form.reg_to.value : '',
+    spend_min: form.spend_min ? form.spend_min.value : '',
+    spend_max: form.spend_max ? form.spend_max.value : '',
+    include_subscribers: document.getElementById('includeSubscribers') && document.getElementById('includeSubscribers').checked ? '1' : '0',
+  };
+  var label = document.getElementById('previewLabel');
+  var result = document.getElementById('previewResult');
+  label.textContent = '…';
+  $.ajax({
+    url: '/admin/newsletter/preview-count',
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'X-CSRF-Token': $('input[name="_token"]').first().val() },
+    data: JSON.stringify(data),
+    success: function(r) {
+      label.textContent = '{{translate "Preview Recipient Count"}}';
+      result.textContent = r.count + ' recipient(s) will receive this email';
+      result.className = 'ml-2 text-success small font-weight-bold';
+    },
+    error: function() {
+      label.textContent = '{{translate "Preview Recipient Count"}}';
+      result.textContent = 'Could not count recipients';
+      result.className = 'ml-2 text-danger small';
+    }
+  });
+}
+
+document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Sending…';
+});
+</script>
+{{end}}
