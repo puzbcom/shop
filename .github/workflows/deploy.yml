@@ -12,26 +12,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Copy SQL files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "sql/"
-          target: "/www/sites/shop/"
-          strip_components: 0
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r sql/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/www/sites/shop/
+          rm /tmp/deploy_key
 
       - name: Run SQL migrations
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            for f in /www/sites/shop/sql/*.sql; do
-              mysql -uroot -p"$DB_ROOT_PASS" shop < "$f"
-            done
-            echo "Done"
-          envs: DB_ROOT_PASS
-        env:
-          DB_ROOT_PASS: ${{ secrets.DB_ROOT_PASS }}
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "for f in /www/sites/shop/sql/*.sql; do mysql -uroot -p'${{ secrets.DB_ROOT_PASS }}' shop < \"\$f\"; done && echo Done"
+          rm /tmp/deploy_key
