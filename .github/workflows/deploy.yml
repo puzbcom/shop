@@ -11,10 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test all secrets
+      - name: Test SSH_KEY secret
         env:
           SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          DB_ROOT_PASS: ${{ secrets.DB_ROOT_PASS }}
-        run: echo "All secrets loaded"
+        run: echo "SSH key loaded"
