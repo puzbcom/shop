@@ -1,4 +1,5 @@
-name: 【终极无人值守】Claude全权托管+云端编译+智能SSL+数据库同步
+name: Deploy to shop.rjck.com
+
 on:
   push:
     branches: [main]
@@ -6,67 +7,36 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    env:
-      SSL_DIR: /etc/nginx/ssl
-      DB_CHARSET: utf8mb4
-      DB_COLLATE: utf8mb4_unicode_ci
 
     steps:
-      - name: 拉取项目代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 解析项目基础信息、数据库账号密码
-        run: |
-          PROJECT="${GITHUB_REPOSITORY##*/}"
-          NAME_LEN=${#PROJECT}
-          FIRST_CHAR=${PROJECT:0:1}
-          LAST_CHAR=${PROJECT: -1}
-          DB_PASS="${PROJECT}${NAME_LEN}${FIRST_CHAR}${LAST_CHAR}"
-
-          echo "PROJECT=$PROJECT" >> $GITHUB_ENV
-          echo "DB_NAME=$PROJECT" >> $GITHUB_ENV
-          echo "DB_USER=$PROJECT" >> $GITHUB_ENV
-          echo "DB_PASS=$DB_PASS" >> $GITHUB_ENV
-          echo "SITE_DIR=/www/sites/$PROJECT" >> $GITHUB_ENV
-          echo "NGINX_CONF=/etc/nginx/conf.d/$PROJECT.conf" >> $GITHUB_ENV
-
-      - name: 云端安装编译环境
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
 
-      - name: 【云端编译】自动构建 NextJS / Go 项目
+      - name: Build Go binary
         run: |
-          # 云端编译NextJS前端
-          if [ -f "package.json" ] && grep -q "next" package.json; then
-            echo "✅ 云端编译 NextJS 项目"
-            npm install
-            npm run build
-          fi
-
-          # 云端静态编译Go后端（无依赖、服务器直接运行）
           if [ -f "go.mod" ]; then
-            echo "✅ 云端编译 Go 项目"
             go mod tidy
-            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server ./cmd/server
             chmod +x server
           fi
 
-      - name: 【私钥安全上传】推送编译产物至服务器
+      - name: Upload files to server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "."
-          target: ${{ env.SITE_DIR }}
+          source: "web/templates,sql,server"
+          target: /www/sites/shop
           overwrite: true
 
-      - name: 读取Claude域名与端口配置（缺省自动随机空闲端口）
+      - name: Deploy on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -74,90 +44,17 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # 读取项目域名（Claude自动生成写入）
-            if [ -f ${{ env.SITE_DIR }}/.domain ]; then
-              DOMAIN=$(cat ${{ env.SITE_DIR }}/.domain)
-              echo "DOMAIN=$DOMAIN" >> /etc/profile
-              echo "当前项目绑定域名：$DOMAIN"
-            else
-              echo "❌ 未检测到域名配置，请先通过Claude全自动建站"
-              exit 1
-            fi
+            cd /www/sites/shop
 
-            # 智能端口：有配置用指定，无配置随机空闲端口并固化
-            if [ -f ${{ env.SITE_DIR }}/.port ]; then
-              GO_PORT=$(cat ${{ env.SITE_DIR }}/.port)
-              echo "✅ 使用Claude指定端口：$GO_PORT"
-            else
-              while true; do
-                GO_PORT=$((10000 + RANDOM % 55000))
-                if ! ss -tulpn | grep -q :$GO_PORT; then
-                  break
-                fi
+            # Run SQL migrations
+            if [ -d sql ]; then
+              for f in sql/*.sql; do
+                mysql -uroot -p${{ secrets.DB_ROOT_PASS }} shop < "$f" && echo "Applied: $f"
               done
-              echo $GO_PORT > ${{ env.SITE_DIR }}/.port
-              echo "✅ 自动分配空闲端口：$GO_PORT（已永久固化）"
-            fi
-            echo "GO_PORT=$GO_PORT" >> /etc/profile
-
-      - name: 服务器部署+动态配置+数据库同步+智能SSL
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            source /etc/profile
-            DOMAIN=$DOMAIN
-            GO_PORT=$GO_PORT
-
-            chown -R www:www ${{ env.SITE_DIR }}
-            cd ${{ env.SITE_DIR }}
-
-            # 重启Go服务，兼容主流端口启动参数
-            if [ -f "server" ]; then
-              pkill -f "./server" || true
-              nohup ./server -port=$GO_PORT > server.log 2>&1 &
-              echo "✅ Go服务启动成功 端口：$GO_PORT"
             fi
 
-            # 全自动数据库创建、授权、增量SQL同步
-            mysql -uroot -p${{ secrets.DB_ROOT_PASS }} -e "
-            CREATE DATABASE IF NOT EXISTS ${{ env.DB_NAME }} DEFAULT CHARACTER SET ${{ env.DB_CHARSET }} COLLATE ${{ env.DB_COLLATE }};
-            CREATE USER IF NOT EXISTS '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY '${{ env.DB_PASS }}';
-            GRANT ALL PRIVILEGES ON ${{ env.DB_NAME }}.* TO '${{ env.DB_USER }}'@'localhost';
-            FLUSH PRIVILEGES;
-            "
-            [ -f migrate.sql ] && mysql -uroot -p${{ secrets.DB_ROOT_PASS }} ${{ env.DB_NAME }} < migrate.sql
-            [ -d sql ] && for f in sql/*.sql; do mysql -uroot -p${{ env.DB_ROOT_PASS }} ${{ env.DB_NAME }} < $f; done
-
-            # 智能SSL自动匹配复用/自动签发
-            if [[ "$DOMAIN" == *.puzb.com ]]; then
-              SSL_CRT=${{ env.SSL_DIR }}/puzb.com.crt
-              SSL_KEY=${{ env.SSL_DIR }}/puzb.com.key
-              echo "✅ 复用 *.puzb.com 泛域名SSL证书"
-            elif [[ "$DOMAIN" == *.rjck.com ]]; then
-              SSL_CRT=${{ env.SSL_DIR }}/rjck.com.crt
-              SSL_KEY=${{ env.SSL_DIR }}/rjck.com.key
-              echo "✅ 复用 *.rjck.com 泛域名SSL证书"
-            else
-              echo "🔍 新域名自动签发独立SSL证书"
-              [ ! -f /root/.acme.sh/acme.sh ] && curl https://get.acme.sh | sh -s email=ssl@puzb.com
-              source ~/.bashrc
-              ~/.acme.sh/acme.sh --issue -d $DOMAIN --webroot ${{ env.SITE_DIR }} --force
-              ~/.acme.sh/acme.sh --install-cert -d $DOMAIN \
-              --key-file ${{ env.SSL_DIR }}/${{ env.PROJECT }}.key \
-              --fullchain-file ${{ env.SSL_DIR }}/${{ env.PROJECT }}.crt \
-              --reloadcmd "systemctl restart nginx"
-              SSL_CRT=${{ env.SSL_DIR }}/${{ env.PROJECT }}.crt
-              SSL_KEY=${{ env.SSL_DIR }}/${{ env.PROJECT }}.key
-            fi
-
-            # 动态Nginx强制HTTPS配置
-            printf 'server {\n  listen 80;\n  server_name %s;\n  return 301 https://$host$request_uri;\n}\nserver {\n  listen 443 ssl;\n  server_name %s;\n  root %s;\n  ssl_certificate %s;\n  ssl_certificate_key %s;\n  ssl_protocols TLSv1.2 TLSv1.3;\n  location / {\n    proxy_pass http://127.0.0.1:%s;\n    proxy_set_header Host $host;\n    proxy_set_header X-Real-IP $remote_addr;\n  }\n}\n' "$DOMAIN" "$DOMAIN" "${{ env.SITE_DIR }}" "$SSL_CRT" "$SSL_KEY" "$GO_PORT" > ${{ env.NGINX_CONF }}
-
-            systemctl restart nginx
-            echo "✅ 部署完成！https://$DOMAIN"
-            echo "✅ 运行端口：$GO_PORT"
-            echo "✅ 数据库：${{ env.DB_NAME }} | ${{ env.DB_USER }} | ${{ env.DB_PASS }}"
+            # Restart server
+            pkill -f "./server" || true
+            nohup ./server > server.log 2>&1 &
+            sleep 2
+            echo "Done: shop.rjck.com"
