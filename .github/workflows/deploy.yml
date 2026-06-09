@@ -5,23 +5,66 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  DOMAIN: shop.rjck.com
+  SITE_ROOT: /www/sites/shop.rjck.com
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy SQL to live server
+      # ── 1. Build Go binary for Linux ────────────────────────────────
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o shop ./cmd/server
+
+      # ── 2. Write SSH key ─────────────────────────────────────────────
+      - name: Write SSH key
         env:
           SSH_KEY_RAW: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          DB_ROOT_PASS: ${{ secrets.DB_ROOT_PASS }}
         run: |
-          echo '-----BEGIN OPENSSH PRIVATE KEY-----' > /tmp/deploy_key
-          echo "$SSH_KEY_RAW" | fold -w 70 >> /tmp/deploy_key
-          echo '-----END OPENSSH PRIVATE KEY-----' >> /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r sql/ "$SERVER_USER@$SERVER_HOST:/www/sites/shop.rjck.com/"
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "MYSQL=\$(sudo docker ps --format '{{.Names}}' | grep -i mysql | head -1); echo \"MySQL container: \$MYSQL\"; sudo docker exec -i \"\$MYSQL\" mysql -uroot -p'${DB_ROOT_PASS}' -e 'SHOW DATABASES;' 2>&1"
-          rm /tmp/deploy_key
+          echo '-----BEGIN OPENSSH PRIVATE KEY-----' > /tmp/k
+          printf '%s' "$SSH_KEY_RAW" | fold -w 70 >> /tmp/k
+          echo '' >> /tmp/k
+          echo '-----END OPENSSH PRIVATE KEY-----' >> /tmp/k
+          chmod 600 /tmp/k
+
+      # ── 3. Upload files ──────────────────────────────────────────────
+      - name: Upload binary & SQL
+        env:
+          H: ${{ secrets.SERVER_HOST }}
+          U: ${{ secrets.SERVER_USER }}
+        run: |
+          SCP="scp -i /tmp/k -o StrictHostKeyChecking=no"
+          $SCP shop                       "$U@$H:$SITE_ROOT/shop"
+          $SCP -r sql/                    "$U@$H:$SITE_ROOT/"
+
+      # ── 4. Remote: migrate + restart ────────────────────────────────
+      - name: Migrate & restart
+        env:
+          H: ${{ secrets.SERVER_HOST }}
+          U: ${{ secrets.SERVER_USER }}
+          DB_PASS: ${{ secrets.DB_ROOT_PASS }}
+        run: |
+          ssh -i /tmp/k -o StrictHostKeyChecking=no "$U@$H" \
+            "MYSQL=\$(sudo docker ps --format '{{.Names}}' | grep -i mysql | head -1)
+             DB='$DOMAIN'
+             for f in $SITE_ROOT/sql/*.sql; do
+               sudo docker exec -i \"\$MYSQL\" mysql -uroot -p'$DB_PASS' \"\$DB\" < \"\$f\"
+             done
+             chmod +x $SITE_ROOT/shop
+             sudo systemctl restart shop 2>/dev/null \
+               || sudo supervisorctl restart shop 2>/dev/null \
+               || (sudo pkill -f '$SITE_ROOT/shop'; sleep 1; cd $SITE_ROOT && nohup sudo ./shop > shop.log 2>&1 &)
+             echo 'Deploy OK'"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/k
