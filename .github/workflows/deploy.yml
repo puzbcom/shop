@@ -11,17 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy SQL files to server
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r sql/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/www/sites/shop/
-          rm /tmp/deploy_key
-
-      - name: Run SQL migrations
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "for f in /www/sites/shop/sql/*.sql; do mysql -uroot -p'${{ secrets.DB_ROOT_PASS }}' shop < \"\$f\"; done && echo Done"
-          rm /tmp/deploy_key
+      - name: List files
+        run: ls -la sql/
