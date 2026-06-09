@@ -1,0 +1,11 @@
+.env
+/bin/
+/uploads/
+/storage/
+/web/static/dist/
+/web/static/node_modules/
+*.exe
+uploads.tar.gz
+*.exe
+*.sql
+*.log
