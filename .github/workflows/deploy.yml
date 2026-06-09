@@ -9,5 +9,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Hello
-        run: echo "Runner is alive"
+      - uses: actions/checkout@v4
+
+      - name: Copy SQL files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "sql/"
+          target: "/www/sites/shop/"
+          strip_components: 0
+
+      - name: Run SQL migrations
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            for f in /www/sites/shop/sql/*.sql; do
+              mysql -uroot -p"$DB_ROOT_PASS" shop < "$f"
+            done
+            echo "Done"
+          envs: DB_ROOT_PASS
+        env:
+          DB_ROOT_PASS: ${{ secrets.DB_ROOT_PASS }}
