@@ -13,12 +13,14 @@ jobs:
 
       - name: Deploy SQL to live server
         env:
-          SSH_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KEY_RAW: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           DB_ROOT_PASS: ${{ secrets.DB_ROOT_PASS }}
         run: |
-          echo "$SSH_KEY_B64" | base64 -d > /tmp/deploy_key
+          echo '-----BEGIN OPENSSH PRIVATE KEY-----' > /tmp/deploy_key
+          echo "$SSH_KEY_RAW" | fold -w 70 >> /tmp/deploy_key
+          echo '-----END OPENSSH PRIVATE KEY-----' >> /tmp/deploy_key
           chmod 600 /tmp/deploy_key
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r sql/ "$SERVER_USER@$SERVER_HOST:/www/sites/shop/"
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "for f in /www/sites/shop/sql/*.sql; do mysql -uroot -p'${DB_ROOT_PASS}' shop < \"\$f\"; done && echo Done"
