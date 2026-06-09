@@ -23,5 +23,5 @@ jobs:
           echo '-----END OPENSSH PRIVATE KEY-----' >> /tmp/deploy_key
           chmod 600 /tmp/deploy_key
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r sql/ "$SERVER_USER@$SERVER_HOST:/www/sites/shop.rjck.com/"
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "MYSQL=\$(docker ps --format '{{.Names}}' | grep -i mysql | head -1); for f in /www/sites/shop.rjck.com/sql/*.sql; do docker exec -i \"\$MYSQL\" mysql -uroot -p'${DB_ROOT_PASS}' shop < \"\$f\"; done && echo Done"
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "MYSQL=\$(sudo docker ps --format '{{.Names}}' | grep -i mysql | head -1); for f in /www/sites/shop.rjck.com/sql/*.sql; do sudo docker exec -i \"\$MYSQL\" mysql -uroot -p'${DB_ROOT_PASS}' shop < \"\$f\"; done && echo Done"
           rm /tmp/deploy_key
