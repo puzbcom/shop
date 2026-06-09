@@ -11,5 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -la sql/
+      - name: Test secrets env
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: echo "Host is set"
